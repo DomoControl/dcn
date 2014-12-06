@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+    <head>
+        <title>DomoContorl V2</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css' ) }}" >
+    </head>
+    
+    <body>
+        <header>
+            <nav class="navbar navbar-default navbar-static-top" role="navigation">
+                <ul class="nav nav-pills center">
+                    <li class="active"><a href="#">Home</a></li>
+                    <li><a href="#">Status</a></li>
+                    <li class="dropdown">
+                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Setup<span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/setup_program_setup.html">Program Setup</a></li>
+                            <li class="divider"></li>
+                            <li><a href="/setup_user.html">User</a></li>
+                            <li class="divider"></li>
+                            <li><a href="/setup_area.html">Area</a></li>
+                            <li><a href="/setup_privilege.html">Privilege</a></li>
+                            <li><a href="/setup_translation.html">Translation</a></li>
+                            <li><a href="/setup_board_type.html">Board Type</a></li>
+                            <li><a href="/setup_board_setup.html">Board Setup</a></li>
+                            <li><a href="/setup_input_type.html">Input Type</a></li>
+                            <li><a href="/setup_program_type.html">Program Type</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="/login">Login</a></li>
+                </ul>
+            </nav>
+            
+        </header>
+            
+         
+            
+            
+        
+            
+        <div class="container">
+            
+            
+            
+            {% block content %}
+            {% endblock %}
+        </div>
+        
+    </body>
+    <script type="text/javascript" src="/static/jquery.js"></script>
+    <script type="text/javascript" src="/static/js/bootstrap.js"></script>
+    
+</html> 
