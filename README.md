@@ -1,8 +1,9 @@
 == New DomoContorl Version 2 == 
 -
 
-This is new version of  https://github.com/DomoControl/domocontrol project.
-It's use this packages:
+You can see new DomoControl version at this address: https://github.com/DomoControl/dcn
+
+New DomoConotrl project use this packages:
 - Python programming language
 - Flask web framework
 - Sqlite3 database
