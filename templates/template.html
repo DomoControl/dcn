@@ -27,7 +27,11 @@
                             <li><a href="/setup_program_type.html">Program Type</a></li>
                         </ul>
                     </li>
-                    <li><a href="/login">Login</a></li>
+                    {% if not session.logged_in %}
+                        <li><a href="/login">Login</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('logout') }}">Logout {{ session.user_name }}</a></li> 
+                    {% endif %}
                 </ul>
             </nav>
             

@@ -14,17 +14,22 @@ temp = 0x55AA
 i2c = smbus.SMBus(1)
 i2c.write_byte(i2c_addr,0x20)
 
-
-
-
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.secret_key = 'secret'
-
-
-def conn():
-    dbname = '/home/pi/dc/db/db.sqlite'
+dbname = '/home/pi/dc/db/db.sqlite'
+DATABASE = '/home/pi/dc/db/db.sqlite'
+    
+def conn_db():
     return sqlite3.connect(dbname)
+
+def query_db(query, args=(), one=True):
+    cur = conn_db().execute(query, args)
+    rv = [dict((cur.description[idx][0], value)
+        for idx, value in enumerate(row)) for row in cur.fetchall()]
+    cur.close()
+    return (rv[0] if rv else None) if one else rv
+
 
 @app.route("/")
 @app.route('/home')
@@ -33,12 +38,7 @@ def home():
     
 @app.route('/hello')
 def hello():
-    a = conn()
-    g.db = conn()
-    cur = g.db.execute('SELECT name FROM pi_user WHERE id=1')
-    user = cur.fetchall()
-    g.db.close()
-    return render_template("hello.html", name=user[0][0])
+    return render_template("hello.html", name=session['user_name'])
     
 @app.route('/logout')
 def logout():
@@ -50,11 +50,14 @@ def logout():
 def login():
     error = None
     if request.method == "POST":
-        if request.form["username"] != "admin" and request.form["password"] != "admin":
-            error = "invalid password or username. Please retry"
-        else:
+        res = query_db('SELECT * FROM pi_user WHERE username = "%s" AND password = "%s"' %(request.form["username"],request.form["password"]))
+        if res and len(res) > 0:
             session['logged_in'] = True
+            session['user_id'] = res['id']
+            session['user_name'] = res['name']
             return redirect(url_for("hello"))
+        else:
+            error = "invalid password or username. Please retry"
     return render_template("login.html", error=error)
     
 if __name__ == '__main__':
