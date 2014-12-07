@@ -1,0 +1,55 @@
+{% extends "template.html" %}
+{% block content %}
+   <h1>User Setup</h1>
+  {% if error %}
+    <p class=error><strong>Error:</strong> {{ error }}
+  {% endif %}
+  
+  <form action="" method=post>
+    <div class="input-group">
+      <span class="input-group-addon" style="width:200px;">Username</span>
+      <input width="200px" type="text" class="form-control" name=username value="{{ pi_user.username }}">
+    </div>
+    <div class="input-group">
+      <span class="input-group-addon" style="width:200px;">Password</span>
+      <input type="password" class="form-control" name=password value="{{ pi_user.password }}">
+    </div>
+    <div class="input-group">
+      <span class="input-group-addon" style="width:200px;">Retype Password</span>
+      <input type="password" class="form-control" name=retype_password value="">
+    </div>
+    <div class="input-group">
+      <span class="input-group-addon" style="width:200px;">Name</span>
+      <input type="text" class="form-control" name=name value="{{ pi_user.name }}">
+    </div>
+    <div class="input-group">
+      <span class="input-group-addon" style="width:200px;">Surname</span>
+      <input type="text" class="form-control" name=surname value="{{ pi_user.surname }}">
+    </div>
+    <div class="input-group">
+      <span class="input-group-addon" style="width:200px;">Language</span>
+      <select name="lang" class="form-control">
+        <option value="en" {% if pi_user.lang == 'en' %} selected {% endif %} >English</option>
+        <option value="it" {% if pi_user.lang == 'it' %} selected {% endif %} >Italian</option>
+        <option value="de" {% if pi_user.lang == 'de' %} selected {% endif %} >German</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <span class="input-group-addon" style="width:200px;">Session Timeout</span>
+      <input type="text" class="form-control" name=username value="{{ pi_user.session }}">
+    </div>
+    <div class="input-group">
+      
+      {% for p in pi_privilege %}
+        <span class="input-group-addon" style="width:200px;">{{ p.name }}</span>
+
+      {% endfor %}
+    </div>
+    
+  {% for message in get_flashed_messages() %}
+    <div class='flash'>
+      {{ message }}
+    </div>
+  {% endfor %}
+  
+{% endblock %}

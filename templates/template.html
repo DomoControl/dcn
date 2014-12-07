@@ -9,46 +9,56 @@
         <header>
             <nav class="navbar navbar-default navbar-static-top" role="navigation">
                 <ul class="nav nav-pills center">
-                    <li class="active"><a href="#">Home</a></li>
-                    <li><a href="#">Status</a></li>
+                    <li class="active"><a href="/home">Home</a></li>
+                    <li><a href="/status">Status</a></li>
                     <li class="dropdown">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Setup<span class="caret"></span></a>
                         <ul class="dropdown-menu">
-                            <li><a href="/setup_program_setup.html">Program Setup</a></li>
+                            {% if session['logged_in']==True %}
+                            <li><a href="/setup_program">Program Setup</a></li>
                             <li class="divider"></li>
-                            <li><a href="/setup_user.html">User</a></li>
+                            <li><a href="/setup_user">User</a></li>
                             <li class="divider"></li>
-                            <li><a href="/setup_area.html">Area</a></li>
-                            <li><a href="/setup_privilege.html">Privilege</a></li>
-                            <li><a href="/setup_translation.html">Translation</a></li>
-                            <li><a href="/setup_board_type.html">Board Type</a></li>
-                            <li><a href="/setup_board_setup.html">Board Setup</a></li>
-                            <li><a href="/setup_input_type.html">Input Type</a></li>
-                            <li><a href="/setup_program_type.html">Program Type</a></li>
+                            <li><a href="/setup_area">Area</a></li>
+                            <li><a href="/setup_privilege">Privilege</a></li>
+                            <li><a href="/setup_translation">Translation</a></li>
+                            <li><a href="/setup_board_type">Board Type</a></li>
+                            <li><a href="/setup_board_setup">Board Setup</a></li>
+                            <li><a href="/setup_input_type">Input Type</a></li>
+                            <li><a href="/setup_program_type">Program Type</a></li>
+                            {% else %}
+                            <li>Please Login</li>
+                            {% endif %}
                         </ul>
                     </li>
+                    
+                    
                     {% if not session.logged_in %}
                         <li><a href="/login">Login</a></li>
                     {% else %}
                         <li><a href="{{ url_for('logout') }}">Logout {{ session.user_name }}</a></li> 
                     {% endif %}
+                    <li><a href="/doc">doc</a></li>
                 </ul>
             </nav>
             
         </header>
-            
-         
-            
-            
         
-            
         <div class="container">
-            
-            
-            
             {% block content %}
+            
             {% endblock %}
         </div>
+        
+        <footer>
+            <nav class="navbar navbar-default navbar-fixed-bottom" role="navigation">
+                <div class="container">
+                    {% if session.logged_in %}
+                        <span>Welcome {{ session.user_name }}</span>
+                    {% endif %}
+                </div>
+            </nav>
+        </footer>    
         
     </body>
     <script type="text/javascript" src="/static/jquery.js"></script>
