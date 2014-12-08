@@ -5,7 +5,8 @@
     <p class=error><strong>Error:</strong> {{ error }}
   {% endif %}
   
-  <form action="" method=post>
+  <form action="" method="post">
+    <input type="hidden" name=id value="{{ pi_user.id }}">
     <div class="input-group">
       <span class="input-group-addon" style="width:200px;">Username</span>
       <input width="200px" type="text" class="form-control" name=username value="{{ pi_user.username }}">
@@ -36,15 +37,25 @@
     </div>
     <div class="input-group">
       <span class="input-group-addon" style="width:200px;">Session Timeout</span>
-      <input type="text" class="form-control" name=username value="{{ pi_user.session }}">
+      <input type="text" class="form-control" name=session value="{{ pi_user.session }}">
     </div>
-    <div class="input-group">
-      
+    <div style="border:1px dashed gray; width:400px; margin-top:10px; padding:3px;">
+      <p>Privilege</p>
       {% for p in pi_privilege %}
-        <span class="input-group-addon" style="width:200px;">{{ p.name }}</span>
-
+        <div >
+          <div class="input-group" style="width:100%">
+            <span class="input-group-addon" style="width:200px;"> {{ p['name'] }} </span>
+            <span style="margin-left:10px;"><input type="checkbox" name="privilege[{{ p.id }}]" value="{{ p.id }}" {% if pi_user.privilege.find('%s' %p['id']) == -1 %}  {% else %} checked {% endif %}></span>
+          </div>
+        </div>
       {% endfor %}
     </div>
+    <div class="input-group">
+      <br />
+      <p style="width:400px; text-align:center;"><input type="submit" class="form-control" name=submit value="Save"></p>
+    </div>
+  </form>
+  <p><small>Last modified: {{ pi_user.timestamp }}</small></p>
     
   {% for message in get_flashed_messages() %}
     <div class='flash'>

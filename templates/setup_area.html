@@ -1,0 +1,23 @@
+{% extends "template.html"  %}
+{% block content %}
+    <h2>Area Setup</h2>
+    {% if error %}
+        <p class=error><strong>Error:</strong> {{ error }}
+    {% endif %}
+    
+    <form action="" method="post">
+        {% for p in pi_area %}
+        <div class="input-group">
+            <input type="hidden" name=id value="{{ p.id }}">
+            <span class="input-group-addon" style="width:200px;">{{ p.name }}</span>
+            <input width="200px" type="text"  name=description value="{{ p.description }}">
+        </div>
+        {% endfor %}
+    
+    
+    
+    </form>
+    
+    
+    
+{% endblock %}
