@@ -1,6 +1,6 @@
 #!/usr/bin/python
 from flask import *
-from flask.ext.session import Session
+#~ from flask.ext.session import Session
 import sys
 #~ from flask.ext.babel import gettext, ngettext
 #~ from functools import wraps
@@ -8,7 +8,8 @@ import sqlite3
 #~ import RPi.GPIO as GPIO
 import smbus as smbus
 
-
+app = Flask(__name__)
+app.secret_key = 'why would I tell you my secret key?'
 
     
 #~ i2c_addr = 0x20
@@ -16,13 +17,13 @@ import smbus as smbus
 #~ i2c = smbus.SMBus(1)
 #~ i2c.write_byte(i2c_addr,0x20)
 
-SESSION_TYPE = 'memcache'
+#~ SESSION_TYPE = 'memcache'
 
-app = Flask(__name__)
-app.config.from_object(__name__)
-app.secret_key = 'why would I tell you my secret key?'
-sess = Session()
-DATABASE = '/home/pi/dc/db/db.sqlite'
+
+#~ app.config.from_object(__name__)
+
+#~ sess = Session()
+DATABASE = '/home/pi/dcn/db/db.sqlite'
     
 def conn_db():
     return sqlite3.connect(DATABASE)
@@ -91,11 +92,11 @@ def login():
     error = None
     if request.method == "POST":
         q = 'SELECT * FROM pi_user WHERE username = "%s" AND password = "%s"' %(request.form["username"],request.form["password"])
-        res = query_db(q)
+        res = query_db(q)[0]
         if res and len(res) > 0:
             session['logged_in'] = True
-            session['user_id'] = res['id']
             session['user_name'] = res['name']
+            session['user_id'] = res['id']
             return render_template("hello.html", error=error)
         else:
             session['logged_in'] = None
@@ -103,10 +104,14 @@ def login():
     return render_template("login.html", error=error)
     
 if __name__ == '__main__':
-    app.secret_key = 'super secret key'
-    app.config['SESSION_TYPE'] = 'filesystem'
-    app.permanent_session_lifetime  = 5000
-    sess.init_app(app)
-    app.run(host="0.0.0.0", port=int("5000"), debug=True )
+    #~ app.secret_key = 'super secret key'
+    #~ app.config['SESSION_TYPE'] = 'filesystem'
+    #~ app.permanent_session_lifetime  = 5000
+    #~ sess.init_app(app)
+    app.run(
+        host="0.0.0.0", 
+        port=int("5000"), 
+        debug=True 
+    )
     #~ babel = Babel(app)
 

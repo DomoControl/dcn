@@ -1,2 +1,29 @@
  * Running on http://0.0.0.0:5000/
  * Restarting with reloader
+87.2.186.33 - - [07/Dec/2014 23:13:14] "POST /login HTTP/1.1" 500 -
+Traceback (most recent call last):
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1836, in __call__
+    return self.wsgi_app(environ, start_response)
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1820, in wsgi_app
+    response = self.make_response(self.handle_exception(e))
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1403, in handle_exception
+    reraise(exc_type, exc_value, tb)
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1817, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1477, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1381, in handle_user_exception
+    reraise(exc_type, exc_value, tb)
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1475, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/usr/local/lib/python2.7/dist-packages/flask/app.py", line 1461, in dispatch_request
+    return self.view_functions[rule.endpoint](**req.view_args)
+  File "/home/pi/dcn/dc.py", line 97, in login
+    session['user_id'] = res['id']
+TypeError: list indices must be integers, not str
+87.2.186.33 - - [07/Dec/2014 23:13:14] "GET /login?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+87.2.186.33 - - [07/Dec/2014 23:13:14] "GET /login?__debugger__=yes&cmd=resource&f=jquery.js HTTP/1.1" 200 -
+87.2.186.33 - - [07/Dec/2014 23:13:14] "GET /login?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+87.2.186.33 - - [07/Dec/2014 23:13:14] "GET /login?__debugger__=yes&cmd=resource&f=ubuntu.ttf HTTP/1.1" 200 -
+87.2.186.33 - - [07/Dec/2014 23:13:14] "GET /login?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+87.2.186.33 - - [07/Dec/2014 23:13:14] "GET /login?__debugger__=yes&cmd=resource&f=source.png HTTP/1.1" 200 -
