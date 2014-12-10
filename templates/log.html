@@ -1,0 +1,10 @@
+{% extends "template.html"  %}
+{% block content %}
+    <h2>User Log</h2>
+    <table class="table table-hover" ><tr><th>IP number</th><th>Command</th><th>Timestamp</th></tr>
+    {% for r in res %}
+        <tr><td>{{ r.ip }}</td><td>{{ r.command }}</td><td>{{ r.timestamp }}</td></tr>
+    {% endfor %}
+    </table>
+    
+{% endblock %}

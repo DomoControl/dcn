@@ -1,5 +1,37 @@
 {% extends "template.html"  %}
+
+
+
 {% block content %}
+
+
+<h1>jQuery Example</h1>
+<p><input type=text size=5 name=a> +
+   <input type=text size=5 name=b> =
+   <span id=result>?</span>
+<p><a href=# id=calculate>calculate server side</a>
+        
+
+
     <h2>Documentation</h2>
+
+   <script type=text/javascript>
+  
+  $(function() {
+    $('a#calculate').bind('click', function() {
+      $.getJSON('/_add_numbers', {
+        a: $('input[name="a"]').val(),
+        b: $('input[name="b"]').val()
+      }, function(data) {
+        $("#result").text(data.result);
+      });
+      return false;
+    });
+  });
+</script>
+
+
 {% endblock %}
  
+
+
