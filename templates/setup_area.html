@@ -5,19 +5,26 @@
         <p class=error><strong>Error:</strong> {{ error }}
     {% endif %}
     
-    <form action="" method="post">
-        {% for p in pi_area %}
-        <div class="input-group">
-            <input type="hidden" name=id value="{{ p.id }}">
-            <span class="input-group-addon" style="width:200px;">{{ p.name }}</span>
-            <input width="200px" type="text"  name=description value="{{ p.description }}">
+    <p>Setup AREA where device are installed</p>
+    <form action="" method="post"  class="form-horizontal" role="form">
+        <div class="form-group">
+            <label class="col-sm-2 control-label">Name</label>
+        
+            <div class="col-sm-10">
+                <label class="col-sm-2 control-label">Description</label>
+            </div>
+        </div>
+        {% for p in data %}
+        <div class="form-group">
+            <input type="hidden" name={{ p.id }}['id'] id="id" value="{{ p.id }}">
+            
+            <label class="col-sm-2 control-label">{{ p.name }}</label>
+            <div class="col-sm-10">
+                <input width="200px" type="text"  name={{ p.id }}['description'] value="{{ p.description }}">
+            </div>
         </div>
         {% endfor %}
-    
-    
-    
+        <input type="submit" name="submit" value="Save">
     </form>
-    
-    
-    
+
 {% endblock %}

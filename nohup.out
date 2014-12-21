@@ -52,3 +52,131 @@ TypeError: list indices must be integers, not str
 192.168.1.8 - - [10/Dec/2014 21:50:12] "GET /log HTTP/1.1" 200 -
 192.168.1.8 - - [10/Dec/2014 21:50:17] "GET /status HTTP/1.1" 200 -
 192.168.1.8 - - [10/Dec/2014 21:50:20] "GET /log HTTP/1.1" 200 -
+95.243.35.141 - - [10/Dec/2014 23:44:39] "GET /status HTTP/1.1" 200 -
+95.243.35.141 - - [10/Dec/2014 23:44:39] "GET /static/css/bootstrap.css HTTP/1.1" 304 -
+95.243.35.141 - - [10/Dec/2014 23:44:39] "GET /static/jquery.js HTTP/1.1" 304 -
+95.243.35.141 - - [10/Dec/2014 23:44:39] "GET /static/js/bootstrap.js HTTP/1.1" 304 -
+95.243.35.141 - - [10/Dec/2014 23:44:40] "GET /status HTTP/1.1" 200 -
+95.243.35.141 - - [10/Dec/2014 23:44:43] "GET /setup_program HTTP/1.1" 200 -
+95.243.35.141 - - [10/Dec/2014 23:44:46] "GET /setup_area HTTP/1.1" 200 -
+95.243.35.141 - - [10/Dec/2014 23:44:50] "GET /setup_privilege HTTP/1.1" 404 -
+95.243.35.141 - - [10/Dec/2014 23:44:53] "GET /setup_board_type HTTP/1.1" 404 -
+95.243.35.141 - - [10/Dec/2014 23:44:56] "GET /log HTTP/1.1" 200 -
+95.243.35.141 - - [10/Dec/2014 23:45:01] "GET /doc HTTP/1.1" 200 -
+95.243.35.141 - - [10/Dec/2014 23:45:11] "GET /logout HTTP/1.1" 302 -
+95.243.35.141 - - [10/Dec/2014 23:45:12] "GET /login HTTP/1.1" 200 -
+95.243.35.141 - - [10/Dec/2014 23:45:15] "GET /status HTTP/1.1" 200 -
+95.243.35.141 - - [10/Dec/2014 23:45:17] "GET /login HTTP/1.1" 200 -
+95.243.35.141 - - [10/Dec/2014 23:45:17] "GET /log HTTP/1.1" 200 -
+95.243.35.141 - - [10/Dec/2014 23:45:20] "GET /log HTTP/1.1" 200 -
+95.243.35.141 - - [10/Dec/2014 23:45:23] "GET /doc HTTP/1.1" 200 -
+95.243.35.141 - - [10/Dec/2014 23:45:26] "GET /home HTTP/1.1" 200 -
+192.168.1.8 - - [11/Dec/2014 20:44:04] "GET /log HTTP/1.1" 200 -
+192.168.1.8 - - [11/Dec/2014 20:44:06] "GET /static/css/bootstrap.css HTTP/1.1" 304 -
+192.168.1.8 - - [11/Dec/2014 20:44:06] "GET /static/jquery.js HTTP/1.1" 304 -
+192.168.1.8 - - [11/Dec/2014 20:44:06] "GET /static/js/bootstrap.js HTTP/1.1" 304 -
+ * Detected change in './dcn.py', reloading
+None
+None
+None
+None
+None
+None
+None
+None
+None
+None
+ * Restarting with reloader
+[{1: 32}, {1: 33}]
+Process Process-1:
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/multiprocessing/process.py", line 258, in _bootstrap
+    self.run()
+  File "/usr/lib/python2.7/multiprocessing/process.py", line 114, in run
+    self._target(*self._args, **self._kwargs)
+  File "./dcn.py", line 203, in loop
+    getIO(P['program'][r]['in_id'],r) #read io status and update IN status in P dict
+  File "./dcn.py", line 155, in getIO
+    io = P['pcb'][board_id].portRead()
+KeyError: 'pcb'
+**********************
+
+{'IN_DELAY': 0, 'enable': 1, 'name': u'Manual', 'type_id': 4, 'timestamp': u'2014-11-21 00:35:23.923494', 'chrono': u'0;2;1;;2;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', 'timer': u'0;0;0;9', 'inverted': 0, 'in_delay': 0, 'OUT_DELAY': 0, 'IN': 0, 'id': 3, 'out_id': 14, 'OUT': 0, 'in_id': 15, 'description': u'Manual%20program'}
+io_id=15  p_id=3 all=0
+board_id = 2
+io_address = 3
+ * Running on http://0.0.0.0:5000/
+ * Restarting with reloader
+[{1: 32}, {1: 33}]
+Process Process-1:
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/multiprocessing/process.py", line 258, in _bootstrap
+    self.run()
+  File "/usr/lib/python2.7/multiprocessing/process.py", line 114, in run
+    self._target(*self._args, **self._kwargs)
+  File "./dcn.py", line 203, in loop
+    getIO(P['program'][r]['in_id'],r) #read io status and update IN status in P dict
+  File "./dcn.py", line 155, in getIO
+    io = P['pcb'][board_id].portRead()
+KeyError: 'pcb'
+**********************
+
+{'IN_DELAY': 0, 'enable': 1, 'name': u'Manual', 'type_id': 4, 'timestamp': u'2014-11-21 00:35:23.923494', 'chrono': u'0;2;1;;2;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', 'timer': u'0;0;0;9', 'inverted': 0, 'in_delay': 0, 'OUT_DELAY': 0, 'IN': 0, 'id': 3, 'out_id': 14, 'OUT': 0, 'in_id': 15, 'description': u'Manual%20program'}
+io_id=15  p_id=3 all=0
+board_id = 2
+io_address = 3
+95.243.85.152 - - [12/Dec/2014 15:10:46] "GET /hello.html HTTP/1.1" 404 -
+95.243.85.152 - - [12/Dec/2014 15:10:46] "GET /favicon.ico HTTP/1.1" 404 -
+95.243.85.152 - - [12/Dec/2014 15:10:46] "GET /favicon.ico HTTP/1.1" 404 -
+95.243.85.152 - - [12/Dec/2014 15:10:51] "GET / HTTP/1.1" 200 -
+95.243.85.152 - - [12/Dec/2014 15:10:52] "GET /static/css/bootstrap.css HTTP/1.1" 200 -
+95.243.85.152 - - [12/Dec/2014 15:10:54] "GET /static/jquery.js HTTP/1.1" 200 -
+95.243.85.152 - - [12/Dec/2014 15:11:00] "GET /static/js/bootstrap.js HTTP/1.1" 200 -
+95.243.85.152 - - [12/Dec/2014 15:11:10] "GET /login HTTP/1.1" 200 -
+95.243.85.152 - - [12/Dec/2014 15:11:18] "POST /login HTTP/1.1" 200 -
+95.243.85.152 - - [12/Dec/2014 15:11:24] "GET /setup_user HTTP/1.1" 200 -
+82.56.123.180 - - [12/Dec/2014 20:04:09] "GET /favicon.ico HTTP/1.1" 404 -
+192.168.1.8 - - [12/Dec/2014 20:04:51] "GET /log HTTP/1.1" 200 -
+192.168.1.8 - - [12/Dec/2014 20:05:00] "GET /favicon.ico HTTP/1.1" 404 -
+192.168.1.8 - - [12/Dec/2014 20:05:01] "GET /favicon.ico HTTP/1.1" 404 -
+None
+None
+None
+None
+ * Running on http://0.0.0.0:5000/
+ * Restarting with reloader
+192.168.1.8 - - [18/Dec/2014 23:47:36] "GET /log HTTP/1.1" 200 -
+62.11.52.227 - - [19/Dec/2014 18:32:11] "GET /favicon.ico HTTP/1.1" 404 -
+ * Detected change in './main.py', reloading
+ * Restarting with reloader
+******
+Unhandled exception in thread started by 
+sys.excepthook is missing
+lost sys.stderr
+ * Running on http://0.0.0.0:5000/
+ * Restarting with reloader
+{'enable': 1, 'name': u'Manual', 'type_id': 4, 'timestamp': u'2014-11-21 00:35:23.923494', 'chrono': u'0;2;1;;2;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', 'timer': u'0;0;0;9', 'inverted': 0, 'in_delay': 0, 'id': 3, 'out_id': 14, 'in_id': 15, 'description': u'Manual%20program'}
+read [{'board_address': u'33', 'io_address': u'3'}] 0
+read [{'board_address': u'32', 'io_address': u'2'}] 0
+0 1
+write [{'board_address': u'32', 'io_address': u'2'}] 0
+{'enable': 1, 'name': u'Manual', 'type_id': 4, 'timestamp': u'2014-11-21 00:35:23.923494', 'chrono': u'0;2;1;;2;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', 'timer': u'0;0;0;9', 'inverted': 0, 'in_delay': 0, 'id': 3, 'out_id': 14, 'in_id': 15, 'description': u'Manual%20program'}
+read [{'board_address': u'33', 'io_address': u'3'}] 0
+read [{'board_address': u'32', 'io_address': u'2'}] 0
+0 1
+write [{'board_address': u'32', 'io_address': u'2'}] 0
+Unhandled exception in thread started by 
+sys.excepthook is missing
+lost sys.stderr
+ * Running on http://0.0.0.0:5000/
+ * Restarting with reloader
+192.168.1.8 - - [21/Dec/2014 21:51:58] "GET /setup_area?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+192.168.1.8 - - [21/Dec/2014 21:51:58] "GET /setup_area?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+{'enable': 1, 'name': u'Manual', 'type_id': 4, 'timestamp': u'2014-11-21 00:35:23.923494', 'chrono': u'0;2;1;;2;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', 'timer': u'0;0;0;9', 'inverted': 0, 'in_delay': 0, 'id': 3, 'out_id': 14, 'in_id': 15, 'description': u'Manual%20program'}
+0 1
+{'enable': 1, 'name': u'Manual', 'type_id': 4, 'timestamp': u'2014-11-21 00:35:23.923494', 'chrono': u'0;2;1;;2;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', 'timer': u'0;0;0;9', 'inverted': 0, 'in_delay': 0, 'id': 3, 'out_id': 14, 'in_id': 15, 'description': u'Manual%20program'}
+0 0
+{'enable': 1, 'name': u'Manual', 'type_id': 4, 'timestamp': u'2014-11-21 00:35:23.923494', 'chrono': u'0;2;1;;2;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', 'timer': u'0;0;0;9', 'inverted': 0, 'in_delay': 0, 'id': 3, 'out_id': 14, 'in_id': 15, 'description': u'Manual%20program'}
+0 1
+{'enable': 1, 'name': u'Manual', 'type_id': 4, 'timestamp': u'2014-11-21 00:35:23.923494', 'chrono': u'0;2;1;;2;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', 'timer': u'0;0;0;9', 'inverted': 0, 'in_delay': 0, 'id': 3, 'out_id': 14, 'in_id': 15, 'description': u'Manual%20program'}
+0 0

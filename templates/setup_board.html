@@ -1,4 +1,10 @@
 {% extends "template.html"  %}
 {% block content %}
     <h2>Board Setup</h2>
+    {% if error %}
+        <p class=error><strong>Error:</strong> {{ error }}
+    {% endif %}
+    <form action="" method="post"  class="form-horizontal" role="form">
+
+    </form>    
 {% endblock %}

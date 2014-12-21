@@ -6,14 +6,14 @@
   {% endif %}
   
   <form action="" method="post">
-    <input type="hidden" name=id value="{{ pi_user.id }}">
+    <input type="hidden" name=id value="{{ user.id }}">
     <div class="input-group">
       <span class="input-group-addon" style="width:200px;">Username</span>
-      <input width="200px" type="text" class="form-control" name=username value="{{ pi_user.username }}">
+      <input width="200px" type="text" class="form-control" name=username value="{{ user.username }}">
     </div>
     <div class="input-group">
       <span class="input-group-addon" style="width:200px;">Password</span>
-      <input type="password" class="form-control" name=password value="{{ pi_user.password }}">
+      <input type="password" class="form-control" name=password value="{{ user.password }}">
     </div>
     <div class="input-group">
       <span class="input-group-addon" style="width:200px;">Retype Password</span>
@@ -21,31 +21,31 @@
     </div>
     <div class="input-group">
       <span class="input-group-addon" style="width:200px;">Name</span>
-      <input type="text" class="form-control" name=name value="{{ pi_user.name }}">
+      <input type="text" class="form-control" name=name value="{{ user.name }}">
     </div>
     <div class="input-group">
       <span class="input-group-addon" style="width:200px;">Surname</span>
-      <input type="text" class="form-control" name=surname value="{{ pi_user.surname }}">
+      <input type="text" class="form-control" name=surname value="{{ user.surname }}">
     </div>
     <div class="input-group">
       <span class="input-group-addon" style="width:200px;">Language</span>
       <select name="lang" class="form-control">
-        <option value="en" {% if pi_user.lang == 'en' %} selected {% endif %} >English</option>
-        <option value="it" {% if pi_user.lang == 'it' %} selected {% endif %} >Italian</option>
-        <option value="de" {% if pi_user.lang == 'de' %} selected {% endif %} >German</option>
+        <option value="en" {% if user.lang == 'en' %} selected {% endif %} >English</option>
+        <option value="it" {% if user.lang == 'it' %} selected {% endif %} >Italian</option>
+        <option value="de" {% if user.lang == 'de' %} selected {% endif %} >German</option>
       </select>
     </div>
     <div class="input-group">
       <span class="input-group-addon" style="width:200px;">Session Timeout</span>
-      <input type="text" class="form-control" name=session value="{{ pi_user.session }}">
+      <input type="text" class="form-control" name=session value="{{ user.session }}">
     </div>
     <div style="border:1px dashed gray; width:400px; margin-top:10px; padding:3px;">
       <p>Privilege</p>
-      {% for p in pi_privilege %}
+      {% for p in privilege %}
         <div >
           <div class="input-group" style="width:100%">
             <span class="input-group-addon" style="width:200px;"> {{ p['name'] }} </span>
-            <span style="margin-left:10px;"><input type="checkbox" name="privilege[{{ p.id }}]" value="{{ p.id }}" {% if pi_user.privilege.find('%s' %p['id']) == -1 %}  {% else %} checked {% endif %}></span>
+            <span style="margin-left:10px;"><input type="checkbox" name="privilege[{{ p.id }}]" value="{{ p.id }}" {% if user.privilege.find('%s' %p['id']) == -1 %}  {% else %} checked {% endif %}></span>
           </div>
         </div>
       {% endfor %}
@@ -55,7 +55,7 @@
       <p style="width:400px; text-align:center;"><input type="submit" class="form-control" name=submit value="Save"></p>
     </div>
   </form>
-  <p><small>Last modified: {{ pi_user.timestamp }}</small></p>
+  <p><small>Last modified: {{ user.timestamp }}</small></p>
     
   {% for message in get_flashed_messages() %}
     <div class='flash'>
