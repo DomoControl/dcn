@@ -246,6 +246,26 @@ def setup_board():
     res = db.query(q)
     return render_template("setup_board.html", data=res)
 
+@app.route('/setup_io_type', methods=["GET","POST"])
+def setup_io_type():
+    if request.method == "POST":
+        f = request.form
+        db.setForm('UPDATE', f.to_dict(), 'io_type')
+    q = 'SELECT * FROM io_type'
+    
+    res = db.query(q)
+    return render_template("setup_io_type.html", data=res)
+
+@app.route('/setup_program_type', methods=["GET","POST"])
+def setup_program_type():
+    if request.method == "POST":
+        f = request.form
+        db.setForm('UPDATE', f.to_dict(), 'program_type')
+    q = 'SELECT * FROM program_type'
+    
+    res = db.query(q)
+    return render_template("setup_program_type.html", data=res)
+
 @app.route('/_add_numbers')
 def add_numbers():
     a = request.args.get('a', 0, type=int)

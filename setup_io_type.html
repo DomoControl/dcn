@@ -1,11 +1,10 @@
 {% extends "template.html"  %}
 {% block content %}
-    <h2>Program Type Setup</h2>
+    <h2>Input / Output Type Setup</h2>
     {% if error %}
         <p class=error><strong>Error:</strong> {{ error }}
     {% endif %}
     
-
     <form action="" method="post"  class="form-horizontal" role="form">
         <div class="form-group">
             <label class="col-sm-2 control-label">Name</label>
@@ -25,7 +24,5 @@
         </div>
         {% endfor %}
         <input type="submit" name="submit" value="Save">
-    </form>
-    
-    
+    </form>    
 {% endblock %}
