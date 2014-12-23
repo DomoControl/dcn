@@ -240,18 +240,64 @@ def setup_board_type():
 def setup_board():
     if request.method == "POST":
         f = request.form
-        if 'enable' in f:
-            enable=1
-        else:
-            enable=0
-        q = 'UPDATE board SET id="%s", name="%s", description="%s", enable="%s", address="%s", board_type="%s" WHERE id="%s"' %(f["id"], f["name"], f["description"], enable, f["address"], f["board_type"], f["id"]) 
-        db.query(q)
+        if f['submit'] == 'Save':
+            if 'enable' in f:
+                enable=1
+            else:
+                enable=0
+            q = 'UPDATE board SET id="%s", name="%s", description="%s", enable="%s", address="%s", board_type="%s" WHERE id="%s"' %(f["id"], f["name"], f["description"], enable, f["address"], f["board_type"], f["id"]) 
+            db.query(q)
+            q = 'SELECT * FROM board'
+            res = db.query(q)
+            q = 'SELECT * FROM board_type ORDER BY id'
+            board_type = db.query(q)
+            return render_template("setup_board.html", data=res, board_type=board_type)
+        elif f['submit'] == 'Edit IO':
+            return redirect( url_for('.setup_board_io', id=f['id']) )
+    else:        
+        q = 'SELECT * FROM board'
+        res = db.query(q)
+        q = 'SELECT * FROM board_type ORDER BY id'
+        board_type = db.query(q)
+        return render_template("setup_board.html", data=res, board_type=board_type)
+            
+@app.route('/setup_board_io', methods=["GET","POST"])
+def setup_board_io():
+    if request.method == "POST":
+        f = request.form
+        print f
+        if f['submit'] == 'Save':
+            if 'enable' in f:
+                enable=1
+            else:
+                enable=0
+            q = 'UPDATE board_io SET id="%s", io_type_id="%s", name="%s", description="%s", enable="%s", board_id="%s", address="%s" WHERE id="%s"' \
+                %(f["id"], f['io_type_id'], f["name"], f["description"], enable, f['board_id'], f["address"], f["id"]) 
+            db.query(q)
+        elif f['submit'] == 'Add IO':
+            if 'enable' in f:
+                enable=1
+            else:
+                enable=0
+            q = 'INSERT INTO board_io (io_type_id, name, description, enable, board_id, address) VALUES ("%s", "%s", "%s", "%s", "%s", "%s")' \
+                %(f['io_type_id'], f["name"], f["description"], enable, f['board_id'], f["address"]) 
+            db.query(q)
+        elif f['submit'] == 'Delete':
+            q = "DELETE FROM board_io WHERE id=%s" %f['id']
+            db.query(q)
         
-    q = 'SELECT * FROM board'
+    id = request.args['id']
+    q = 'SELECT * FROM board_io WHERE board_id=%s' %id
     res = db.query(q)
-    q = 'SELECT * FROM board_type ORDER BY id'
+    q = 'SELECT * FROM board WHERE id=%s' %id
+    board = db.query(q)
+    q = 'SELECT * FROM board_type WHERE id=%s' %board[0]['board_type']
     board_type = db.query(q)
-    return render_template("setup_board.html", data=res, board_type=board_type)
+    q = 'SELECT * FROM io_type'
+    io_type = db.query(q)
+    q = 'SELECT * FROM board'
+    all_board = db.query(q)
+    return render_template("setup_board_io.html", data=res, board=board, board_type=board_type, io_type=io_type, all_board=all_board)
 
 @app.route('/setup_io_type', methods=["GET","POST"])
 def setup_io_type():

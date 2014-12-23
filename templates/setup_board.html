@@ -7,7 +7,7 @@
     <table class="table table-hover">
   
     
-        <tr><th style="width:50px;">ID</th><th style="width:50px;">Name</th><th>Description</th><th>Enable</th><th>Address</th><th>Board Type</th><th>&nbsp;</th></tr>
+        <tr><th style="width:50px;">ID</th><th style="width:50px;">Name</th><th>Description</th><th>Enable</th><th>Address</th><th>Board Type</th><th>&nbsp;</th><th>&nbsp;</th></tr>
         
         {% for p in data %}
             <form action="" method="post"  class="form-horizontal" role="form">    
@@ -26,6 +26,7 @@
                             {% endfor %}
                         </select>
                     <td><input class="btn btn-default" type="submit" name="submit" value="Save"></td>                
+                    <td><input class="btn btn-default" type="submit" name="submit" value="Edit IO"></td>                
                 </tr>
                 
                 

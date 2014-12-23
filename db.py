@@ -25,7 +25,7 @@ class Database:
                 for idx, value in enumerate(row)) for row in res.fetchall()]
             cur.close()
             return (rv[0] if rv else None) if one else rv
-        elif query.find('INSERT') or query.find('UPDATE'):
+        elif query.find('INSERT') or query.find('UPDATE') or query.find('DELETE') :
             cur.commit()
             cur.close()
 
