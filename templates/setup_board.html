@@ -4,7 +4,35 @@
     {% if error %}
         <p class=error><strong>Error:</strong> {{ error }}
     {% endif %}
-    <form action="" method="post"  class="form-horizontal" role="form">
-
-    </form>    
+    <table class="table table-hover">
+  
+    
+        <tr><th style="width:50px;">ID</th><th style="width:50px;">Name</th><th>Description</th><th>Enable</th><th>Address</th><th>Board Type</th><th>&nbsp;</th></tr>
+        
+        {% for p in data %}
+            <form action="" method="post"  class="form-horizontal" role="form">    
+                <tr>
+                    <td><input type="hidden"  name='id' value="{{ p.id }}">{{ p.id }}</td>
+                    <td><input type="text"  name='name' value="{{ p.name }}"></td>
+                    <td><input width="200px" type="text"  name='description' value="{{ p.description }}"></td>
+                    <td><input type="checkbox"  name='enable' {% if p.enable == 1 %} checked {% endif %}></td>
+                    <td><input width="50px" type="number" min="0" max="64" name='address' value="{{ p.address }}"></td>
+                    <td>
+                        <select name="board_type">
+                            {% for b in board_type %}
+                                <option value="{{b.id}}" {% if b.id == p.board_type %} selected {% endif %} >
+                                    {{b.name}} - {{b.description}}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    <td><input class="btn btn-default" type="submit" name="submit" value="Save"></td>                
+                </tr>
+                
+                
+            </form>     
+        {% endfor %}
+        
+      
+    
+    </table>
 {% endblock %}

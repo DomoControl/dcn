@@ -220,9 +220,9 @@ def setup_privilege():
 def setup_translation():
     if request.method == "POST":
         f = request.form
-        db.setForm('UPDATE', f.to_dict(), 'translation')
+        q = 'UPDATE translation SET en="%s", it="%s", de="%s" WHERE id="%s" ' %(f["en"], f["it"], f["de"], f["id"])
+        db.query(q)
     q = 'SELECT * FROM translation'
-    
     res = db.query(q)
     return render_template("setup_translation.html", data=res)
 
@@ -240,11 +240,18 @@ def setup_board_type():
 def setup_board():
     if request.method == "POST":
         f = request.form
-        db.setForm('UPDATE', f.to_dict(), 'board')
+        if 'enable' in f:
+            enable=1
+        else:
+            enable=0
+        q = 'UPDATE board SET id="%s", name="%s", description="%s", enable="%s", address="%s", board_type="%s" WHERE id="%s"' %(f["id"], f["name"], f["description"], enable, f["address"], f["board_type"], f["id"]) 
+        db.query(q)
+        
     q = 'SELECT * FROM board'
-    
     res = db.query(q)
-    return render_template("setup_board.html", data=res)
+    q = 'SELECT * FROM board_type ORDER BY id'
+    board_type = db.query(q)
+    return render_template("setup_board.html", data=res, board_type=board_type)
 
 @app.route('/setup_io_type', methods=["GET","POST"])
 def setup_io_type():
@@ -388,10 +395,11 @@ def setup(): #program setup
     q = 'SELECT * FROM program WHERE enable=1'
     res = db.query(q)
     for r in res:
-        p = domocontrol.Domocontrol(r)
-        p.setBus()
-        p.getProgram()
-        p.setProgram()
+        #~ p = domocontrol.Domocontrol(r)
+        #~ p.setBus()
+        #~ p.getProgram()
+        #~ p.setProgram()
+        pass
         
         
 

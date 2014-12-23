@@ -3,10 +3,10 @@
     <h2>Translation Setup</h2>
     
     <p>Setup TRANSLATION: terms to translate</p>
-    <form action="" method="post"  class="form-horizontal" role="form">
+    
         
         <div class="form-group">
-            <label for="inputEmail3" class="col-sm-2 control-label">Tag</label>
+            <label  class="col-sm-2 control-label">Tag</label>
         
             <div class="col-sm-10">
                 <label style="width:200px" class="col-sm-2 control-label">English</label>
@@ -16,21 +16,23 @@
         </div>
         
         {% for p in data %}
-        <div class="form-group">
-            <input type="hidden" name={{ p.id }}['id'] id="id" value="{{ p.id }}">
-            
-            <label for="inputEmail3" class="col-sm-2 control-label">{{ p.tag }}</label>
-            <div class="col-sm-10">
-                <input width="200px" type="text"  name={{ p.id }}['en'] value="{{ p.en }}">
-            
-                <input width="200px" type="text"  name={{ p.id }}['it'] value="{{ p.it }}">
-            
-                <input width="200px" type="text"  name={{ p.id }}['de'] value="{{ p.de }}">
+        <form action="" method="post"  class="form-horizontal" role="form">
+            <div class="form-group">
+                <input type="hidden" name='id' value="{{ p.id }}">
+                <label for="inputEmail3" class="col-sm-2 control-label">{{ p.tag }}</label>
+                <div class="col-sm-10">
+                    <input width="200px" type="text"  name='en' value="{{ p.en }}">
+                
+                    <input width="200px" type="text"  name='it' value="{{ p.it }}">
+                
+                    <input width="200px" type="text"  name='de' value="{{ p.de }}">
+                    <input class="btn btn-default" type="submit" name={{ p.id }} value="Save">
+                </div>
+               
             </div>
-        </div>
+        </form>        
         {% endfor %}
-        <input type="submit" name="submit" value="Save">
-    </form>
+    
     
     <br \><br \><br \><br \><br \><br \>
 {% endblock %}

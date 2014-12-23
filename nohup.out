@@ -180,3 +180,18 @@ lost sys.stderr
 0 1
 {'enable': 1, 'name': u'Manual', 'type_id': 4, 'timestamp': u'2014-11-21 00:35:23.923494', 'chrono': u'0;2;1;;2;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', 'timer': u'0;0;0;9', 'inverted': 0, 'in_delay': 0, 'id': 3, 'out_id': 14, 'in_id': 15, 'description': u'Manual%20program'}
 0 0
+ * Running on http://0.0.0.0:5000/
+ * Restarting with reloader
+192.168.1.8 - - [21/Dec/2014 23:16:37] "GET /setup_area HTTP/1.1" 200 -
+192.168.1.8 - - [21/Dec/2014 23:16:44] "GET /setup_privilege HTTP/1.1" 200 -
+192.168.1.8 - - [21/Dec/2014 23:16:48] "GET /setup_translation HTTP/1.1" 200 -
+192.168.1.8 - - [22/Dec/2014 20:01:34] "GET /favicon.ico HTTP/1.1" 404 -
+192.168.1.8 - - [22/Dec/2014 20:01:34] "GET /favicon.ico HTTP/1.1" 404 -
+{'enable': 1, 'name': u'Manual', 'type_id': 4, 'timestamp': u'2014-11-21 00:35:23.923494', 'chrono': u'0;2;1;;2;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', 'timer': u'0;0;0;9', 'inverted': 0, 'in_delay': 0, 'id': 3, 'out_id': 14, 'in_id': 15, 'description': u'Manual%20program'}
+0 1
+{'enable': 1, 'name': u'Manual', 'type_id': 4, 'timestamp': u'2014-11-21 00:35:23.923494', 'chrono': u'0;2;1;;2;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', 'timer': u'0;0;0;9', 'inverted': 0, 'in_delay': 0, 'id': 3, 'out_id': 14, 'in_id': 15, 'description': u'Manual%20program'}
+0 0
+{'enable': 1, 'name': u'Manual', 'type_id': 4, 'timestamp': u'2014-11-21 00:35:23.923494', 'chrono': u'0;2;1;;2;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', 'timer': u'0;0;0;9', 'inverted': 0, 'in_delay': 0, 'id': 3, 'out_id': 14, 'in_id': 15, 'description': u'Manual%20program'}
+0 1
+{'enable': 1, 'name': u'Manual', 'type_id': 4, 'timestamp': u'2014-11-21 00:35:23.923494', 'chrono': u'0;2;1;;2;0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;', 'timer': u'0;0;0;9', 'inverted': 0, 'in_delay': 0, 'id': 3, 'out_id': 14, 'in_id': 15, 'description': u'Manual%20program'}
+0 0
