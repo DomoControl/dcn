@@ -9,8 +9,6 @@ from threading import Timer, Thread
 #~ from time import sleep 
 #~ import scheduler
 
-
-
 #~ from script.forms import ContactForm
 
 app = Flask(__name__)
@@ -319,6 +317,65 @@ def setup_program_type():
     res = db.query(q)
     return render_template("setup_program_type.html", data=res)
 
+@app.route('/setup_program', methods=["GET","POST"])
+def setup_program():
+    setLog()
+    if 'logged_in' in session and session['logged_in']==True:
+        if request.method == "POST":
+            f = request.form.to_dict()
+            
+            ch = ''
+            chrono = ''
+            timer = ''
+            x = 1
+            for k in sorted(f): #get chrono information
+                #~ print k, f[k]
+                if k.find('chrono') >= 0 and f[k] >= '0':
+                    ch = ch+"%s-" %f[k]
+                    print ch
+                    if x == 8:
+                        chrono = chrono + ch[:-1] + ";"
+                        ch = ''
+                        x = 0
+                    x = x+1
+            
+            print chrono
+            
+            for k in sorted(f): #get timer information
+                if k.find('timer') >= 0 and f[k] >= 0:
+                    timer = timer+"%s-" %f[k] 
+            chrono =  chrono[:-1]
+            timer = timer[:-1]
+                       
+                        
+            
+                        
+            inverted = '1' if 'inverted' in f else '0'
+            enable = '1' if 'enable' in f else '0'
+            
+            q = 'UPDATE program SET in_id="%s", delay="%s", inverted="%s", out_id="%s", type_id="%s", name="%s", description="%s", enable="%s", timer="%s", chrono="%s" WHERE id="%s"  ' \
+                %(f['in_id'], f['delay'], inverted, f['out_id'], f['type_id'], f['name'], f['description'], enable, timer, chrono, f['id'])
+            
+            print q
+            db.query(q)
+        
+        q = 'SELECT * FROM program'
+        res = db.query(q)
+        timer=res[0]['timer'].split('-')
+        chrono=res[0]['chrono'].split(';')
+        cr = [] #chrono list
+        for c in chrono:
+            cr.append(c.split('-'))
+        q = 'SELECT * FROM board_io'
+        board_io = db.query(q)
+        q = 'SELECT * FROM program_type'
+        program_type = db.query(q)
+        
+        return render_template("setup_program.html", data=res, board_io=board_io, program_type=program_type,timer=timer, chrono=cr )
+    else:
+        return render_template("login.html")   
+
+
 @app.route('/_add_numbers')
 def add_numbers():
     a = request.args.get('a', 0, type=int)
@@ -340,13 +397,6 @@ def doc():
     setLog() 
     return render_template("doc.html")
 
-@app.route('/setup_program')
-def setup_program():
-    setLog()
-    if 'logged_in' in session and session['logged_in']==True:
-        return render_template("setup_program.html")
-    else:
-        return render_template("login.html")   
 
 @app.route('/setup_user', methods=["GET","POST"])
 def setup_user():
