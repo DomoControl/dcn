@@ -2,14 +2,26 @@
 import time
 import smbus
 from db import Database
+import threading
 
 class Domocontrol:
     """Class DomoControl"""
     
-    def __init__(self, p=''): #p = program dictionary
+    def __init__(self, p='', ss='start'): #p = program dictionary
         self.p = p
+        self.ss=ss
         self.db = Database()
+        
+    def loop(self):
+        print "loop"
+        
 
+       
+        t = threading.Timer(1, self.loop) #recall loop function every 1 second    
+        if(self.ss == 'start'):
+            t.start()
+        else:
+            t.cancel()
 
     def setBus(self):
         self.device=[]

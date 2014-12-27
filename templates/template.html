@@ -2,6 +2,7 @@
 <html>
     <head>
         <title>DomoContorl V2</title>
+        <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css' ) }}" >
         <script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"></script>
         <script type=text/javascript src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
@@ -43,6 +44,9 @@
                     {% endif %}
                     <li><a href="/log">Log</a></li>
                     <li><a href="/doc">Doc</a></li>
+<!--
+                    <li><a href="/message">Messages</a></li>
+-->
                 </ul>
             </nav>
             

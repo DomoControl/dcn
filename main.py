@@ -5,11 +5,7 @@ import sys
 import datetime
 import time
 import domocontrol
-from threading import Timer, Thread
-#~ from time import sleep 
-#~ import scheduler
-
-#~ from script.forms import ContactForm
+import threading
 
 app = Flask(__name__)
 #~ app.secret_key = 'why would I tell you my secret key?'
@@ -263,7 +259,7 @@ def setup_board():
 def setup_board_io():
     if request.method == "POST":
         f = request.form
-        print f
+        print(f)
         if f['submit'] == 'Save':
             if 'enable' in f:
                 enable=1
@@ -320,61 +316,83 @@ def setup_program_type():
 @app.route('/setup_program', methods=["GET","POST"])
 def setup_program():
     setLog()
-    if 'logged_in' in session and session['logged_in']==True:
-        if request.method == "POST":
-            f = request.form.to_dict()
-            
-            ch = ''
-            chrono = ''
-            timer = ''
-            x = 1
-            for k in sorted(f): #get chrono information
-                #~ print k, f[k]
-                if k.find('chrono') >= 0 and f[k] >= '0':
-                    ch = ch+"%s-" %f[k]
-                    print ch
-                    if x == 8:
-                        chrono = chrono + ch[:-1] + ";"
-                        ch = ''
-                        x = 0
-                    x = x+1
-            
-            print chrono
-            
-            for k in sorted(f): #get timer information
-                if k.find('timer') >= 0 and f[k] >= 0:
-                    timer = timer+"%s-" %f[k] 
-            chrono =  chrono[:-1]
-            timer = timer[:-1]
-                       
-                        
-            
-                        
-            inverted = '1' if 'inverted' in f else '0'
-            enable = '1' if 'enable' in f else '0'
-            
+    #Test is user is logged
+    if not 'logged_in' in session and session['logged_in']==True:
+        return render_template("login.html") 
+    
+    
+    if request.method == "POST" and 'btn' in request.form.to_dict() and (request.form.to_dict()['btn']=='Save' or request.form.to_dict()['btn']=='New'):
+        print('Save or New Program Form')
+        f = request.form.to_dict()
+        print f
+        ch = ''
+        chrono = ''
+        timer = ''
+        x = 1
+        for k in sorted(f): #get chrono information
+            if k.find('chrono') >= 0 and f[k] >= '0':
+                ch = ch+"%s-" %f[k]
+                if x == 8:
+                    chrono = chrono + ch[:-1] + ";"
+                    ch = ''
+                    x = 0
+                x = x+1
+        print(chrono)
+        
+        for k in sorted(f): #get timer information
+            if k.find('timer') >= 0 and f[k] >= 0:
+                timer = timer+"%s-" %f[k] 
+        chrono =  chrono[:-1]
+        timer = timer[:-1]
+                    
+        inverted = '1' if 'inverted' in f else '0'
+        enable = '1' if 'enable' in f else '0'
+        
+        if request.form.to_dict()['btn']=='Save':
             q = 'UPDATE program SET in_id="%s", delay="%s", inverted="%s", out_id="%s", type_id="%s", name="%s", description="%s", enable="%s", timer="%s", chrono="%s" WHERE id="%s"  ' \
                 %(f['in_id'], f['delay'], inverted, f['out_id'], f['type_id'], f['name'], f['description'], enable, timer, chrono, f['id'])
-            
-            print q
-            db.query(q)
+        elif request.form.to_dict()['btn']=='New':
+            q = 'INSERT INTO program (in_id, delay, inverted, out_id, type_id, name, description, enable, timer, chrono) VALUES( "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s" )' \
+                %(f['in_id'], f['delay'], inverted, f['out_id'], f['type_id'], f['name'], f['description'], enable, timer, chrono)
         
-        q = 'SELECT * FROM program'
-        res = db.query(q)
-        timer=res[0]['timer'].split('-')
-        chrono=res[0]['chrono'].split(';')
-        cr = [] #chrono list
-        for c in chrono:
-            cr.append(c.split('-'))
-        q = 'SELECT * FROM board_io'
-        board_io = db.query(q)
-        q = 'SELECT * FROM program_type'
-        program_type = db.query(q)
+        print(q)
+        db.query(q)
+    elif request.method == "POST" and 'btn' in request.form.to_dict() and request.form.to_dict()['btn']=='Delete':
+        print('Delete Program Form')
+        f = request.form.to_dict()
+        print(f['id'])
+    
+    elif request.method == "POST" and [s for s in request.form.to_dict() if "delete_chrono" in s]:
+        print('Delete Chrono in Program Form')
+        f = request.form.to_dict()
+        chronoid = [s for s in request.form.to_dict() if "delete_chrono" in s] 
+        chronoid = int(chronoid[0][13:]) #chrono part to remove 
+        q = 'SELECT chrono FROM program WHERE id="%s"' %f['id']
+        chrono = str(db.query(q)[0]['chrono'])
+        chrono = chrono.split(';') #from string to list
+        chrono.pop(chronoid-1) #remove part of chrono
+        chrono = ';'.join(chrono) #convert list to string
+        q = 'UPDATE program SET chrono="%s" WHERE id="%s" ' %(chrono, f['id'])
+        db.query(q)
         
-        return render_template("setup_program.html", data=res, board_io=board_io, program_type=program_type,timer=timer, chrono=cr )
-    else:
-        return render_template("login.html")   
+        
+    q = 'SELECT * FROM program'
+    res = db.query(q)
+    timer=res[0]['timer'].split('-')
+    chrono=res[0]['chrono'].split(';')
+    cr = [] #chrono list
+    for c in chrono:
+        cr.append(c.split('-'))
+    q = 'SELECT * FROM board_io'
+    board_io = db.query(q)
+    q = 'SELECT * FROM program_type'
+    program_type = db.query(q)
+    
+    return render_template("setup_program.html", data=res, board_io=board_io, program_type=program_type,timer=timer, chrono=cr )
 
+@app.route('/message')
+def message():
+    return render_template("message.html")
 
 @app.route('/_add_numbers')
 def add_numbers():
@@ -488,6 +506,10 @@ def login():
 
 
 def setup(): #program setup
+    
+    d = domocontrol.Domocontrol(ss='start')
+    d.loop()
+    
     q = 'SELECT * FROM program WHERE enable=1'
     res = db.query(q)
     for r in res:
@@ -496,31 +518,16 @@ def setup(): #program setup
         #~ p.getProgram()
         #~ p.setProgram()
         pass
-        
-        
 
-status = [] #stastus of program changed
-def loop(ss='start'):
-    setup()
-    if len(status):
-        pass 
-    
-       
-    
-    #recall function every 1 second
-    #~ t = Timer(1,loop)   
-    #~ if(ss == 'start'):
-        #~ t.start()
-    #~ else:
-        #~ t.cancel()
 
-if __name__ == '__main__':   
+
+if __name__ == '__main__':       
     setup()     
-    loop(ss='start')
+    #~ loop('start')
     app.run(
         host="0.0.0.0", 
         port=int("5000"), 
         debug=True 
     )
     #~ s.stop()
-    loop(ss='stop')
+    #~ loop('stop')

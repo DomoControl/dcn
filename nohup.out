@@ -221,3 +221,60 @@ lost sys.stderr
 192.168.1.8 - - [26/Dec/2014 10:36:37] "GET /favicon.ico HTTP/1.1" 404 -
 192.168.1.8 - - [26/Dec/2014 10:43:52] "GET /favicon.ico HTTP/1.1" 404 -
 192.168.1.8 - - [26/Dec/2014 10:43:52] "GET /setup_program HTTP/1.1" 200 -
+ * Running on http://0.0.0.0:5000/
+ * Restarting with reloader
+192.168.1.8 - - [26/Dec/2014 19:17:31] "POST /status HTTP/1.1" 405 -
+192.168.1.8 - - [26/Dec/2014 19:17:31] "GET /favicon.ico HTTP/1.1" 404 -
+192.168.1.8 - - [26/Dec/2014 19:17:32] "GET /favicon.ico HTTP/1.1" 404 -
+192.168.1.8 - - [26/Dec/2014 19:17:45] "POST /status HTTP/1.1" 405 -
+192.168.1.8 - - [26/Dec/2014 19:17:52] "GET / HTTP/1.1" 200 -
+192.168.1.8 - - [26/Dec/2014 19:17:53] "GET /static/doc/image/domocontrol.png HTTP/1.1" 200 -
+192.168.1.8 - - [26/Dec/2014 19:17:58] "GET /login HTTP/1.1" 200 -
+192.168.1.8 - - [26/Dec/2014 19:18:00] "POST /login HTTP/1.1" 200 -
+192.168.1.8 - - [26/Dec/2014 19:24:46] "GET / HTTP/1.1" 200 -
+192.168.1.8 - - [26/Dec/2014 19:24:46] "GET /static/css/bootstrap.css HTTP/1.1" 304 -
+192.168.1.8 - - [26/Dec/2014 19:24:46] "GET /static/jquery.js HTTP/1.1" 304 -
+192.168.1.8 - - [26/Dec/2014 19:24:46] "GET /static/js/bootstrap.js HTTP/1.1" 304 -
+192.168.1.8 - - [26/Dec/2014 19:24:46] "GET /static/doc/image/domocontrol.png HTTP/1.1" 200 -
+192.168.1.8 - - [26/Dec/2014 19:24:48] "GET /static/img/favicon.ico HTTP/1.1" 200 -
+192.168.1.8 - - [26/Dec/2014 19:24:56] "GET /login HTTP/1.1" 200 -
+192.168.1.8 - - [26/Dec/2014 19:24:58] "POST /login HTTP/1.1" 200 -
+192.168.1.8 - - [26/Dec/2014 19:25:19] "GET /setup_program HTTP/1.1" 200 -
+192.168.1.8 - - [26/Dec/2014 19:25:20] "GET /static/fonts/glyphicons-halflings-regular.woff HTTP/1.1" 304 -
+GET
+ * Running on http://0.0.0.0:5000/
+ * Restarting with reloader
+46.105.109.159 - - [27/Dec/2014 00:35:32] "HEAD / HTTP/1.1" 200 -
+54.162.97.207 - - [27/Dec/2014 05:35:55] "GET / HTTP/1.1" 200 -
+54.87.75.52 - - [27/Dec/2014 07:39:15] "GET / HTTP/1.1" 200 -
+54.87.75.52 - - [27/Dec/2014 07:39:35] "GET / HTTP/1.0" 200 -
+192.168.1.8 - - [27/Dec/2014 09:30:05] "GET /setup_program HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:54:21] "GET / HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:54:21] "GET /static/css/bootstrap.css HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:54:24] "GET /static/jquery.js HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:54:30] "GET /static/js/bootstrap.js HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:54:32] "GET /static/img/favicon.ico HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:54:33] "GET /static/doc/image/domocontrol.png HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:54:57] "GET /status HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:55:05] "POST /status HTTP/1.1" 405 -
+79.7.26.132 - - [27/Dec/2014 09:55:05] "GET /favicon.ico HTTP/1.1" 404 -
+79.7.26.132 - - [27/Dec/2014 09:55:05] "GET /favicon.ico HTTP/1.1" 404 -
+79.7.26.132 - - [27/Dec/2014 09:55:15] "GET /login HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:55:23] "POST /login HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:55:34] "GET /setup_program HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:55:34] "GET /static/fonts/glyphicons-halflings-regular.woff HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:55:50] "GET /setup_area HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:55:55] "GET /setup_board_type HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:56:00] "GET /setup_program_type HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:56:05] "GET /status HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:56:12] "GET /status HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:56:14] "GET /home HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:56:35] "GET /setup_privilege HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:56:43] "GET /doc HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:56:54] "GET /setup_board HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:56:58] "GET /status HTTP/1.1" 200 -
+79.7.26.132 - - [27/Dec/2014 09:57:02] "GET /home HTTP/1.1" 200 -
+192.168.1.8 - - [27/Dec/2014 09:58:36] "GET /log HTTP/1.1" 200 -
+Unhandled exception in thread started by 
+sys.excepthook is missing
+lost sys.stderr

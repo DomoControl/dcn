@@ -18,12 +18,15 @@
                                 <span class="text-center" style="margin-left:20px;">Program number:&nbsp;</span><label class="form-control-static">{{p['id']}}</label>
                                 <span style="margin-left:20px;"> Name:&nbsp;</span><label class="form-control-static">{{p['name']}}</label>
                                 <span style="margin-left:20px;"> Description:&nbsp;</span><label class="form-control-static">{{p['description']}}</label>
-                                <span style="margin-left:20px;"> Type:&nbsp;</span><label class="form-control-static"></label>
-                                
+                                <span style="margin-left:20px;"> Type:&nbsp;</span><label class="form-control-static">&nbsp;
+                                    {% for type in program_type %}
+                                        {% if type.id == p.type_id %}{{type.name}} {% endif %}
+                                    {% endfor %}
+                                </label>
                             </a>
                         </h4>
                     </div>
-                    <div id="collapse{{p['id']}}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading{{p['id']}}">
+                    <div id="collapse{{p['id']}}" class="panel-collapse collapse " role="tabpanel" aria-labelledby="heading{{p['id']}}">
                      
                         <form action="" method="post"    class="form-inline text-center" role="form" style="padding:10px; margin-bottom:20px;">  
                             
@@ -81,6 +84,7 @@
                             <div class="form-group">
                                 <input class="btn btn-default" type="submit" name="btn" value="Save">
                                 <input class="btn btn-default" type="submit" name="btn" value="Delete">
+                                <input class="btn btn-default" type="submit" name="btn" value="New">
                             </div>
                             
                             <div class="collapse in" id="timer" style="border:1px dotted gray; margin:20px; padding:20px;">
