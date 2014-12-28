@@ -6,12 +6,20 @@ import datetime
 import time
 import domocontrol
 import threading
+from flask.ext.babel import Babel
+from config import LANGUAGES
+
 
 app = Flask(__name__)
+babel = Babel(app)
 #~ app.secret_key = 'why would I tell you my secret key?'
 app.config.from_object('config')
-
+#~ babel = Babel(app, default_locale='it', default_timezone='UTC', date_formats=None, configure_jinja=True)
 #~ from app import views
+
+@babel.localeselector
+def get_locale():
+    return 'it'  # request.accept_languages.best_match(LANGUAGES.keys())
 
 def now():
     return datetime.datetime.now()
