@@ -1,13 +1,13 @@
 {% extends "template.html"  %}
 {% block content %}
-    <h2>Board Setup</h2>
+    <h2>{{_('Board Setup')}}</h2>
     {% if error %}
         <p class=error><strong>Error:</strong> {{ error }}
     {% endif %}
     <table class="table table-hover">
   
     
-        <tr><th style="width:50px;">ID</th><th style="width:50px;">Name</th><th>Description</th><th>Enable</th><th>Address</th><th>Board Type</th><th>&nbsp;</th><th>&nbsp;</th></tr>
+        <tr><th style="width:50px;">ID</th><th style="width:50px;">{{_('Name')}}</th><th>{{_('Description')}}</th><th>{{_('Enable')}}</th><th>{{_('Address')}}</th><th>{{_('Board Type')}}</th><th>&nbsp;</th><th>&nbsp;</th></tr>
         
         {% for p in data %}
             <form action="" method="post"  class="form-horizontal" role="form">    

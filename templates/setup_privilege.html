@@ -1,17 +1,16 @@
 {% extends "template.html"  %}
 {% block content %}
-    <h2>Privilege Setup</h2>
+    <h2>{{_('Privilege Setup')}}</h2>
     {% if error %}
         <p class=error><strong>Error:</strong> {{ error }}
     {% endif %}
     
-    <p>Setup PRIVILEGE: description of privileges type</p>
     <form action="" method="post"  class="form-horizontal" role="form">
         <div class="form-group">
             <label for="inputEmail3" class="col-sm-2 control-label">Name</label>
         
             <div class="col-sm-10">
-                <label for="inputEmail3" class="col-sm-2 control-label">Description</label>
+                <label for="inputEmail3" class="col-sm-2 control-label">{{_('Description')}}</label>
             </div>
         </div>
         {% for p in data %}

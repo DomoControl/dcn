@@ -3,7 +3,7 @@
 {% extends "template.html"  %}
 {% block content %}
 
-    <h2>Program setup</h2>
+    <h2>{{_('Program setup')}}</h2>
     
     <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
 
@@ -15,10 +15,10 @@
                             <a data-toggle="collapse" class="collapsed center-block text-center" data-parent="#accordion" href="#collapse{{p['id']}}" aria-expanded="false" aria-controls="collapseOne">
                                 
                                 <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
-                                <span class="text-center" style="margin-left:20px;">Program number:&nbsp;</span><label class="form-control-static">{{p['id']}}</label>
-                                <span style="margin-left:20px;"> Name:&nbsp;</span><label class="form-control-static">{{p['name']}}</label>
-                                <span style="margin-left:20px;"> Description:&nbsp;</span><label class="form-control-static">{{p['description']}}</label>
-                                <span style="margin-left:20px;"> Type:&nbsp;</span><label class="form-control-static">&nbsp;
+                                <span class="text-center" style="margin-left:20px;">{{_('Program number:')}}&nbsp;</span><label class="form-control-static">{{p['id']}}</label>
+                                <span style="margin-left:20px;">{{_('Name')}}:&nbsp;</span><label class="form-control-static">{{p['name']}}</label>
+                                <span style="margin-left:20px;">{{_('Description')}}:&nbsp;</span><label class="form-control-static">{{p['description']}}</label>
+                                <span style="margin-left:20px;">{{_('Type')}}:&nbsp;</span><label class="form-control-static">&nbsp;
                                     {% for type in program_type %}
                                         {% if type.id == p.type_id %}{{type.name}} {% endif %}
                                     {% endfor %}
@@ -33,9 +33,9 @@
                             <div class="form-group" >
                                 
                                 <input type="hidden" name='id' value="{{ p.id }}" class="form-control" id="id" placeholder="id">
-                                <label class="form-control-static">Name:</label><input width="100px" type="text"  name='name' value="{{ p.name }}">
-                                <label class="form-control-static">Description:</label><input width="100px" type="text"  name='description' value="{{ p.description }}">
-                                <label class="form-control-static">Type:</label>
+                                <label class="form-control-static">{{_('Name')}}:</label><input width="100px" type="text"  name='name' value="{{ p.name }}">
+                                <label class="form-control-static">{{_('Description')}}:</label><input width="100px" type="text"  name='description' value="{{ p.description }}">
+                                <label class="form-control-static">{{_('Type')}}:</label>
                                 
                                 <select name="type_id" id="type_id" class="form-control">
                                     {% for type in program_type %}
@@ -58,11 +58,11 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="delay">Delay:</label>
+                                <label for="delay">{{_('Delay')}}':</label>
                                 <input type="number" name='delay' min=0 value="{{ p.delay }}">
                             </div>
                             <div class="form-group">
-                                <label for="inverted">Inverted:</label>
+                                <label for="inverted">{{_('Inverted')}}:</label>
                                 <input type="checkbox"  name='inverted' {% if p.inverted == 1 %} checked {% endif %}>
                             </div>
                             <div class="form-group">
@@ -78,7 +78,7 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="enable">Enable:</label>
+                                <label for="enable">{{_('Enable')}}:</label>
                                 <input type="checkbox"  name='enable' value='0' {% if p.enable == 1 %} checked {% endif %} >
                             </div>
                             <div class="form-group">
@@ -91,7 +91,7 @@
                                 <p><center>Timer setup</center></p>
                                 <table align="center">
                                     <tr>
-                                        <td></td><td>Days</td><td>Hours</td><td>Minutes</td><td>Seconds</td>
+                                        <td></td><td>{{_('Days')}}</td><td>{{_('Hours')}}</td><td>{{_('Minutes')}}</td><td>{{_('Seconds')}}</td>
                                     </tr>
                                     <tr>
                                         <td>Timer setting: </td>
@@ -107,7 +107,7 @@
                                 <p><center>Chrono setup</center></p>
                                 <table align="center">
                                     <tr>
-                                        <td></td><td>Days</td><td>Hours</td><td>Minutes</td><td>Seconds</td><td>:</td><td>Days</td><td>Hours</td><td>Minutes</td><td>Seconds</td>
+                                        <td></td><td>{{_('Days')}}</td><td>{{_('Hours')}}</td><td>{{_('Minutes')}}</td><td>{{_('Seconds')}}</td><td>:</td><td>{{_('Days')}}</td><td>{{_('Hours')}}</td><td>{{_('Minutes')}}</td><td>{{_('Seconds')}}</td>
                                     </tr>
                                     {% set x = 1 %} 
                                     
@@ -116,14 +116,14 @@
                                             <td>From:</td>
                                             <td>
                                                 <select name='chrono{{"%s0" %x}}'>
-                                                    <option value="0"  {% if c[0] == '0' %} selected {% endif %} >Each day</option>
-                                                    <option value="1"  {% if c[0] == '1' %} selected {% endif %} >Monday</option>
-                                                    <option value="2"  {% if c[0] == '2' %} selected {% endif %} >Tuesday</option>
-                                                    <option value="3"  {% if c[0] == '3' %} selected {% endif %} >Wednesday</option>
-                                                    <option value="4"  {% if c[0] == '4' %} selected {% endif %} >Thursday</option>
-                                                    <option value="5"  {% if c[0] == '5' %} selected {% endif %} >Friday</option>
-                                                    <option value="6"  {% if c[0] == '6' %} selected {% endif %} >Saturday</option>
-                                                    <option value="7"  {% if c[0] == '7' %} selected {% endif %} >Sunday</option>
+                                                    <option value="0"  {% if c[0] == '0' %} selected {% endif %} >{{_('Each day')}}</option>
+                                                    <option value="1"  {% if c[0] == '1' %} selected {% endif %} >{{_('Monday')}}</option>
+                                                    <option value="2"  {% if c[0] == '2' %} selected {% endif %} >{{_('Tuesday')}}</option>
+                                                    <option value="3"  {% if c[0] == '3' %} selected {% endif %} >{{_('Wednesday')}}</option>
+                                                    <option value="4"  {% if c[0] == '4' %} selected {% endif %} >{{_('Thursday')}}</option>
+                                                    <option value="5"  {% if c[0] == '5' %} selected {% endif %} >{{_('Friday')}}</option>
+                                                    <option value="6"  {% if c[0] == '6' %} selected {% endif %} >{{_('Saturday')}}</option>
+                                                    <option value="7"  {% if c[0] == '7' %} selected {% endif %} >{{_('Sunday')}}</option>
                                                 </select>
                                             
                                             </td>
@@ -133,14 +133,14 @@
                                             <td style="width:120px; text-align:right;">  To:</td>
                                             <td>
                                                 <select name='chrono{{"%s4" %x}}'>
-                                                    <option value="0"  {% if c[4] == '0' %} selected {% endif %} >Each day</option>
-                                                    <option value="1"  {% if c[4] == '1' %} selected {% endif %} >Monday</option>
-                                                    <option value="2"  {% if c[4] == '2' %} selected {% endif %} >Tuesday</option>
-                                                    <option value="3"  {% if c[4] == '3' %} selected {% endif %} >Wednesday</option>
-                                                    <option value="4"  {% if c[4] == '4' %} selected {% endif %} >Thursday</option>
-                                                    <option value="5"  {% if c[4] == '5' %} selected {% endif %} >Friday</option>
-                                                    <option value="6"  {% if c[4] == '6' %} selected {% endif %} >Saturday</option>
-                                                    <option value="7"  {% if c[4] == '7' %} selected {% endif %} >Sunday</option>
+                                                    <option value="0"  {% if c[4] == '0' %} selected {% endif %} >{{_('Each day')}}</option>
+                                                    <option value="1"  {% if c[4] == '1' %} selected {% endif %} >{{_('Monday')}}</option>
+                                                    <option value="2"  {% if c[4] == '2' %} selected {% endif %} >{{_('Tuesday')}}</option>
+                                                    <option value="3"  {% if c[4] == '3' %} selected {% endif %} >{{_('Wednesday')}}</option>
+                                                    <option value="4"  {% if c[4] == '4' %} selected {% endif %} >{{_('Thursday')}}</option>
+                                                    <option value="5"  {% if c[4] == '5' %} selected {% endif %} >{{_('Friday')}}</option>
+                                                    <option value="6"  {% if c[4] == '6' %} selected {% endif %} >{{_('Saturday')}}</option>
+                                                    <option value="7"  {% if c[4] == '7' %} selected {% endif %} >{{_('Sunday')}}</option>
                                                 </select>
                                             </td>
                                             <td><input type="number" style="width:80px;"   name='chrono{{"%s5" %x}}' value="{{ c[5] }}"></td>
@@ -159,14 +159,14 @@
                                             
                                             <td>
                                                 <select name='chronon1'>
-                                                    <option value="0">Each day</option>
-                                                    <option value="1">Monday</option>
-                                                    <option value="2">Tuesday</option>
-                                                    <option value="3">Wednesday</option>
-                                                    <option value="4">Thursday</option>
-                                                    <option value="5">Friday</option>
-                                                    <option value="6">Saturday</option>
-                                                    <option value="7">Sunday</option>
+                                                    <option value="0">{{_('Each day')}}</option>
+                                                    <option value="1">{{_('Monday')}}</option>
+                                                    <option value="2">{{_('Tuesday')}}</option>
+                                                    <option value="3">{{_('Wednesday')}}</option>
+                                                    <option value="4">{{_('Thursday')}}</option>
+                                                    <option value="5">{{_('Friday')}}</option>
+                                                    <option value="6">{{_('Saturday')}}</option>
+                                                    <option value="7">{{_('Sunday')}}</option>
                                                 </select>
                                             </td>
                                             <td><input type="number" style="width:80px;"   name='chronon2' value=""></td>
@@ -175,14 +175,14 @@
                                             <td style="width:120px; text-align:right;">  To:</td>
                                             <td>
                                                 <select name='chronon5'>
-                                                    <option value="0">Each day</option>
-                                                    <option value="1">Monday</option>
-                                                    <option value="2">Tuesday</option>
-                                                    <option value="3">Wednesday</option>
-                                                    <option value="4">Thursday</option>
-                                                    <option value="5">Friday</option>
-                                                    <option value="6">Saturday</option>
-                                                    <option value="7">Sunday</option>
+                                                    <option value="0">{{_('Each day')}}</option>
+                                                    <option value="1">{{_('Monday')}}</option>
+                                                    <option value="2">{{_('Tuesday')}}</option>
+                                                    <option value="3">{{_('Wednesday')}}</option>
+                                                    <option value="4">{{_('Thursday')}}</option>
+                                                    <option value="5">{{_('Friday')}}</option>
+                                                    <option value="6">{{_('Saturday')}}</option>
+                                                    <option value="7">{{_('Sunday')}}</option>
                                                 </select>
                                             </td>
                                             

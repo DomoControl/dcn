@@ -1,7 +1,7 @@
 <!doctype html>
-<html  lang="it">
+<html>
     <head>
-        <title>DomoContorl V2</title>
+        <title>{{_('DomoContorl V2')}}</title>
         <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css' ) }}" >
         <script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"></script>
@@ -14,33 +14,35 @@
             <nav class="navbar navbar-default navbar-static-top" role="navigation">
                 <ul class="nav nav-pills center">
                     <li class="active"><a href="/home">Home</a></li>
-                    <li><a href="/status">Status</a></li>
+                    <li><a href="/status">{{_('Status')}}</a></li>
                     <li class="dropdown">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Setup<span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             
                             {% if session['logged_in']==True %}
-                            <li><a href="/setup_program">Program Setup</a></li>
+                            <li><a href="/setup_program">{{_('Program Setup')}}</a></li>
                             <li class="divider"></li>
-                            <li><a href="/setup_user">User</a></li>
+                            <li><a href="/setup_user">{{_('User')}}</a></li>
                             <li class="divider"></li>
                             <li><a href="/setup_area">Area</a></li>
-                            <li><a href="/setup_privilege">Privilege</a></li>
+                            <li><a href="/setup_privilege">{{_('Privilege')}}</a></li>
+<!--
                             <li><a href="/setup_translation">Translation</a></li>
-                            <li><a href="/setup_board_type">Board Type</a></li>
+-->
+                            <li><a href="/setup_board_type">{{_('Board Type')}}</a></li>
                             <li><a href="/setup_board">Board Setup</a></li>
-                            <li><a href="/setup_io_type">I/O Type</a></li>
-                            <li><a href="/setup_program_type">Program Type</a></li>
+                            <li><a href="/setup_io_type">{{_('I/O Type')}}</a></li>
+                            <li><a href="/setup_program_type">{{_('Program Type')}}'</a></li>
                             {% else %}
-                            <li>Please Login</li>
+                            <li>{{_('Please Login')}}</li>
                             {% endif %}
                         </ul>
                     </li>
                     
                     {% if not session.logged_in %}
-                        <li><a href="/login">Login</a></li>
+                        <li><a href="/login">{{_('Login')}}</a></li>
                     {% else %}
-                        <li><a href="{{ url_for('logout') }}">Logout {{ session.user_name }}</a></li> 
+                        <li><a href="{{ url_for('logout') }}">{{_('Logout')}} {{ session.user_name }}</a></li> 
                     {% endif %}
                     <li><a href="/log">Log</a></li>
                     <li><a href="/doc">Doc</a></li>
@@ -62,7 +64,8 @@
             <nav class="navbar navbar-default navbar-fixed-bottom" role="navigation">
                 <div class="container">
                     {% if session.logged_in %}
-                        <span>Welcome {{ session.user_name }}</span>
+                        <span>{{_('Welcome')}} {{ session.user_name }}</span>
+                        <span>{{_('Welcome')}} {{ session.user_name }}</span>
                     {% endif %}
                 </div>
             </nav>

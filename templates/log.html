@@ -1,7 +1,7 @@
 {% extends "template.html"  %}
 {% block content %}
-    <h2>User Log</h2>
-    <table class="table table-condensed" ><tr><th>IP number</th><th>Command</th><th>Timestamp</th></tr>
+    <h2>{{_('User Log')}}</h2>
+    <table class="table table-condensed" ><tr><th>{{_('IP number')}}</th><th>URL</th><th>{{_('Timestamp')}}</th></tr>
     {% for r in res %}
         <tr><td>{{ r.ip }}</td><td>{{ r.command }}</td><td>{{ r.timestamp }}</td></tr>
     {% endfor %}

@@ -1,18 +1,17 @@
-# Italian translations for PROJECT.
+# Translations template for PROJECT.
 # Copyright (C) 2014 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
-# Luca Subiaco <subluca@gmail.com>, 2014.
 #
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2014-12-28 22:21+0100\n"
-"PO-Revision-Date: 2014-12-28 22:21+0100\n"
-"Last-Translator: Luca Subiaco <subluca@gmail.com>\n"
-"Language-Team: Italiano <subluca@gmail.com>\n"
-"Plural-Forms: nplurals=1; plural=0\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -20,417 +19,399 @@ msgstr ""
 
 #: templates/contact.html:4
 msgid "Contact"
-msgstr "Contatti"
+msgstr ""
 
 #: templates/doc.html:5
 msgid "Domocontrol documentation"
-msgstr "Documentazione DomoControl"
+msgstr ""
 
 #: templates/doc.html:7
 msgid "Installation"
-msgstr "Installazione"
+msgstr ""
 
 #: templates/doc.html:8
 msgid "Domocontrol Version TWO require"
-msgstr "DomoControl versione TWO richiede:"
+msgstr ""
 
 #: templates/doc.html:9
 msgid ""
 "first version demo is available at http://my-tek.no-ip.org:8080 and on "
 "github at address: https://github.com/DomoControl/domocontrol"
 msgstr ""
-"La demo della prima versione è disponibile all'indirizzo http://my-tek"
-".no-ip.org:8080 e sul repository: "
-"https://github.com/DomoControl/domocontrol"
 
 #: templates/doc.html:12
 msgid "Raspberry PI board"
-msgstr "Raspberry PI"
+msgstr ""
 
 #: templates/doc.html:13
 msgid ""
 "One or more board interface with more inputs and outputs to control home "
 "devices"
 msgstr ""
-"Una o più schede con più ingressi e uscite per controllare i dispositivi "
-"della casa"
 
 #: templates/doc.html:14
 msgid "python language"
-msgstr "Linguaggio Python"
+msgstr ""
 
 #: templates/doc.html:15
 msgid "Flask Framework with plugins"
-msgstr "Framework Flask con relativi moduli"
+msgstr ""
 
 #: templates/doc.html:16
 msgid "Sqlite3 to store informations"
-msgstr "Database SQlite per memorizzare le informazioni"
+msgstr ""
 
 #: templates/doc.html:17
 msgid ""
 "In second stage, more slave board  I/O with Arduino connected with "
 "Raspberry by RS485"
 msgstr ""
-"In un secondo momento, più schede I/O remote con Arduino collegate al "
-"Raspberry tramite RS485"
 
 #: templates/doc.html:20
 msgid "Main Menu"
-msgstr "Menu Principale"
+msgstr ""
 
 #: templates/doc.html:22
 msgid "Home: project presentation"
-msgstr "Home: presentazione del progetto"
+msgstr ""
 
 #: templates/doc.html:23
 msgid "Status: shows the status of the I/O"
-msgstr "Stato: mostra lo stato degli ingressi e uscite"
+msgstr ""
 
 #: templates/doc.html:24
 msgid "Setup"
-msgstr "Configurazione"
+msgstr ""
 
 #: templates/doc.html:25
 msgid "Login / Logout"
-msgstr "Entra / Esci"
+msgstr ""
 
 #: templates/doc.html:26
 msgid "Log: user access"
-msgstr "Log: accesso utenti"
+msgstr ""
 
 #: templates/doc.html:27
 msgid "Doc: software installation and user manual"
-msgstr "Doc: Installazione del softwware e il manuale utente"
+msgstr ""
 
 #: templates/doc.html:30
 msgid "Submenu Setup"
-msgstr "Sottomenu Setup"
+msgstr ""
 
 #: templates/doc.html:32
 msgid ""
 "Program Setup: Configuration program, which inputs activate the outputs "
 "activated and in which modes"
 msgstr ""
-"Impostazione programma: Configurazione dei programmi, ovvero quali "
-"ingressi attivano le uscite e in che modalità"
 
 #: templates/doc.html:33
 msgid "User: User configuration"
-msgstr "Utenti: Configurazione degli utenti"
+msgstr ""
 
 #: templates/doc.html:34
 msgid "Area: define in what locations are positioned the I/O"
-msgstr "Area: definisce in quale locazione sono posizionati gli ingressi e uscite"
+msgstr ""
 
 #: templates/doc.html:35
 msgid "Privilege: defines the types of user privileges"
-msgstr "Privilegi: definisce le tipologia di privilegi degli utenti"
+msgstr ""
 
 #: templates/doc.html:36
 msgid "Board Type: defines the types of boards"
-msgstr "Tipo Scheda: definisce le tipologie delle schede"
+msgstr ""
 
 #: templates/doc.html:37
 msgid "Board Setup: set the property of boards"
-msgstr "Board Setup: configura le proprietà delle schede"
+msgstr ""
 
 #: templates/doc.html:38
 msgid "I/O Type: set the description of input and output types"
-msgstr "Tipo I/O: setta la descrizione della tipologia degli ingressi e uscite"
+msgstr ""
 
 #: templates/doc.html:39
 msgid "Program Type: set the description of modality of the program"
-msgstr "Tipo Programma: imposta la descrizione della modalità dei programmi"
+msgstr ""
 
 #: templates/hello.html:3 templates/template.html:67 templates/template.html:68
 msgid "Welcome"
-msgstr "Benvenuto"
+msgstr ""
 
 #: templates/hello.html:3
 msgid "You are logged in."
-msgstr "Sei loggato"
+msgstr ""
 
 #: templates/hello.html:4 templates/template.html:45
 msgid "Logout"
-msgstr "Esci"
+msgstr ""
 
 #: templates/home.html:5
 msgid "Welcome into DomoControl free software version two"
-msgstr "Benvenuto sulla seconda versione di DomoControl free software"
+msgstr ""
 
 #: templates/home.html:6
 msgid ""
 "if you want to contribute to the development of the project, please write"
 " at subluca(at)gmail.com"
 msgstr ""
-"Se desideri contribuire allo sviluppo del progetto, scrivi un'email "
-"all'indirizzo subluca(at)gmail.com"
 
 #: templates/home.html:8
 msgid "This project require:"
-msgstr "Il progetto richiede:"
+msgstr ""
 
 #: templates/home.html:9
 msgid "Raspberry PI control board and Arduino slave board or other board"
 msgstr ""
-"Raspberry PI come scheda principale e periferiche basate su Arduino o "
-"altro"
 
 #: templates/home.html:10
 msgid "Python language"
-msgstr "Linguaggio Python"
+msgstr ""
 
 #: templates/home.html:11
 msgid "Flask framework with plugins"
-msgstr "Framework Flask con relativi moduli"
+msgstr ""
 
 #: templates/home.html:12
 msgid "Sqlite database to store all informations"
-msgstr "Database SQlite per memorizzare le informazioni"
+msgstr ""
 
 #: templates/home.html:16
 msgid "Project repository:"
-msgstr "Repository del progetto:"
+msgstr ""
 
 #: templates/home.html:18
 msgid "Demo, when active"
-msgstr "Demo, quanto disponibile"
+msgstr ""
 
 #: templates/home.html:22
 msgid "Facebook group:"
-msgstr "Gruppo Facebook:"
+msgstr ""
 
 #: templates/home.html:23
 msgid ""
 "if you want to contribute to the development of software, please write "
 "email to: subluca at gmail.com"
 msgstr ""
-"Se desideri contribuire allo sviluppo del progetto, scrivi un'email "
-"all'indirizzo subluca(at)gmail.com"
 
 #: templates/log.html:3
 msgid "User Log"
-msgstr "Log utente"
+msgstr ""
 
 #: templates/log.html:4
 msgid "IP number"
-msgstr "Numero IP"
+msgstr ""
 
 #: templates/log.html:4
 msgid "Timestamp"
-msgstr "Ultima modifica"
+msgstr ""
 
 #: templates/login.html:3 templates/template.html:43
 msgid "Login"
-msgstr "Entra"
+msgstr ""
 
 #: templates/login.html:4
 msgid "Please insert username and password"
-msgstr "Inserisci il nome utente e la password"
+msgstr ""
 
 #: templates/login.html:16 templates/setup_user.html:11
 msgid "Username"
-msgstr "Nome utente"
+msgstr ""
 
 #: templates/message.html:3
 msgid "Board Messages"
-msgstr "Messaggi"
+msgstr ""
 
 #: templates/setup_area.html:10 templates/setup_board.html:10
 #: templates/setup_board_type.html:10 templates/setup_io_type.html:10
 #: templates/setup_program.html:19 templates/setup_program.html:36
 #: templates/setup_program_type.html:11 templates/setup_user.html:23
 msgid "Name"
-msgstr "Nome"
+msgstr ""
 
 #: templates/setup_area.html:13 templates/setup_board.html:10
 #: templates/setup_board_type.html:13 templates/setup_io_type.html:13
 #: templates/setup_privilege.html:13 templates/setup_program.html:20
 #: templates/setup_program.html:37 templates/setup_program_type.html:14
 msgid "Description"
-msgstr "Descrizione"
+msgstr ""
 
 #: templates/setup_board.html:3
 msgid "Board Setup"
-msgstr "Impostazione scheda"
+msgstr ""
 
 #: templates/setup_board.html:10 templates/setup_program.html:81
 msgid "Enable"
-msgstr "Abilitato"
+msgstr ""
 
 #: templates/setup_board.html:10
 msgid "Address"
-msgstr "Indirizzo"
+msgstr ""
 
 #: templates/setup_board.html:10 templates/template.html:32
 msgid "Board Type"
-msgstr "Tipo scheda"
+msgstr ""
 
 #: templates/setup_board_io.html:3
 msgid "Board I/O Setup"
-msgstr "Configurazione degli I/O della scheda"
+msgstr ""
 
 #: templates/setup_board_type.html:3
 msgid "Board Type Setup"
-msgstr "Impostazione del Tipo di scheda"
+msgstr ""
 
 #: templates/setup_io_type.html:3
 msgid "I/O Type Setup"
-msgstr "Configurazione del tipo di I/O"
+msgstr ""
 
 #: templates/setup_privilege.html:3
 msgid "Privilege Setup"
-msgstr "Configurazione Privilegi"
+msgstr ""
 
 #: templates/setup_program.html:6
 msgid "Program setup"
-msgstr "Configurazione del Programma"
+msgstr ""
 
 #: templates/setup_program.html:18
 msgid "Program number:"
-msgstr "Numero programma:"
+msgstr ""
 
 #: templates/setup_program.html:21 templates/setup_program.html:38
 msgid "Type"
-msgstr "Tipo"
+msgstr ""
 
 #: templates/setup_program.html:61
 msgid "Delay"
-msgstr "Ritardo"
+msgstr ""
 
 #: templates/setup_program.html:65
 msgid "Inverted"
-msgstr "Invertito"
+msgstr ""
 
 #: templates/setup_program.html:94 templates/setup_program.html:110
 msgid "Days"
-msgstr "Giorni"
+msgstr ""
 
 #: templates/setup_program.html:94 templates/setup_program.html:110
 msgid "Hours"
-msgstr "Ore"
+msgstr ""
 
 #: templates/setup_program.html:94 templates/setup_program.html:110
 msgid "Minutes"
-msgstr "Minuti"
+msgstr ""
 
 #: templates/setup_program.html:94 templates/setup_program.html:110
 msgid "Seconds"
-msgstr "Secondi"
+msgstr ""
 
 #: templates/setup_program.html:119 templates/setup_program.html:136
 #: templates/setup_program.html:162 templates/setup_program.html:178
 msgid "Each day"
-msgstr "Tutti i giorni"
+msgstr ""
 
 #: templates/setup_program.html:120 templates/setup_program.html:137
 #: templates/setup_program.html:163 templates/setup_program.html:179
 msgid "Monday"
-msgstr "Lunedi"
+msgstr ""
 
 #: templates/setup_program.html:121 templates/setup_program.html:138
 #: templates/setup_program.html:164 templates/setup_program.html:180
 msgid "Tuesday"
-msgstr "Martedi"
+msgstr ""
 
 #: templates/setup_program.html:122 templates/setup_program.html:139
 #: templates/setup_program.html:165 templates/setup_program.html:181
 msgid "Wednesday"
-msgstr "Mercoledi"
+msgstr ""
 
 #: templates/setup_program.html:123 templates/setup_program.html:140
 #: templates/setup_program.html:166 templates/setup_program.html:182
 msgid "Thursday"
-msgstr "Giovedi"
+msgstr ""
 
 #: templates/setup_program.html:124 templates/setup_program.html:141
 #: templates/setup_program.html:167 templates/setup_program.html:183
 msgid "Friday"
-msgstr "Venerdi"
+msgstr ""
 
 #: templates/setup_program.html:125 templates/setup_program.html:142
 #: templates/setup_program.html:168 templates/setup_program.html:184
 msgid "Saturday"
-msgstr "Sabato"
+msgstr ""
 
 #: templates/setup_program.html:126 templates/setup_program.html:143
 #: templates/setup_program.html:169 templates/setup_program.html:185
 msgid "Sunday"
-msgstr "Domenica"
+msgstr ""
 
 #: templates/setup_program_type.html:3
 msgid "Program Type Setup"
-msgstr "Configurazione delle tipologie di programma"
+msgstr ""
 
 #: templates/setup_user.html:3
 msgid "User Setup"
-msgstr "Configurazione utente"
+msgstr ""
 
 #: templates/setup_user.html:19
 msgid "Retype Password"
-msgstr "Ridigita la Password"
+msgstr ""
 
 #: templates/setup_user.html:27
 msgid "Surname"
-msgstr "Cognome"
+msgstr ""
 
 #: templates/setup_user.html:31
 msgid "Language"
-msgstr "Lingua"
+msgstr ""
 
 #: templates/setup_user.html:33
 msgid "English"
-msgstr "Inglese"
+msgstr ""
 
 #: templates/setup_user.html:34
 msgid "Italian"
-msgstr "Italiano"
+msgstr ""
 
 #: templates/setup_user.html:38
 msgid "Session Timeout"
-msgstr "Sessione Timeout"
+msgstr ""
 
 #: templates/setup_user.html:42 templates/template.html:28
 msgid "Privilege"
-msgstr "Privilegi"
+msgstr ""
 
 #: templates/setup_user.html:57
 msgid "Last modified:"
-msgstr "Ultima modifica"
+msgstr ""
 
 #: templates/status.html:3
 msgid "Status page"
-msgstr "Pagina dello stato"
+msgstr ""
 
 #: templates/template.html:4
 msgid "DomoContorl V2"
-msgstr "DomoContorl V2"
+msgstr ""
 
 #: templates/template.html:17
 msgid "Status"
-msgstr "Stato"
+msgstr ""
 
 #: templates/template.html:23
 msgid "Program Setup"
-msgstr "Settaggio Programma"
+msgstr ""
 
 #: templates/template.html:25
 msgid "User"
-msgstr "Utenti"
+msgstr ""
 
 #: templates/template.html:34
 msgid "I/O Type"
-msgstr "Tipo I/O"
+msgstr ""
 
 #: templates/template.html:35
 msgid "Program Type"
-msgstr "Tipo Programma"
+msgstr ""
 
 #: templates/template.html:37
 msgid "Please Login"
-msgstr "Prego registrati"
-
-#~ msgid "Welcome into DomoControl Version Two, free software"
-#~ msgstr "Benvenuto sulla seconda versione di DomoControl, Free Software"
+msgstr ""
 

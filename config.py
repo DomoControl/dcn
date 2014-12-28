@@ -8,3 +8,4 @@ LANGUAGES = {
     'en': 'English',
     'it': 'Italian'
 }
+BABEL_DEFAULT_LOCALE = 'en'

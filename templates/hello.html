@@ -1,5 +1,5 @@
 {% extends "template.html"  %}
 {% block content %}
-    <h2>Welcome {{ session['user_name'] }} ! You are logged in.</h2>
-    <a href="/logout">Logout</a>
+    <h2>{{_('Welcome')}} {{ session['user_name'] }} ! {{_('You are logged in.')}}</h2>
+    <a href="/logout">{{_('Logout')}}</a>
 {% endblock %}

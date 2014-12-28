@@ -1,37 +1,42 @@
 {% extends "template.html"  %}
 
 {% block content %}
-<!--
-<h1>{{ _('Hello world') }}</h1>
--->
 
+<h2>{{_('Domocontrol documentation')}}</h2>
 
-<h2>Domocontrol documentation</h2>
+<h3>{{_('Installation')}}</h3>
+{{_('Domocontrol Version TWO require')}}:<br />
+<small>{{_('first version demo is available at http://my-tek.no-ip.org:8080 and on github at address: https://github.com/DomoControl/domocontrol')}}</small><br /><br />
 
-<h3>Installation</h3>
-Domocontrol Version TWO (first version demo is available at http://my-tek.no-ip.org:8080 and on github at address: https://github.com/DomoControl/domocontrol) require:
 <ul>
-  <li>Raspberry PI board</li>
-  <li>One or more board interface with more inputs and outputs to control home devices.</li>
-  <li>python language</li>
-  <li>Flask Framework with plugins</li>
-  <li>Sqlite3 to store informations</li>
-  <li>In second stage, more slave board  I/O with Arduino connected with Raspberry by RS485</li>
+  <li>{{_('Raspberry PI board')}}</li>
+  <li>{{_('One or more board interface with more inputs and outputs to control home devices')}}</li>
+  <li>{{_('python language')}}</li>
+  <li>{{_('Flask Framework with plugins')}}</li>
+  <li>{{_('Sqlite3 to store informations')}}</li>
+  <li>{{_('In second stage, more slave board  I/O with Arduino connected with Raspberry by RS485')}}</li>
 </ul>
 
-<h3>Main Menu</h3>
+<h3>{{_('Main Menu')}}</h3>
 <ul>
-  <li>Home: project presentation</li>
-  <li>Status: shows the status of the I/O</li>
-  <li>Stup</li>
-  <li>Login / Logout</li>
-  <li>Log: user access</li>
-  <li>Doc: software installation and user manual</li>
+  <li>{{_('Home: project presentation')}}</li>
+  <li>{{_('Status: shows the status of the I/O')}}</li>
+  <li>{{_('Setup')}}</li>
+  <li>{{_('Login / Logout')}}</li>
+  <li>{{_('Log: user access')}}</li>
+  <li>{{_('Doc: software installation and user manual')}}</li>
 </ul>
 
-<h3>Submain Status</h3>
+<h3>{{_('Submenu Setup')}}</h3>
 <ul>
-  <li></li>
+  <li>{{_('Program Setup: Configuration program, which inputs activate the outputs activated and in which modes')}}</li>
+  <li>{{_('User: User configuration')}}</li>
+  <li>{{_('Area: define in what locations are positioned the I/O')}}</li>
+  <li>{{_('Privilege: defines the types of user privileges')}}</li>
+  <li>{{_('Board Type: defines the types of boards')}}</li>
+  <li>{{_('Board Setup: set the property of boards')}}</li>
+  <li>{{_('I/O Type: set the description of input and output types')}}</li>
+  <li>{{_('Program Type: set the description of modality of the program')}}</li>
 </ul>
 
 <!--

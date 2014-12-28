@@ -11,15 +11,28 @@ from config import LANGUAGES
 
 
 app = Flask(__name__)
+app.config.from_pyfile('config.py')
 babel = Babel(app)
 #~ app.secret_key = 'why would I tell you my secret key?'
 app.config.from_object('config')
 #~ babel = Babel(app, default_locale='it', default_timezone='UTC', date_formats=None, configure_jinja=True)
 #~ from app import views
 
+@app.route('/lang/it')
+def lang(language=None):
+     setattr(g, 'lang', language)
+
 @babel.localeselector
 def get_locale():
-    return 'it'  # request.accept_languages.best_match(LANGUAGES.keys())
+    # if a user is logged in, use the locale from the user settings
+    user = getattr(g, 'user', None)
+    print user
+    if user is not None:
+        return user.locale
+    # otherwise try to guess the language from the user accept
+    # header the browser transmits.  We support de/fr/en in this
+    # example.  The best match wins.
+    return request.accept_languages.best_match(['it', 'en'])
 
 def now():
     return datetime.datetime.now()
@@ -515,8 +528,8 @@ def login():
 
 def setup(): #program setup
     
-    d = domocontrol.Domocontrol(ss='start')
-    d.loop()
+    #~ d = domocontrol.Domocontrol(ss='start')
+    #~ d.loop()
     
     q = 'SELECT * FROM program WHERE enable=1'
     res = db.query(q)

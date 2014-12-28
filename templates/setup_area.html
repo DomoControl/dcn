@@ -5,13 +5,12 @@
         <p class=error><strong>Error:</strong> {{ error }}
     {% endif %}
     
-    <p>Setup AREA where device are installed</p>
     <form action="" method="post"  class="form-horizontal" role="form">
         <div class="form-group">
-            <label class="col-sm-2 control-label">Name</label>
+            <label class="col-sm-2 control-label">{{_('Name')}}</label>
         
             <div class="col-sm-10">
-                <label class="col-sm-2 control-label">Description</label>
+                <label class="col-sm-2 control-label">{{_('Description')}}</label>
             </div>
         </div>
         {% for p in data %}

@@ -1,6 +1,6 @@
 {% extends "template.html" %}
 {% block content %}
-   <h1>User Setup</h1>
+   <h1>{{_('User Setup')}}</h1>
   {% if error %}
     <p class=error><strong>Error:</strong> {{ error }}
   {% endif %}
@@ -8,7 +8,7 @@
   <form action="" method="post">
     <input type="hidden" name=id value="{{ user.id }}">
     <div class="input-group">
-      <span class="input-group-addon" style="width:200px;">Username</span>
+      <span class="input-group-addon" style="width:200px;">{{_('Username')}}'</span>
       <input width="200px" type="text" class="form-control" name=username value="{{ user.username }}">
     </div>
     <div class="input-group">
@@ -16,31 +16,30 @@
       <input type="password" class="form-control" name=password value="{{ user.password }}">
     </div>
     <div class="input-group">
-      <span class="input-group-addon" style="width:200px;">Retype Password</span>
+      <span class="input-group-addon" style="width:200px;">{{_('Retype Password')}}'</span>
       <input type="password" class="form-control" name=retype_password value="">
     </div>
     <div class="input-group">
-      <span class="input-group-addon" style="width:200px;">Name</span>
+      <span class="input-group-addon" style="width:200px;">{{_('Name')}}</span>
       <input type="text" class="form-control" name=name value="{{ user.name }}">
     </div>
     <div class="input-group">
-      <span class="input-group-addon" style="width:200px;">Surname</span>
+      <span class="input-group-addon" style="width:200px;">{{_('Surname')}}</span>
       <input type="text" class="form-control" name=surname value="{{ user.surname }}">
     </div>
     <div class="input-group">
-      <span class="input-group-addon" style="width:200px;">Language</span>
+      <span class="input-group-addon" style="width:200px;">{{_('Language')}}</span>
       <select name="lang" class="form-control">
-        <option value="en" {% if user.lang == 'en' %} selected {% endif %} >English</option>
-        <option value="it" {% if user.lang == 'it' %} selected {% endif %} >Italian</option>
-        <option value="de" {% if user.lang == 'de' %} selected {% endif %} >German</option>
+        <option value="en" {% if user.lang == 'en' %} selected {% endif %} >{{_('English')}}</option>
+        <option value="it" {% if user.lang == 'it' %} selected {% endif %} >{{_('Italian')}}</option>
       </select>
     </div>
     <div class="input-group">
-      <span class="input-group-addon" style="width:200px;">Session Timeout</span>
+      <span class="input-group-addon" style="width:200px;">{{_('Session Timeout')}}</span>
       <input type="text" class="form-control" name=session value="{{ user.session }}">
     </div>
     <div style="border:1px dashed gray; width:400px; margin-top:10px; padding:3px;">
-      <p>Privilege</p>
+      <p>{{_('Privilege')}}</p>
       {% for p in privilege %}
         <div >
           <div class="input-group" style="width:100%">
@@ -55,7 +54,7 @@
       <p style="width:400px; text-align:center;"><input type="submit" class="form-control" name=submit value="Save"></p>
     </div>
   </form>
-  <p><small>Last modified: {{ user.timestamp }}</small></p>
+  <p><small>{{_('Last modified:')}} {{ user.timestamp }}</small></p>
     
   {% for message in get_flashed_messages() %}
     <div class='flash'>
