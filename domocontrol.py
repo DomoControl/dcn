@@ -10,22 +10,17 @@ class Domocontrol:
     def __init__(self, p='', ss='start'): #p = program dictionary
         self.p = p
         self.ss=ss
+        self.i2c = 0 #(dev/i2c_x) Default is 0 but setBus check for right value       
         self.db = Database()
+        self.mapping = {0:0, 1:1, 2:2, 3:4, 4:8, 5:16, 6:32, 7:64, 8:128}
         
-    def loop(self):
-        print "loop"
+        self.setBus()
+        print "*** Show device in /etc/i2c-%s" %self.i2c
         
-
-       
-        t = threading.Timer(1, self.loop) #recall loop function every 1 second    
-        if(self.ss == 'start'):
-            t.start()
-        else:
-            t.cancel()
-
     def setBus(self):
         self.device=[]
         for a in range(0,10):
+            #~ print a
             try:
                 i2c = smbus.SMBus(a)
                 self.i2c = a #address i2c /dev/i2c_x
@@ -48,26 +43,25 @@ class Domocontrol:
         bus = smbus.SMBus(self.i2c)
         #~ bus.write_byte(int(var[0]['board_address']), 0xff)
         IOvalue = bus.read_byte(int(address[0]['board_address']))
+        #~ print "Board_address:%s  In_address:%s" %(address[0]['board_address'], IOvalue)
         if IO == 'read': #read bit value
             #~ print bin(value) #IO status
             bit_value = (IOvalue >> (int(address[0]['io_address'])-1))&1
             return bit_value
         
         elif IO == 'write': #set bit value
-            pass
             if value == 1:
                 pass
-                val = int(IOvalue) | int(address[0]['io_address'] )
+                val = int(IOvalue) | self.mapping[ int(address[0]['io_address']) ]
+                
                 bus.write_byte(int(address[0]['board_address']), val)
             else:
-                pass 
-                val = int(IOvalue) & int(value)
+                pass
+                val = int(IOvalue) & (  0xffff - self.mapping[ int(address[0]['io_address']) ] )
                 bus.write_byte(int(address[0]['board_address']), val)
-            #~ print IO, address, value, IOvalue
+            #~ print 
+            #~ print "StatusPrec:%s,  bit:%s,  value:%s,  statusNew:%s" %(bin(IOvalue), address[0]['io_address'], value, bin(val) )
     
-    def getProgram(self):
-        print self.p
-        return self.p
 
     def setProgram(self):
         if self.p['type_id'] == 1: #Timer
@@ -78,7 +72,8 @@ class Domocontrol:
             self.setAutomatic()
         elif  self.p['type_id'] == 4: #Manual
             self.setManual()
-            
+
+"""            
     def setTimer(self):
         print "Timer"
         
@@ -100,7 +95,7 @@ class Domocontrol:
             pass
         #~ print in_address, out_address
         #~ print in_status, out_status
-        
+"""
         
         
         

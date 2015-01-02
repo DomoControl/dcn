@@ -1,0 +1,71 @@
+Metadata-Version: 1.1
+Name: app
+Version: 0.0.2
+Summary: Python base class for Mac OS Applications
+Home-page: http://github.com/cancerhermit/PyApp/
+Author: cancerhermit
+Author-email: cancerhermit@gmail.com
+License: GPL
+Description: Installing
+        ----------
+        
+        ::
+        
+            pip install app
+        
+         Usage ----------
+        
+        Application class
+        ^^^^^^^^^^^^^^^^^
+        
+        ::
+        
+            from app import application
+            itunes=application("iTunes")
+            itunes.open() # open in background
+            print itunes.active,itunes.frontmost
+            >>> True, False
+            itunes.activate() # open and frontmost 
+            print itunes.active,itunes.frontmost
+            >>> True, True
+        
+        AppleScript
+        '''''''''''
+        
+        ::
+        
+            itunes.tell("play")
+        
+        equal to:
+        
+        ::
+        
+            tell application "iTunes"
+                play
+            end tell
+        
+        - itunes.quit()
+        
+        System Events
+        ^^^^^^^^^^^^^
+        
+        ::
+        
+            from app.system import events
+            print events.processes # processes list
+            print events.processes.frontmost # frontmost application
+            >>> Terminal
+            print "iCal" in events.processes
+            >>> True
+        
+        
+Keywords: Mac OS Application AppleScript appscript
+Platform: MacOS X
+Classifier: License :: OSI Approved :: GNU General Public License (GPL)
+Classifier: Environment :: Console
+Classifier: Environment :: MacOS X
+Classifier: Natural Language :: English
+Classifier: Operating System :: MacOS
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Topic :: Utilities

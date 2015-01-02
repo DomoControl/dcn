@@ -8,7 +8,8 @@ import domocontrol
 import threading
 from flask.ext.babel import Babel
 from config import LANGUAGES
-
+#~ from apscheduler.schedulers.blocking import BlockingScheduler
+import threading
 
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
@@ -26,12 +27,10 @@ def lang(language=None):
 def get_locale():
     # if a user is logged in, use the locale from the user settings
     user = getattr(g, 'user', None)
-    print user
     if user is not None:
         return user.locale
     # otherwise try to guess the language from the user accept
     # header the browser transmits.  We support de/fr/en in this
-    # example.  The best match wins.
     return request.accept_languages.best_match(['it', 'en'])
 
 def now():
@@ -378,10 +377,13 @@ def setup_program():
         
         print(q)
         db.query(q)
+        setup()    
+        
     elif request.method == "POST" and 'btn' in request.form.to_dict() and request.form.to_dict()['btn']=='Delete':
         print('Delete Program Form')
         f = request.form.to_dict()
         print(f['id'])
+        setup()    
     
     elif request.method == "POST" and [s for s in request.form.to_dict() if "delete_chrono" in s]:
         print('Delete Chrono in Program Form')
@@ -395,7 +397,8 @@ def setup_program():
         chrono = ';'.join(chrono) #convert list to string
         q = 'UPDATE program SET chrono="%s" WHERE id="%s" ' %(chrono, f['id'])
         db.query(q)
-        
+        setup()    
+    
         
     q = 'SELECT * FROM program'
     res = db.query(q)
@@ -513,42 +516,87 @@ def login():
     error = None
     if request.method == "POST":
         q = 'SELECT * FROM user WHERE username = "%s" AND password = "%s"' %(request.form["username"],request.form["password"])
-        res = db.query(q)[0]
-        if res and len(res) > 0:
+        res = db.query(q)
+        if res and len(res[0]) > 0:
             session['logged_in'] = True
-            session['user_name'] = res['name']
-            session['user_id'] = res['id']
+            session['user_name'] = res[0]['name']
+            session['user_id'] = res[0]['id']
             return render_template("hello.html", error=error)
         else:
             session['logged_in'] = None
             error = "invalid password or username. Please retry"
     return render_template("login.html", error=error)
 
+P = {} #Dict with Program
+Q = {} #Copy of Program
+A = {} #All other db information
 
+d = domocontrol.Domocontrol()
+d.setBus()
 
 def setup(): #program setup
-    
-    #~ d = domocontrol.Domocontrol(ss='start')
-    #~ d.loop()
-    
-    q = 'SELECT * FROM program WHERE enable=1'
+    q = 'SELECT id, in_id, delay, inverted, out_id, type_id, name, description, timer, chrono FROM program WHERE enable=1'
     res = db.query(q)
+    for r in res:        
+        P[r['id']] = r
+        P[r['id']].update({'IN':r['inverted'], 'TIMER':0})
+    
+    #Area informations
+    q = 'SELECT id, name, description FROM area'
+    res = db.query(q)
+    A['area']={}
     for r in res:
-        #~ p = domocontrol.Domocontrol(r)
-        #~ p.setBus()
-        #~ p.getProgram()
-        #~ p.setProgram()
-        pass
+        A['area'].update({r['id'] : r})
+    
+    #Board informations
+    q = 'SELECT * FROM board'
+    res = db.query(q)
+    A['board']={}
+    for r in res:
+        A['board'].update({r['id'] : r})
+    
+    #Board_io informations
+    q = 'SELECT * FROM board_io'
+    res = db.query(q)
+    A['board_io']={}
+    for r in res:
+        A['board_io'].update({r['id'] : r})
+ 
+    #Board_type informations
+    q = 'SELECT * FROM board_type'
+    res = db.query(q)
+    A['board_type']={}
+    for r in res:
+        A['board_type'].update({r['id'] : r})
+    
+    print P
+    
+def resetIO(): #To rese all port to begin and to end program
+    pass    
+    
+    
+def loop():
+    #~ print now()
+    for p in P:        
+        if P[p]['type_id'] == 4: #Manual
+            in_address = d.getAddress(P[p]['in_id'])
+            out_address = d.getAddress(P[p]['out_id'])
+            #~ print "in_address:%s  out_address:%s" %(in_address, out_address)
+            in_status = d.IOStatus('read', in_address)
+            out_status = d.IOStatus('read', out_address)
+            if P[p]['inverted'] == 1 : #flag inverted
+                #~ in_status = not in_status
+                pass
+            d.IOStatus('write', out_address, in_status)
 
-
+    threading.Timer(1, loop).start()
 
 if __name__ == '__main__':       
-    setup()     
-    #~ loop('start')
+    setup()    
+    loop()
+    
     app.run(
         host="0.0.0.0", 
         port=int("5000"), 
-        debug=True 
+        debug=True
     )
-    #~ s.stop()
-    #~ loop('stop')
