@@ -325,8 +325,6 @@ def status():
         return render_template("login.html")   
 
 
-
-
 @app.route('/welcome')
 def welcome():
     return render_template('welcome.html')
