@@ -2,7 +2,8 @@
 import time
 import smbus
 from db import Database
-import threading
+import datetime
+#~ import threading
 
 class Domocontrol:
     """Class DomoControl"""
@@ -13,9 +14,17 @@ class Domocontrol:
         self.i2c = 0 #(dev/i2c_x) Default is 0 but setBus check for right value       
         self.db = Database()
         self.mapping = {0:0, 1:1, 2:2, 3:4, 4:8, 5:16, 6:32, 7:64, 8:128}
-        
         self.setBus()
-        print "*** Show device in /etc/i2c-%s" %self.i2c
+        #~ print "*** Show device in /etc/i2c-%s" %self.i2c
+        self.P = {} #Dict with Program
+        self.Q = {} #Copy of Program
+        self.A = {} #All other db information
+
+    def now(self):
+        return datetime.datetime.now()
+    
+    def getDict(self):
+        return self.P
         
     def setBus(self):
         self.device=[]
@@ -39,65 +48,103 @@ class Domocontrol:
         self.address = self.db.query(q)
         return self.address
     
-    def IOStatus(self, IO, address, value=0): #set / get IO Status: IO=read/write, address:board_address+io_address, value:bit value
+    def IOStatus(self, rw, board_address, io_address, value=0): #set / get IO Status: rw=read/write
         bus = smbus.SMBus(self.i2c)
         #~ bus.write_byte(int(var[0]['board_address']), 0xff)
-        IOvalue = bus.read_byte(int(address[0]['board_address']))
-        #~ print "Board_address:%s  In_address:%s" %(address[0]['board_address'], IOvalue)
-        if IO == 'read': #read bit value
+        IOvalue = bus.read_byte(int(board_address))
+        #~ print "Board_address:%s  IOValue:%s" %(board_address, IOvalue)
+        if rw == 'read': #read bit value
             #~ print bin(value) #IO status
-            bit_value = (IOvalue >> (int(address[0]['io_address'])-1))&1
+            bit_value = (IOvalue >> (int(io_address)-1))&1
             return bit_value
         
-        elif IO == 'write': #set bit value
+        elif rw == 'write': #set bit value
             if value == 1:
                 pass
-                val = int(IOvalue) | self.mapping[ int(address[0]['io_address']) ]
+                val = int(IOvalue) | self.mapping[ int(io_address) ]
                 
-                bus.write_byte(int(address[0]['board_address']), val)
+                bus.write_byte(int(board_address), val)
             else:
                 pass
-                val = int(IOvalue) & (  0xffff - self.mapping[ int(address[0]['io_address']) ] )
-                bus.write_byte(int(address[0]['board_address']), val)
+                val = int(IOvalue) & (  0xffff - self.mapping[ int(io_address) ] )
+                bus.write_byte(int(board_address), val)
             #~ print 
             #~ print "StatusPrec:%s,  bit:%s,  value:%s,  statusNew:%s" %(bin(IOvalue), address[0]['io_address'], value, bin(val) )
     
-
-    def setProgram(self):
-        if self.p['type_id'] == 1: #Timer
-            self.setTimer()
-        elif  self.p['type_id'] == 2: #TimerOut
-            self.setTimeout()
-        elif  self.p['type_id'] == 3: #Automatic
-            self.setAutomatic()
-        elif  self.p['type_id'] == 4: #Manual
-            self.setManual()
-
-"""            
-    def setTimer(self):
-        print "Timer"
-        
-    def setTimerOut(self): 
-        print "TimerOut"
     
-    def setAutomatic(self):
-        print "Automatic"
 
-    def setManual(self):
-        #~ print "Manual"
-        in_address = self.getAddress(self.p['in_id'])
-        in_status = self.IOStatus('read',in_address)
-        out_address = self.getAddress(self.p['out_id'])
-        out_status = self.IOStatus('read',out_address)
-        print in_status, out_status
-        if out_status != in_status:
-            self.IOStatus('write', out_address, in_status)
-            pass
-        #~ print in_address, out_address
-        #~ print in_status, out_status
-"""
+    def setup(self): #program setup
+        q = 'SELECT id, in_id, delay, inverted, out_id, type_id, name, description, timer, chrono FROM program WHERE enable=1'
+        res = self.db.query(q)
+        for r in res:        
+            self.P[r['id']] = r
+            self.P[r['id']].update({'IN':r['inverted'], 'TIMER':0})
+        
+        #Area informations
+        q = 'SELECT id, name, description FROM area'
+        res = self.db.query(q)
+        self.A['area']={}
+        for r in res:
+            self.A['area'].update({r['id'] : r})
+        
+        #Board informations
+        q = 'SELECT * FROM board'
+        res = self.db.query(q)
+        self.A['board']={}
+        for r in res:
+            self.A['board'].update({r['id'] : r})
+        
+        #Board_io informations
+        q = 'SELECT * FROM board_io'
+        res = self.db.query(q)
+        self.A['board_io']={}
+        for r in res:
+            self.A['board_io'].update({r['id'] : r})
+     
+        #Board_type informations
+        q = 'SELECT * FROM board_type'
+        res = self.db.query(q)
+        self.A['board_type']={}
+        for r in res:
+            self.A['board_type'].update({r['id'] : r})
+        
+        print self.P
         
         
+    def resetIO(self): #To rese all port to begin and to end program
+        q = 'SELECT io.board_id, io.address as io_address, io.io_type_id, b.board_type, b.address as board_address FROM board_io io, board b WHERE io.board_id=b.id'
+        res = db.query(q)
+        for r in res:       
+            if r['io_type_id'] == 1 and int(r['board_address']) > 0: #input type
+                print "INPUT  type %s" %r
+                d.IOStatus('read', r['board_address'], r['io_address'], 1 )
+                
+            elif r['io_type_id'] == 2 and int(r['board_address']) > 0: #output type
+                print "OUTPUT type %s" %r
+                d.IOStatus('write', r['board_address'], r['io_address'], 0 )
+
         
+    def loop(self):
+        print "Loop %s" % self.now()
+        for p in self.P:        
+            if self.P[p]['type_id'] == 4: # 4 = Manual
+                #~ print "Manual %s" %P[p]
+                in_address = self.getAddress(self.P[p]['in_id'])
+                out_address = self.getAddress(self.P[p]['out_id'])
+                #~ print "get in/out addres %s" %now()
+                #~ print in_address
+                in_status = self.IOStatus('read', in_address[0]['board_address'], in_address[0]['io_address'])
+                out_status = self.IOStatus('read', out_address[0]['board_address'], out_address[0]['io_address'])
+                #~ print "get in/out status %s" %now()
+                #~ print "in_status:%s,  out_status:%s" %(in_status, out_status)
+                if self.P[p]['inverted'] == 1 : #flag inverted
+                    in_status = not in_status
+                
+                #~ print "address_board:%s  io_address:%s  in_status:%s  out_status:%s" %(out_address[0]['board_address'], out_address[0]['io_address'], in_status, out_status)
+                self.IOStatus('write', out_address[0]['board_address'], out_address[0]['io_address'], in_status)
+        
+
+
+
 
 

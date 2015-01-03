@@ -422,3 +422,53 @@ AttributeError: __exit__
 Unhandled exception in thread started by 
 sys.excepthook is missing
 lost sys.stderr
+ * Running on http://0.0.0.0:5000/
+ * Restarting with reloader
+192.168.1.186 - - [02/Jan/2015 23:21:17] "GET / HTTP/1.1" 200 -
+192.168.1.186 - - [02/Jan/2015 23:21:17] "GET /static/doc/image/domocontrol.png HTTP/1.1" 200 -
+192.168.1.186 - - [02/Jan/2015 23:21:18] "GET /static/css/bootstrap.css HTTP/1.1" 200 -
+192.168.1.186 - - [02/Jan/2015 23:21:18] "GET /static/jquery.js HTTP/1.1" 200 -
+192.168.1.186 - - [02/Jan/2015 23:21:18] "GET /static/js/bootstrap.js HTTP/1.1" 200 -
+192.168.1.186 - - [02/Jan/2015 23:21:18] "GET /static/img/favicon.ico HTTP/1.1" 200 -
+79.49.237.67 - - [02/Jan/2015 23:30:24] "GET / HTTP/1.1" 200 -
+79.49.237.67 - - [02/Jan/2015 23:30:25] "GET /static/css/bootstrap.css HTTP/1.1" 200 -
+79.49.237.67 - - [02/Jan/2015 23:30:27] "GET /static/jquery.js HTTP/1.1" 200 -
+79.49.237.67 - - [02/Jan/2015 23:30:33] "GET /static/js/bootstrap.js HTTP/1.1" 200 -
+79.49.237.67 - - [02/Jan/2015 23:30:36] "GET /static/img/favicon.ico HTTP/1.1" 200 -
+79.49.237.67 - - [02/Jan/2015 23:30:36] "GET /static/doc/image/domocontrol.png HTTP/1.1" 200 -
+62.11.167.137 - - [03/Jan/2015 09:00:02] "GET / HTTP/1.1" 200 -
+62.11.167.137 - - [03/Jan/2015 09:00:02] "GET /static/css/bootstrap.css HTTP/1.1" 200 -
+62.11.167.137 - - [03/Jan/2015 09:00:05] "GET /static/jquery.js HTTP/1.1" 200 -
+62.11.167.137 - - [03/Jan/2015 09:00:11] "GET /static/js/bootstrap.js HTTP/1.1" 200 -
+62.11.167.137 - - [03/Jan/2015 09:00:14] "GET /static/doc/image/domocontrol.png HTTP/1.1" 200 -
+62.11.167.137 - - [03/Jan/2015 09:00:19] "GET /log HTTP/1.1" 200 -
+62.11.167.137 - - [03/Jan/2015 09:00:21] "GET /static/img/favicon.ico HTTP/1.1" 200 -
+62.11.167.137 - - [03/Jan/2015 09:00:40] "GET /static/doc/image/domocontrol.png HTTP/1.1" 200 -
+62.11.248.208 - - [03/Jan/2015 09:08:51] "GET / HTTP/1.1" 200 -
+62.11.248.208 - - [03/Jan/2015 09:08:51] "GET /static/css/bootstrap.css HTTP/1.1" 200 -
+62.11.248.208 - - [03/Jan/2015 09:08:54] "GET /static/jquery.js HTTP/1.1" 200 -
+62.11.248.208 - - [03/Jan/2015 09:09:00] "GET /static/js/bootstrap.js HTTP/1.1" 200 -
+62.11.248.208 - - [03/Jan/2015 09:09:03] "GET /static/doc/image/domocontrol.png HTTP/1.1" 200 -
+62.11.248.208 - - [03/Jan/2015 09:09:06] "GET /static/img/favicon.ico HTTP/1.1" 200 -
+87.4.175.168 - - [03/Jan/2015 10:57:10] "GET /setup_program HTTP/1.1" 200 -
+*** Show device in /etc/i2c-1
+{3: {'name': u'PR1', 'type_id': 4, 'chrono': u'1-1-2-3-2-4-5-6;5-7-8-9-6-10-11-12;6-1-2-3-6-1-2-44', 'timer': u'3-2-1-0', 'id': 3, 'delay': 0, 'TIMER': 0, 'IN': 0, 'out_id': 13, 'inverted': 0, 'in_id': 30, 'description': u'Program 1'}}
+*** Show device in /etc/i2c-1
+{3: {'name': u'PR1', 'type_id': 4, 'chrono': u'1-1-2-3-2-4-5-6;5-7-8-9-6-10-11-12;6-1-2-3-6-1-2-44', 'timer': u'3-2-1-0', 'id': 3, 'delay': 0, 'TIMER': 0, 'IN': 0, 'out_id': 13, 'inverted': 0, 'in_id': 30, 'description': u'Program 1'}}
+Exception SystemExit: 0 in <module 'threading' from '/usr/lib/python2.7/threading.pyc'> ignored
+Exception SystemExit: 0 in <module 'threading' from '/usr/lib/python2.7/threading.pyc'> ignored
+Exception in thread Thread-41584 (most likely raised during interpreter shutdown):
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/threading.py", line 552, in __bootstrap_inner
+  File "/usr/lib/python2.7/threading.py", line 760, in run
+  File "main.py", line 580, in loop
+<type 'exceptions.TypeError'>: 'NoneType' object is not iterable
+Unhandled exception in thread started by 
+sys.excepthook is missing
+lost sys.stderr
+Unhandled exception in thread started by 
+sys.excepthook is missing
+lost sys.stderr
+Unhandled exception in thread started by 
+sys.excepthook is missing
+lost sys.stderr
