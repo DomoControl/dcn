@@ -314,9 +314,13 @@ def status():
     if 'logged_in' in session and session['logged_in']==True:
         q = 'SELECT * FROM program'
         res = db.query(q)
-        for r in res:
-            print r
+        #~ d.setup()
+        #~ print d.getDict('P')
         
+        #~ for r in res:
+            #~ print r
+            
+            #~ print d.IOStatus('read', )
         
     
     

@@ -472,3 +472,190 @@ lost sys.stderr
 Unhandled exception in thread started by 
 sys.excepthook is missing
 lost sys.stderr
+ * Running on http://0.0.0.0:5000/
+ * Restarting with reloader
+87.4.175.168 - - [03/Jan/2015 16:21:33] "GET /status HTTP/1.1" 200 -
+87.4.175.168 - - [03/Jan/2015 16:21:33] "GET /static/css/bootstrap.css HTTP/1.1" 304 -
+87.4.175.168 - - [03/Jan/2015 16:21:33] "GET /static/jquery.js HTTP/1.1" 304 -
+87.4.175.168 - - [03/Jan/2015 16:21:33] "GET /static/js/bootstrap.js HTTP/1.1" 304 -
+151.19.212.214 - - [03/Jan/2015 16:24:09] "GET / HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:24:09] "GET /static/css/bootstrap.css HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:24:12] "GET /static/jquery.js HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:24:19] "GET /static/js/bootstrap.js HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:24:21] "GET /static/doc/image/domocontrol.png HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:24:27] "GET /static/img/favicon.ico HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:25:20] "GET /status HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:25:29] "GET /login HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:25:33] "GET /log HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:25:40] "GET /doc HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:25:58] "GET /home HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:26:30] "GET /doc HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:27:22] "GET /status HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:27:25] "GET /doc HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:27:33] "GET /status HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:27:42] "POST /status HTTP/1.1" 405 -
+151.19.212.214 - - [03/Jan/2015 16:27:42] "GET /favicon.ico HTTP/1.1" 404 -
+151.19.212.214 - - [03/Jan/2015 16:27:51] "GET /login HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:28:07] "POST /login HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:29:08] "GET /status HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:29:49] "GET /setup_program HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:29:51] "GET /static/fonts/glyphicons-halflings-regular.woff HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:30:06] "GET /doc HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:30:12] "GET /log HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:30:19] "GET /status HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:30:52] "GET /setup_area HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:31:00] "GET /setup_board_type HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:31:10] "GET /setup_program_type HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:31:16] "GET /status HTTP/1.1" 200 -
+151.19.212.214 - - [03/Jan/2015 16:31:19] "GET /logout HTTP/1.1" 302 -
+151.19.212.214 - - [03/Jan/2015 16:31:20] "GET /login HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:05:14] "GET / HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:05:15] "GET /static/css/bootstrap.css HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:05:17] "GET /static/jquery.js HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:05:36] "GET /static/js/bootstrap.js HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:05:38] "GET /static/doc/image/domocontrol.png HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:05:46] "GET /static/img/favicon.ico HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:06:07] "GET / HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:06:08] "GET /static/css/bootstrap.css HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/SocketServer.py", line 295, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python2.7/SocketServer.py", line 321, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python2.7/SocketServer.py", line 334, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python2.7/SocketServer.py", line 651, in __init__
+    self.finish()
+  File "/usr/lib/python2.7/SocketServer.py", line 704, in finish
+    self.wfile.flush()
+  File "/usr/lib/python2.7/socket.py", line 303, in flush
+    self._sock.sendall(view[write_offset:write_offset+buffer_size])
+error: [Errno 32] Broken pipe
+79.35.245.233 - - [03/Jan/2015 18:06:10] "GET /static/jquery.js HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/SocketServer.py", line 295, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python2.7/SocketServer.py", line 321, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python2.7/SocketServer.py", line 334, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python2.7/SocketServer.py", line 651, in __init__
+    self.finish()
+  File "/usr/lib/python2.7/SocketServer.py", line 704, in finish
+    self.wfile.flush()
+  File "/usr/lib/python2.7/socket.py", line 303, in flush
+    self._sock.sendall(view[write_offset:write_offset+buffer_size])
+error: [Errno 32] Broken pipe
+79.35.245.233 - - [03/Jan/2015 18:06:10] "GET /static/js/bootstrap.js HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/SocketServer.py", line 295, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python2.7/SocketServer.py", line 321, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python2.7/SocketServer.py", line 334, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python2.7/SocketServer.py", line 651, in __init__
+    self.finish()
+  File "/usr/lib/python2.7/SocketServer.py", line 704, in finish
+    self.wfile.flush()
+  File "/usr/lib/python2.7/socket.py", line 303, in flush
+    self._sock.sendall(view[write_offset:write_offset+buffer_size])
+error: [Errno 32] Broken pipe
+79.35.245.233 - - [03/Jan/2015 18:06:11] "GET /static/doc/image/domocontrol.png HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/SocketServer.py", line 295, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python2.7/SocketServer.py", line 321, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python2.7/SocketServer.py", line 334, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python2.7/SocketServer.py", line 651, in __init__
+    self.finish()
+  File "/usr/lib/python2.7/SocketServer.py", line 704, in finish
+    self.wfile.flush()
+  File "/usr/lib/python2.7/socket.py", line 303, in flush
+    self._sock.sendall(view[write_offset:write_offset+buffer_size])
+error: [Errno 32] Broken pipe
+79.35.245.233 - - [03/Jan/2015 18:06:24] "GET / HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:06:25] "GET /static/css/bootstrap.css HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:06:28] "GET /static/jquery.js HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:06:37] "GET /static/js/bootstrap.js HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:06:42] "GET /static/doc/image/domocontrol.png HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:07:04] "GET /static/img/favicon.ico HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:07:19] "GET / HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:07:31] "GET / HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:07:34] "GET /status HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:07:39] "POST /status HTTP/1.1" 405 -
+79.35.245.233 - - [03/Jan/2015 18:07:40] "GET /favicon.ico HTTP/1.1" 404 -
+79.35.245.233 - - [03/Jan/2015 18:07:41] "GET /favicon.ico HTTP/1.1" 404 -
+79.35.245.233 - - [03/Jan/2015 18:07:50] "GET / HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:07:52] "GET /login HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:07:58] "POST /login HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:08:07] "GET /setup_board_type HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:08:10] "GET /setup_privilege HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:08:13] "GET /status HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:08:16] "GET /setup_program_type HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:18:17] "GET /status HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:18:20] "GET /log HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:18:30] "GET /log HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/SocketServer.py", line 295, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python2.7/SocketServer.py", line 321, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python2.7/SocketServer.py", line 334, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python2.7/SocketServer.py", line 651, in __init__
+    self.finish()
+  File "/usr/lib/python2.7/SocketServer.py", line 704, in finish
+    self.wfile.flush()
+  File "/usr/lib/python2.7/socket.py", line 303, in flush
+    self._sock.sendall(view[write_offset:write_offset+buffer_size])
+error: [Errno 32] Broken pipe
+79.35.245.233 - - [03/Jan/2015 18:18:30] "GET /doc HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:19:44] "GET /home HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:19:56] "GET /setup_area HTTP/1.1" 200 -
+79.35.245.233 - - [03/Jan/2015 18:20:00] "GET /setup_program_type HTTP/1.1" 200 -
+93.42.179.56 - - [03/Jan/2015 18:47:56] "GET / HTTP/1.1" 200 -
+93.42.179.56 - - [03/Jan/2015 18:47:57] "GET /static/css/bootstrap.css HTTP/1.1" 200 -
+93.42.179.56 - - [03/Jan/2015 18:47:59] "GET /static/jquery.js HTTP/1.1" 200 -
+93.42.179.56 - - [03/Jan/2015 18:48:05] "GET /static/js/bootstrap.js HTTP/1.1" 200 -
+93.42.179.56 - - [03/Jan/2015 18:48:07] "GET /static/doc/image/domocontrol.png HTTP/1.1" 200 -
+93.42.179.56 - - [03/Jan/2015 18:48:13] "GET /static/img/favicon.ico HTTP/1.1" 200 -
+93.42.179.56 - - [03/Jan/2015 18:50:20] "GET /status HTTP/1.1" 200 -
+93.42.179.56 - - [03/Jan/2015 18:50:22] "GET /login HTTP/1.1" 200 -
+62.11.84.196 - - [03/Jan/2015 21:01:59] "GET / HTTP/1.1" 200 -
+62.11.84.196 - - [03/Jan/2015 21:01:59] "GET /static/jquery.js HTTP/1.1" 304 -
+62.11.84.196 - - [03/Jan/2015 21:01:59] "GET /static/css/bootstrap.css HTTP/1.1" 304 -
+62.11.84.196 - - [03/Jan/2015 21:01:59] "GET /static/js/bootstrap.js HTTP/1.1" 304 -
+62.11.84.196 - - [03/Jan/2015 21:01:59] "GET /static/doc/image/domocontrol.png HTTP/1.1" 200 -
+151.46.54.69 - - [03/Jan/2015 21:04:35] "GET / HTTP/1.1" 200 -
+151.46.54.69 - - [03/Jan/2015 21:04:42] "GET /static/css/bootstrap.css HTTP/1.1" 200 -
+151.46.54.69 - - [03/Jan/2015 21:04:53] "GET /static/jquery.js HTTP/1.1" 200 -
+151.46.54.69 - - [03/Jan/2015 21:05:49] "GET /static/js/bootstrap.js HTTP/1.1" 200 -
+Traceback (most recent call last):
+  File "/usr/lib/python2.7/SocketServer.py", line 295, in _handle_request_noblock
+    self.process_request(request, client_address)
+  File "/usr/lib/python2.7/SocketServer.py", line 321, in process_request
+    self.finish_request(request, client_address)
+  File "/usr/lib/python2.7/SocketServer.py", line 334, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python2.7/SocketServer.py", line 651, in __init__
+    self.finish()
+  File "/usr/lib/python2.7/SocketServer.py", line 704, in finish
+    self.wfile.flush()
+  File "/usr/lib/python2.7/socket.py", line 303, in flush
+    self._sock.sendall(view[write_offset:write_offset+buffer_size])
+error: [Errno 32] Broken pipe
+62.11.84.196 - - [03/Jan/2015 21:05:51] "GET /login HTTP/1.1" 200 -
+62.11.84.196 - - [03/Jan/2015 21:05:51] "GET /login HTTP/1.1" 200 -
+151.46.54.69 - - [03/Jan/2015 21:05:52] "GET /static/js/bootstrap.js HTTP/1.1" 200 -
+151.46.54.69 - - [03/Jan/2015 21:06:03] "GET /static/doc/image/domocontrol.png HTTP/1.1" 200 -
+151.46.54.69 - - [03/Jan/2015 21:06:21] "GET /static/img/favicon.ico HTTP/1.1" 200 -
+151.46.54.69 - - [03/Jan/2015 21:07:08] "GET /login HTTP/1.1" 200 -
+151.46.54.69 - - [03/Jan/2015 21:07:53] "POST /login HTTP/1.1" 200 -
+151.46.54.69 - - [03/Jan/2015 21:08:45] "GET /setup_program HTTP/1.1" 200 -
+151.46.54.69 - - [03/Jan/2015 21:09:15] "GET /static/fonts/glyphicons-halflings-regular.ttf HTTP/1.1" 200 -
+151.46.54.69 - - [03/Jan/2015 21:10:06] "GET /logout HTTP/1.1" 302 -
+151.46.54.69 - - [03/Jan/2015 21:10:14] "GET /login HTTP/1.1" 200 -
+69.171.230.116 - - [04/Jan/2015 01:34:34] "GET /static/doc/image/domocontrol.png HTTP/1.1" 200 -

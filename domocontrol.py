@@ -23,8 +23,9 @@ class Domocontrol:
     def now(self):
         return datetime.datetime.now()
     
-    def getDict(self):
-        return self.P
+    def getDict(self,dict):
+        
+        return self.dict
         
     def setBus(self):
         self.device=[]
