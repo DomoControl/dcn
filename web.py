@@ -243,16 +243,6 @@ def setup_program():
 def message():
     return render_template("message.html")
 
-@app.route('/_add_numbers')
-def add_numbers():
-    a = request.args.get('a', 0, type=int)
-    b = request.args.get('b', 0, type=int)
-    print( a, b)
-    return jsonify(result=a + b)
-
-
-
-
 @app.route('/log')
 def log():
     q = 'SELECT * FROM log ORDER BY timestamp desc'
@@ -307,26 +297,30 @@ def setup_user():
 def home():
     setLog()
     return render_template("home.html")
+
+@app.route('/getTime') #return datetime now() to show in footer
+def getTime():
+    #~ print "Get Datetime"
+    return jsonify(result=now())  
+  
+  
     
 @app.route('/status')
 def status():   
     setLog()
     if 'logged_in' in session and session['logged_in']==True:
-        q = 'SELECT * FROM program'
-        res = db.query(q)
-        #~ d.setup()
-        #~ print d.getDict('P')
-        
-        #~ for r in res:
-            #~ print r
-            
-            #~ print d.IOStatus('read', )
-        
-    
-    
         return render_template("status.html")
     else:
         return render_template("login.html")   
+
+@app.route('/getStatus')
+def getStatus():
+    print "Get Status"
+    #~ print domocontrol.Domocontrol.Z
+    d.setup()
+    d.loop()
+    
+    return jsonify(result=d.Z)
 
 
 @app.route('/welcome')

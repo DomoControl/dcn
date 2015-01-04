@@ -1,8 +1,42 @@
 {% extends "template.html"  %}
 {% block content %}
-    <h2>{{_('Status page')}}</h2>
-    <p>To do....</p>
+<h2>{{_('Status page')}}</h2>
+
+
+<script type=text/javascript>
+    window.setInterval(function(){
+        $.getJSON('/getStatus', {   },
+        
+        function(data) {
+            P = data.result;
+            //~ alert(JSON.stringify(data.result[3]));
+            var f = '<table border=1px>';
+            for( var p in P ){
+                //~ $('#id').text(P[p]['id']);
+                f += '<tr><td>'+P[p]['IN']+'</td><td>'+P[p]['OUT']+'</td></tr>'
+                
+                
+            }
+          
+            f += '</table>';
+        
+        
+            document.getElementById('status').innerHTML = f;
+        
+        }
+        )
     
     
+  
+    }, 1000);
+
+</script>
+
+
+<div id='status'></div>
+<!--
+<span id="id"></span>
+-->
+
 {% endblock %}
  

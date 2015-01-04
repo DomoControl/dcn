@@ -15,7 +15,7 @@ def loop():
         d.loop()
         
         x +=1
-        if x > 10: #Get Database status every tot cycle
+        if x > 2: #Get Database status every tot cycle
             x = 0
             d.setup()
         
@@ -23,4 +23,5 @@ def loop():
         #~ threading.Timer(1, loop).start()
         time.sleep(1)
 
+        print d.Z
 loop() #start loop

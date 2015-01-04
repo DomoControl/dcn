@@ -659,3 +659,24 @@ error: [Errno 32] Broken pipe
 151.46.54.69 - - [03/Jan/2015 21:10:06] "GET /logout HTTP/1.1" 302 -
 151.46.54.69 - - [03/Jan/2015 21:10:14] "GET /login HTTP/1.1" 200 -
 69.171.230.116 - - [04/Jan/2015 01:34:34] "GET /static/doc/image/domocontrol.png HTTP/1.1" 200 -
+----------------------------------------
+Exception happened during processing of request from ('79.35.245.233', 55113)
+----------------------------------------
+----------------------------------------
+Exception happened during processing of request from ('79.35.245.233', 55114)
+----------------------------------------
+----------------------------------------
+Exception happened during processing of request from ('79.35.245.233', 55115)
+----------------------------------------
+----------------------------------------
+Exception happened during processing of request from ('79.35.245.233', 55116)
+----------------------------------------
+----------------------------------------
+Exception happened during processing of request from ('79.35.245.233', 55578)
+----------------------------------------
+----------------------------------------
+Exception happened during processing of request from ('151.46.54.69', 9526)
+----------------------------------------
+Unhandled exception in thread started by 
+sys.excepthook is missing
+lost sys.stderr

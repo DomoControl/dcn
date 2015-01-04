@@ -7,6 +7,7 @@ import datetime
 
 class Domocontrol:
     """Class DomoControl"""
+    Z = {}
     
     def __init__(self, p='', ss='start'): #p = program dictionary
         self.p = p
@@ -20,13 +21,12 @@ class Domocontrol:
         self.Q = {} #Copy of Program
         self.A = {} #All other db information
 
+    def setZ(self,P):
+        self.Z = P
+
     def now(self):
         return datetime.datetime.now()
-    
-    def getDict(self,dict):
-        
-        return self.dict
-        
+ 
     def setBus(self):
         self.device=[]
         for a in range(0,10):
@@ -53,10 +53,13 @@ class Domocontrol:
         bus = smbus.SMBus(self.i2c)
         #~ bus.write_byte(int(var[0]['board_address']), 0xff)
         IOvalue = bus.read_byte(int(board_address))
+        
         #~ print "Board_address:%s  IOValue:%s" %(board_address, IOvalue)
         if rw == 'read': #read bit value
             #~ print bin(value) #IO status
             bit_value = (IOvalue >> (int(io_address)-1))&1
+            #~ print "Board_address:%s, io_address:%s, Value:%s" %(board_address, io_address, bit_value)
+
             return bit_value
         
         elif rw == 'write': #set bit value
@@ -127,7 +130,10 @@ class Domocontrol:
         
     def loop(self):
         print "Loop %s" % self.now()
-        for p in self.P:        
+       
+        self.setZ(self.P)
+        for p in self.P:   
+            
             if self.P[p]['type_id'] == 4: # 4 = Manual
                 #~ print "Manual %s" %P[p]
                 in_address = self.getAddress(self.P[p]['in_id'])
@@ -135,9 +141,12 @@ class Domocontrol:
                 #~ print "get in/out addres %s" %now()
                 #~ print in_address
                 in_status = self.IOStatus('read', in_address[0]['board_address'], in_address[0]['io_address'])
+                
                 out_status = self.IOStatus('read', out_address[0]['board_address'], out_address[0]['io_address'])
-                #~ print "get in/out status %s" %now()
+                
                 #~ print "in_status:%s,  out_status:%s" %(in_status, out_status)
+                self.P[p]['IN'] = in_status
+                self.P[p]['OUT'] = out_status
                 if self.P[p]['inverted'] == 1 : #flag inverted
                     in_status = not in_status
                 
