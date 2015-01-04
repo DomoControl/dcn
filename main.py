@@ -21,7 +21,7 @@ def loop():
         
         #~ print "Stop %s" %now()
         #~ threading.Timer(1, loop).start()
-        time.sleep(1)
+        time.sleep(0.1)
 
-        print d.Z
+        #~ print d.Z
 loop() #start loop

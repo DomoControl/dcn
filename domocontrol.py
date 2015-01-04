@@ -21,6 +21,10 @@ class Domocontrol:
         self.Q = {} #Copy of Program
         self.A = {} #All other db information
 
+    def setWebStatus(self): #Set all Status informations into Z Dict
+        self.setup()
+        self.Z = self.P
+
     def setZ(self,P):
         self.Z = P
 
@@ -112,7 +116,7 @@ class Domocontrol:
         for r in res:
             self.A['board_type'].update({r['id'] : r})
         
-        print self.P
+        #~ print self.P
         
         
     def resetIO(self): #To rese all port to begin and to end program
@@ -129,7 +133,7 @@ class Domocontrol:
 
         
     def loop(self):
-        print "Loop %s" % self.now()
+        #~ print "Loop %s" % self.now()
        
         self.setZ(self.P)
         for p in self.P:   
@@ -153,7 +157,7 @@ class Domocontrol:
                 #~ print "address_board:%s  io_address:%s  in_status:%s  out_status:%s" %(out_address[0]['board_address'], out_address[0]['io_address'], in_status, out_status)
                 self.IOStatus('write', out_address[0]['board_address'], out_address[0]['io_address'], in_status)
         
-
+        #~ print self.P
 
 
 

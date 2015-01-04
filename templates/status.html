@@ -10,33 +10,40 @@
         function(data) {
             P = data.result;
             //~ alert(JSON.stringify(data.result[3]));
-            var f = '<table border=1px>';
+            var f = '<table class="table ">';
+            f += '<tr><th class="text-center">IN</th><th class="text-center">OUT</th><th class="text-center">Inverted</th><th class="text-center">ID</th><th class="text-center">Name</th><th class="text-center">Description</th></tr>'
             for( var p in P ){
                 //~ $('#id').text(P[p]['id']);
-                f += '<tr><td>'+P[p]['IN']+'</td><td>'+P[p]['OUT']+'</td></tr>'
+                
+                if( P[p]['IN'] == 1 ){var in_img = '<img src="static/img/in_on.png" height=40px>';}else{var in_img = '<img src="static/img/in_off.png" height=40px>';}
+                if( P[p]['OUT'] == 1 ){var out_img = '<img src="static/img/out_on.png" height=50px>';}else{var out_img = '<img src="static/img/out_off.png" height=50px>';}
+                f += '<tr><td title="'+1+'" class="text-center">'+in_img+'</td><td class="text-center">'+out_img+'</td>';
+                if( P[p]['inverted'] == 1 ){var inverted = '<span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>';}else{var inverted = '<span class="glyphicon glyphicon glyphicon glyphicon-remove" aria-hidden="true"></span>';}
+                f += '<td class="text-center">'+inverted+'</td>'
+                f += '<td class="text-center">'+P[p]['id']+'</td><td class="text-center">'+P[p]['name']+'</td><td class="text-center">'+P[p]['description']+'</td>';
+                
+                f += '</tr>';
                 
                 
             }
-          
             f += '</table>';
-        
+            f += '<p><input type="submit" value="IO Edit" onclick="editIO('+P[p]['id']+')" ></p>'
         
             document.getElementById('status').innerHTML = f;
         
         }
         )
     
-    
-  
     }, 1000);
 
+
+    function editIO(id){
+        window.location.href = "/setup_program";
+    }
 </script>
 
 
 <div id='status'></div>
-<!--
-<span id="id"></span>
--->
 
 {% endblock %}
  

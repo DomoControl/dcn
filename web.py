@@ -313,12 +313,21 @@ def status():
     else:
         return render_template("login.html")   
 
+A = {}
+
 @app.route('/getStatus')
-def getStatus():
-    print "Get Status"
+def getStatus(): #return array with all status informations
+    #~ print "Get Status"
     #~ print domocontrol.Domocontrol.Z
     d.setup()
     d.loop()
+    global A
+    if A == d.A:
+        print "A = d.A"
+    else:
+        print "A diverso da d.A"
+        A = d.A
+        
     
     return jsonify(result=d.Z)
 
@@ -330,7 +339,7 @@ def welcome():
 @app.route('/hello')
 def hello():
     session['ciccio'] = 'user_name'
-    print(session.get('ciccio'))
+    #~ print(session.get('ciccio'))
     return render_template("hello.html")
     
 @app.route('/logout')
