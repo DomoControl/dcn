@@ -8,20 +8,22 @@
     
     
     <div class="page-header">
-        <h1><small>ID: </small>{{board[0]['id']}}  <small>Board: </small>{{board[0]['name']}}  <small>Description: </small>{{board[0]['description']}} <small>Type: </small> {{board_type[0]['description']}}</h1>
+        <h2><small>ID: </small>{{board[0]['id']}}  <small>Board: </small>{{board[0]['name']}}  <small>Description: </small>{{board[0]['description']}} <small>Type: </small> {{board_type[0]['description']}}</h2>
     </div>
     
     <table class="table table-hover">
   
     
-        <tr><th style="width:50px;">ID</th><th style="width:50px;">Type</th><th>Name</th><th>Description</th><th>Enable</th><th>Board</th><th>Address</th><th>&nbsp;</th><th>&nbsp;</th></tr>
+        <tr><th style="width:50px;" class="text-center">ID</th><th style="width:150px;" class="text-center">Type</th>
+            <th class="text-center">Name</th><th class="text-center">Description</th>
+            <th class="text-center">Enable</th><th class="text-center">Board</th><th class="text-center">Address</th><th >&nbsp;</th><th>&nbsp;</th></tr>
         
         {% for p in data %}
             <form action="" method="post"  class="form-horizontal" role="form">    
                 <tr>
-                    <td><input type="hidden"  name='id' value="{{ p.id }}">{{ p.id }}</td>
+                    <td class="text-center"><input type="hidden"  name='id' value="{{ p.id }}">{{ p.id }}</td>
                     <td>
-                        <select name="io_type_id">
+                        <select name="io_type_id" class="form-control" style="width:100px;">
                                 {% for io in io_type %}
                                     <option value="{{io.id}}" {% if io.id == p.io_type_id %} selected {% endif %} >
                                         {{io.name}}
@@ -31,10 +33,10 @@
                     </td>
                     <td><input type="text"  name='name' value="{{ p.name }}"></td>
                     <td><input width="100px" type="text"  name='description' value="{{ p.description }}"></td>
-                    <td><input type="checkbox"  name='enable' {% if p.enable == 1 %} checked {% endif %}></td>
+                    <td class="text-center"><input type="checkbox"  name='enable' {% if p.enable == 1 %} checked {% endif %}></td>
                     
                     <td>
-                        <select name="board_id">
+                        <select name="board_id" class="form-control" style="width:100px;">
                                 {% for all in all_board %}
                                     <option value="{{all.id}}" {% if all.id == p.board_id %} selected {% endif %} >
                                         {{all.name}}
@@ -43,7 +45,7 @@
                         </select>
                     </td>
                     
-                    <td><input width="50px" type="number" min="0" max="64" name='address' value="{{ p.address }}"></td>
+                    <td class="text-center"><input width="50px" type="number" min="0" max="64" name='address' value="{{ p.address }}" style="width:60px;"></td>
                     
                     <td><input class="btn btn-default" type="submit" name="submit" value="Save"></td>
                     <td><input class="btn btn-default" type="submit" name="submit" value="Delete"></td>
@@ -56,7 +58,7 @@
             <tr>
                 <td>-</td>
                 <td>
-                    <select name="io_type_id">
+                    <select name="io_type_id" class="form-control">
                             {% for io in io_type %}
                                 <option value="{{io.id}}">
                                     {{io.name}}
@@ -69,7 +71,7 @@
                 <td><input type="checkbox"  name='enable' ></td>
                 
                 <td>
-                    <select name="board_id">
+                    <select name="board_id" class="form-control">
                             {% for all in all_board %}
                                 <option value="{{all.id}}">
                                     {{all.name}}
@@ -78,7 +80,7 @@
                     </select>
                 </td>
                 
-                <td><input width="50px" type="number" min="0" max="64" name='address' value=""></td>
+                <td class="text-center"><input width="50px" type="number" min="0" max="64" name='address' value="0"  style="width:60px;"></td>
                 
                 <td colspan=2><input class="btn btn-default" type="submit" name="submit" value="Add IO"></td>
             </tr>

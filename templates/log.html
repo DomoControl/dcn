@@ -1,10 +1,53 @@
 {% extends "template.html"  %}
 {% block content %}
     <h2>{{_('User Log')}}</h2>
-    <table class="table table-condensed" ><tr><th>{{_('IP number')}}</th><th>URL</th><th>{{_('Timestamp')}}</th></tr>
-    {% for r in res %}
-        <tr><td>{{ r.ip }}</td><td>{{ r.command }}</td><td>{{ r.timestamp }}</td></tr>
-    {% endfor %}
-    </table>
+    
+    
+    
+    
+    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingOne">
+                
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                        <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
+                        Group by IP - Unique IP number: {{ res1|length }}
+                    </a>
+                </h4>
+            </div>
+            <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+                <div class="panel-body">
+                    <table class="table table-condensed" ><tr><th>Count</th><th>{{_('IP number')}}</th></tr>
+                        {% for r in res1 %}
+                            <tr><td>{{ r.count }}</td><td>{{ r.ip }}</td></tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+        <div class="panel panel-default">
+            <div class="panel-heading" role="tab" id="headingTwo">
+                <h4 class="panel-title">
+                    <a data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                        <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
+                        Last IP connection - Total connection: {{ res|length }}
+                    </a>
+                </h4>
+            </div>
+            <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                <div class="panel-body">
+                    <table class="table table-condensed" ><tr><th>{{_('IP number')}}</th><th>URL</th><th>{{_('Timestamp')}}</th></tr>
+                        {% for r in res %}
+                            <tr><td>{{ r.ip }}</td><td>{{ r.command }}</td><td>{{ r.timestamp }}</td></tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
     
 {% endblock %}

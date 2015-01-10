@@ -7,7 +7,7 @@
     <table class="table table-hover">
   
     
-        <tr><th style="width:50px;">ID</th><th style="width:50px;">{{_('Name')}}</th><th>{{_('Description')}}</th><th>{{_('Enable')}}</th><th>{{_('Address')}}</th><th>{{_('Board Type')}}</th><th>&nbsp;</th><th>&nbsp;</th></tr>
+        <tr><th style="width:50px;">ID</th><th style="width:50px;">{{_('Name')}}</th><th>{{_('Description')}}</th><th>{{_('Enable')}}</th><th>{{_('Address')}}</th><th colspan=2>{{_('Board Type')}}</th><th>&nbsp;</th></tr>
         
         {% for p in data %}
             <form action="" method="post"  class="form-horizontal" role="form">    
@@ -18,9 +18,9 @@
                     <td><input type="checkbox"  name='enable' {% if p.enable == 1 %} checked {% endif %}></td>
                     <td><input width="50px" type="number" min="0" max="64" name='address' value="{{ p.address }}"></td>
                     <td>
-                        <select name="board_type">
+                        <select name="board_type"   class="form-control">
                             {% for b in board_type %}
-                                <option value="{{b.id}}" {% if b.id == p.board_type %} selected {% endif %} >
+                                <option value="{{b.id}}" {% if b.id == p.board_type_id %} selected {% endif %} >
                                     {{b.name}} - {{b.description}}
                                 </option>
                             {% endfor %}

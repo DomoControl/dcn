@@ -14,7 +14,7 @@
                         <h4 class="panel-title">
                             <a data-toggle="collapse" class="collapsed center-block text-center" data-parent="#accordion" href="#collapse{{p['id']}}" aria-expanded="false" aria-controls="collapseOne">
                                 
-                                <span class="glyphicon glyphicon-arrow-down" aria-hidden="true"></span>
+                                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                                 <span class="text-center" style="margin-left:20px;">{{_('Program number:')}}&nbsp;</span><label class="form-control-static">{{p['id']}}</label>
                                 <span style="margin-left:20px;">{{_('Name')}}:&nbsp;</span><label class="form-control-static">{{p['name']}}</label>
                                 <span style="margin-left:20px;">{{_('Description')}}:&nbsp;</span><label class="form-control-static">{{p['description']}}</label>
@@ -23,6 +23,14 @@
                                         {% if type.id == p.type_id %}{{type.name}} {% endif %}
                                     {% endfor %}
                                 </label>
+                                <span style="margin-left:20px;">{{_('Enable')}}:&nbsp;</span>
+                                {% if p.enable == 1 %} 
+                                    <span class="glyphicon glyphicon-ok" aria-hidden="true"></span> 
+                                {% else %}
+                                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> 
+                                {% endif %}
+                                
+                                
                             </a>
                         </h4>
                     </div>
@@ -51,14 +59,14 @@
                                     {% for in in board_io %}
                                         {% if in.io_type_id == 0 or in.io_type_id == 1 %} <!-- Mostra solo gli ingressi -->
                                             <option value="{{in.id}}" {% if in.id == p.in_id %} selected {% endif %} >
-                                                {{in.name}}
+                                                {{in.name}} - {{in.description}}
                                             </option>
                                         {% endif %}
                                     {% endfor %}
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="delay">{{_('Delay')}}':</label>
+                                <label for="delay">{{_('Delay')}}:</label>
                                 <input type="number" name='delay' min=0 value="{{ p.delay }}">
                             </div>
                             <div class="form-group">
@@ -69,9 +77,9 @@
                                 <label for="in"> OUT:</label>
                                 <select name="out_id"  class="form-control">
                                     {% for out in board_io %}
-                                        {% if out.io_type_id == 2 %} <!-- Mostra solo le uscite -->
+                                        {% if out.io_type_id == 2 or out.io_type_id == 3 %} <!-- Mostra solo le uscite -->
                                             <option value="{{out.id}}" {% if out.id == p.out_id %} selected {% endif %} >
-                                                {{out.name}}
+                                                {{out.name}} - {{out.description}}
                                             </option>
                                         {% endif %}    
                                     {% endfor %}
@@ -82,9 +90,9 @@
                                 <input type="checkbox"  name='enable' value='0' {% if p.enable == 1 %} checked {% endif %} >
                             </div>
                             <div class="form-group">
-                                <input class="btn btn-default" type="submit" name="btn" value="Save">
-                                <input class="btn btn-default" type="submit" name="btn" value="Delete">
-                                <input class="btn btn-default" type="submit" name="btn" value="New">
+                                <input class="btn btn-success" type="submit" name="btn" value="Save">
+                                <input class="btn btn-danger" type="submit" name="btn" value="Delete">
+                                <input class="btn btn-info" type="submit" name="btn" value="Copy">
                             </div>
                             
                             <div class="collapse in" id="timer" style="border:1px dotted gray; margin:20px; padding:20px;">
@@ -94,11 +102,12 @@
                                         <td></td><td>{{_('Days')}}</td><td>{{_('Hours')}}</td><td>{{_('Minutes')}}</td><td>{{_('Seconds')}}</td>
                                     </tr>
                                     <tr>
+                                        
                                         <td>Timer setting: </td>
-                                        <td><input width=1 type="number"   name='timer0' value="{{ timer[0] }}"></td>
-                                        <td><input type="number"   name='timer1' value="{{ timer[1] }}"></td>
-                                        <td><input type="number"   name='timer2' value="{{ timer[2] }}"></td>
-                                        <td><input type="number"   name='timer3' value="{{ timer[3] }}"></td>
+                                        <td><input width=1 type="number"   name='timer0' value="{{ p.timer.split('-')[0] }}"></td>
+                                        <td><input type="number"   name='timer1' value="{{ p.timer.split('-')[1] }}"></td>
+                                        <td><input type="number"   name='timer2' value="{{ p.timer.split('-')[2] }}"></td>
+                                        <td><input type="number"   name='timer3' value="{{ p.timer.split('-')[3] }}"></td>
                                     </tr>
                                 </table>
                             </div>
@@ -115,7 +124,7 @@
                                         <tr>
                                             <td>From:</td>
                                             <td>
-                                                <select name='chrono{{"%s0" %x}}'>
+                                                <select name='chrono{{"%s0" %x}}'  class="form-control">
                                                     <option value="0"  {% if c[0] == '0' %} selected {% endif %} >{{_('Each day')}}</option>
                                                     <option value="1"  {% if c[0] == '1' %} selected {% endif %} >{{_('Monday')}}</option>
                                                     <option value="2"  {% if c[0] == '2' %} selected {% endif %} >{{_('Tuesday')}}</option>
@@ -132,7 +141,7 @@
                                             <td><input type="number" style="width:80px;"   name='chrono{{"%s3" %x}}' value="{{ c[3] }}"></td>
                                             <td style="width:120px; text-align:right;">  To:</td>
                                             <td>
-                                                <select name='chrono{{"%s4" %x}}'>
+                                                <select name='chrono{{"%s4" %x}}'  class="form-control">
                                                     <option value="0"  {% if c[4] == '0' %} selected {% endif %} >{{_('Each day')}}</option>
                                                     <option value="1"  {% if c[4] == '1' %} selected {% endif %} >{{_('Monday')}}</option>
                                                     <option value="2"  {% if c[4] == '2' %} selected {% endif %} >{{_('Tuesday')}}</option>
@@ -146,7 +155,7 @@
                                             <td><input type="number" style="width:80px;"   name='chrono{{"%s5" %x}}' value="{{ c[5] }}"></td>
                                             <td><input type="number" style="width:80px;"   name='chrono{{"%s6" %x}}' value="{{ c[6] }}"></td>
                                             <td><input type="number" style="width:80px;"   name='chrono{{"%s7" %x}}' value="{{ c[7] }}"></td>
-                                            <td><input type="submit" name='delete_chrono{{x}}' value='Delete' ></td>
+                                            <td><input type="submit" class="btn btn-danger" name='delete_chrono{{x}}' value='Delete' ></td>
                                         </tr>
                                         
                                         {% set x = x+1 %} 
@@ -158,7 +167,7 @@
                                             <td>From:</td>
                                             
                                             <td>
-                                                <select name='chronon1'>
+                                                <select name='chronon1'  class="form-control">
                                                     <option value="0">{{_('Each day')}}</option>
                                                     <option value="1">{{_('Monday')}}</option>
                                                     <option value="2">{{_('Tuesday')}}</option>
@@ -174,7 +183,7 @@
                                             <td><input type="number" style="width:80px;"   name='chronon4' value=""></td>
                                             <td style="width:120px; text-align:right;">  To:</td>
                                             <td>
-                                                <select name='chronon5'>
+                                                <select name='chronon5'  class="form-control">
                                                     <option value="0">{{_('Each day')}}</option>
                                                     <option value="1">{{_('Monday')}}</option>
                                                     <option value="2">{{_('Tuesday')}}</option>
