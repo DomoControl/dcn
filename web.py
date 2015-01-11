@@ -200,23 +200,24 @@ def setup_program():
         timer = timer[:-1]
         inverted = '1' if 'inverted' in f else '0'
         enable = '1' if 'enable' in f else '0'
-        print timer
+        #~ print timer
         if request.form.to_dict()['btn'] == 'Save':
-            q = 'UPDATE program SET in_id="%s", delay="%s", inverted="%s", out_id="%s", type_id="%s", name="%s",\
-            description="%s", enable="%s", timer="%s", chrono="%s" WHERE id="%s" '\
-            % (f['in_id'], f['delay'], inverted, f['out_id'], f['type_id'], f['name'], f['description'], enable, timer, chrono, f['id'])
+            q = 'UPDATE program SET in_id="%s", inverted="%s", out_id="%s", type_id="%s", name="%s",'\
+            'description="%s", enable="%s", timer="%s", chrono="%s" WHERE id="%s" '\
+             % (f['in_id'], inverted, f['out_id'], f['type_id'], f['name'], f['description'], enable, timer, chrono, f['id'])
         elif request.form.to_dict()['btn'] == 'Copy':
-            q = 'INSERT INTO program (in_id, delay, inverted, out_id, type_id, name, description, enable, timer, chrono) VALUES( \
-            "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s" )'\
-            % (f['in_id'], f['delay'], inverted, f['out_id'], f['type_id'], f['name'], f['description'], enable, timer, chrono)
+            q = 'INSERT INTO program (in_id, inverted, out_id, type_id, name, description, enable, timer, chrono)'\
+            'VALUES( "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")' % (f['in_id'], inverted, f['out_id'], f['type_id'], f['name'], f['description'], enable, timer, chrono)
+        #~ print q
         db.query(q)
         d.setup()
+        d.loop()
 
     elif request.method == "POST" and 'btn' in request.form.to_dict() and request.form.to_dict()['btn'] == 'Delete':
         print('Delete Program Form')
         f = request.form.to_dict()
         q = 'DELETE FROM program WHERE id="%s" ' % f['id']
-        print(q)
+        #~ print(q)
         db.query(q)
         d.setup()
 
@@ -240,11 +241,14 @@ def setup_program():
     cr = []  # chrono list
     for c in chrono:
         cr.append(c.split('-'))
-    q = 'SELECT * FROM board_io'
-    board_io = db.query(q)
+    q = 'SELECT * FROM board_io WHERE io_type_id = 0 OR io_type_id = 1 AND enable = 1'
+    board_io_in = db.query(q)
+    q = 'SELECT * FROM board_io WHERE io_type_id = 2 OR io_type_id = 3 AND enable = 1'
+    board_io_out = db.query(q)
+    print board_io_out
     q = 'SELECT * FROM program_type'
     program_type = db.query(q)
-    return render_template("setup_program.html", data=res, board_io=board_io, program_type=program_type, timer=timer, chrono=cr)
+    return render_template("setup_program.html", data=res, board_io_in=board_io_in, board_io_out=board_io_out, program_type=program_type, timer=timer, chrono=cr)
 
 
 @app.route('/message')
@@ -340,6 +344,7 @@ def setIN():
     mode = request.args.get('mode')  # to set IN = mode
     print "Set Button", pid, mode
     d.setIN(pid, mode)
+    d.loop()
     return jsonify(result=123)
 
 
@@ -380,6 +385,10 @@ def login():
             error = "invalid password or username. Please retry"
     return render_template("login.html", error=error)
 
+#~ @app.errorhandler(500)
+#~ def internal_error(error):
+    #~ return render_template("home.html")
+
 
 def setup():
     d.setup()
@@ -387,7 +396,9 @@ def setup():
 
 def loop():
     d.loop()
-    threading.Timer(1, loop).start()
+    threading.Timer(0.5, loop).start()
+
+
 
 
 if __name__ == '__main__':

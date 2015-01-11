@@ -6,7 +6,7 @@
         <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css' ) }}" >
         <script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"></script>
         <script type=text/javascript src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
-            
+
         <script type=text/javascript> //Get Time
             window.setInterval(function(){
                 $.getJSON('/getTime', {
@@ -15,11 +15,11 @@
                     }
                 )}, 60000);
         </script>
-    
-    
+
+
     </head>
-    
-    <body height="100%">
+
+    <body style="font-size:16px; height:100%;">
         <header>
             <nav class="navbar navbar-default navbar-static-top" role="navigation">
                 <ul class="nav nav-pills center">
@@ -28,7 +28,7 @@
                     <li class="dropdown">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Setup<span class="caret"></span></a>
                         <ul class="dropdown-menu">
-                            
+
                             {% if session['logged_in']==True %}
                             <li><a href="/setup_program">{{_('Program Setup')}}</a></li>
                             <li class="divider"></li>
@@ -48,11 +48,11 @@
                             {% endif %}
                         </ul>
                     </li>
-                    
+
                     {% if not session.logged_in %}
                         <li><a href="/login">{{_('Login')}}</a></li>
                     {% else %}
-                        <li><a href="{{ url_for('logout') }}">{{_('Logout')}} {{ session.user_name }}</a></li> 
+                        <li><a href="{{ url_for('logout') }}">{{_('Logout')}} {{ session.user_name }}</a></li>
                     {% endif %}
                     <li><a href="/log">Log</a></li>
                     <li><a href="/doc">Doc</a></li>
@@ -61,27 +61,27 @@
 -->
                 </ul>
             </nav>
-            
+
         </header>
-        
+
         <div class="container">
             {% block content %}
-            
+
             {% endblock %}
         </div>
-        
+
         <footer style="margin-top:100px;">
-            <nav class="navbar navbar-default navbar-fixed-bottom" role="navigation">                
+            <nav class="navbar navbar-default navbar-fixed-bottom" role="navigation">
                 <div class="col-md-3">
                     {% if session.logged_in %}
                         <span>{{_('Welcome')}} {{ session.user_name }}</span>
                     {% endif %}
                 </div>
-                <div id="time" class="col-md-3"></div>
+                <div id="time" class="col-md-2"></div>
             </nav>
-        </footer>  
-        
+        </footer>
+
     </body>
-    
-    
-</html> 
+
+
+</html>

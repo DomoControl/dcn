@@ -84,6 +84,7 @@ class Domocontrol:
         self.A['program_type'] = {}
         for r in res:
             self.A['program_type'].update({r['id']: r})
+        return
 
     def resetIO(self):  # To rese all port to begin and to end program
         q = 'SELECT io.board_id, io.address as io_address, io.io_type_id, b.board_type_id, b.address as board_address FROM board_io io, board b WHERE io.board_id=b.id'
@@ -120,7 +121,7 @@ class Domocontrol:
             return self.P[data['program_id']]['IN']
 
     def setIO(self, data, value):  # Set I/O status
-        print data, value
+        #~ print data, value
         if int(data['board_type_id']) == 1:  # I2C board
             bus = smbus.SMBus(self.i2c)
             IOvalue = bus.read_byte(int(data['board_address']))
@@ -152,22 +153,19 @@ class Domocontrol:
 
     def loop(self):
         for p in self.P:  # p = id of self.P
-            print self.P
+            #~ print self.P
             if self.P[p]['type_id'] == 4:  # 4 = Manual
                 in_address = self.getAddress('in_id', p)
                 out_address = self.getAddress('out_id', p)
                 in_status = self.IOStatus(in_address)
                 self.P[p]['IN'] = in_status
-                in_stat = 0 if int(self.P[p]['inverted']) == int(in_status) else 1  # Status inverted is flag inverted = 1
-                # print 'write', out_address, in_stat
+                in_stat = 0 if int(self.P[p]['inverted']) == int(self.P[p]['IN']) else 1  # Status inverted is flag inverted = 1
                 self.setIO(out_address, in_stat)
-                # self.IOStatus('write', out_address, in_stat)
 
             elif self.P[p]['type_id'] == 1:  # 1 = Timer (luci scale)
                 in_address = self.getAddress('in_id', p)
                 out_address = self.getAddress('out_id', p)
                 in_status = self.IOStatus(in_address)
-                # print "==>>> TIMER", self.P[p]['TIMER'], int(in_status), int(self.P[p]['IN']),  int(self.P[p]['inverted'])
                 self.P[p]['IN'] = in_status
 
                 if int(in_status) == 1:
@@ -190,7 +188,6 @@ class Domocontrol:
                 in_address = self.getAddress('in_id', p)
                 out_address = self.getAddress('out_id', p)
                 in_status = self.IOStatus(in_address)
-                # print "==>>> TIMER", self.P[p]['TIMER'], int(in_status), int(self.P[p]['IN']),  int(self.P[p]['inverted'])
                 self.P[p]['IN'] = in_status
 
                 if int(self.P[p]['IN']) == 1:
@@ -208,3 +205,43 @@ class Domocontrol:
                     if 'TIMER' in self.P[p]:
                         del self.P[p]['TIMER']
                     self.setIO(out_address, int(self.P[p]['inverted']))
+
+
+            elif self.P[p]['type_id'] == 3:  # 3 = Automatic
+                in_address = self.getAddress('in_id', p)
+                out_address = self.getAddress('out_id', p)
+                in_status = self.IOStatus(in_address)
+                self.P[p]['IN'] = in_status
+
+                date = self.now().strftime('%Y-%m-%d')
+                chrono = self.P[p]['chrono'].split(';')
+                chronoOpen = 0
+                for ch in chrono:
+                    c = ch.split('-')
+                    fd = c.pop(0)
+                    fh = c.pop(0)
+                    fm = c.pop(0)
+                    fs = c.pop(0)
+
+                    td = c.pop(0)
+                    th = c.pop(0)
+                    tm = c.pop(0)
+                    ts = c.pop(0)
+
+                    tfrom = '%s %s:%s:%s' %(date, fh, fm, fs)
+                    tto = '%s %s:%s:%s' %(date, th, tm, ts)
+
+                    FMT = '%Y-%m-%d %H:%M:%S'
+
+                    timefrom = datetime.datetime.strptime(tfrom, FMT)
+                    timeto = datetime.datetime.strptime(tto, FMT)
+
+                    daynow = self.now().weekday() #Day of week
+
+                    if (int(fd) == 7 and int(td) == 7 and self.now() > timefrom and self.now() < timeto) or (int(daynow) >= int(fd) and int(daynow) <= int(td) and self.now() > timefrom and self.now() < timeto):
+                        chronoOpen = 1
+
+                in_stat = 0 if int(self.P[p]['inverted']) == chronoOpen else 1  # Status inverted is flag inverted = 1
+                self.setIO(out_address, in_stat)
+
+
