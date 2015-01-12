@@ -395,7 +395,10 @@ def setup():
 
 
 def loop():
-    d.loop()
+    try:
+        d.loop()
+    except:
+        pass
     threading.Timer(0.5, loop).start()
 
 
