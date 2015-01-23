@@ -10,6 +10,7 @@ class Domocontrol:
 
     def __init__(self):  # p = program dictionary
         self.i2c = 0  # (dev/i2c_x) Default is 0 but setBus check for right value
+        print 'Device i2c: %s' %self.i2c
         self.db = Database()
         self.mapping = {0: 0, 1: 1, 2: 2, 3: 4, 4: 8, 5: 16, 6: 32, 7: 64, 8: 128}
         self.setBus()

@@ -391,6 +391,8 @@ def login():
 
 
 def setup():
+    print 'Setup Domocontrol.py'
+    d.setBus()
     d.setup()
 
 
@@ -398,7 +400,7 @@ def loop():
     try:
         d.loop()
     except:
-        pass
+        print 'Error Domocontrol.py'
     threading.Timer(0.5, loop).start()
 
 
