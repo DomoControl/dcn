@@ -15,51 +15,56 @@
                     }
                 )}, 60000);
         </script>
-
+<script>
+  $(document).ready(function () {
+  $("#{{request.endpoint}}").addClass("active"); })
+</script>
 
     </head>
 
     <body style="font-size:16px; height:100%;">
         <header>
-            <nav class="navbar navbar-default navbar-static-top" role="navigation">
-                <ul class="nav nav-pills center">
-                    <li class="active"><a href="/home">Home</a></li>
-                    <li><a href="/status">{{_('Status')}}</a></li>
-                    <li class="dropdown">
-                        <a class="dropdown-toggle" data-toggle="dropdown" href="#">Setup<span class="caret"></span></a>
-                        <ul class="dropdown-menu">
+            <nav id="navbar-example" class="nav bar navbar-default navbar-static">
+                <div class="collapse navbar-collapse bs-example-js-navbar-collapse">
+                    <ul class="nav nav-pills" role="tablist">
+                        <li id="home"><a href="{{ url_for('home')}}">Home</a></li>
+                        <li id="menu_status"><a href="{{ url_for('menu_status')}}">{{_('Status')}}</a></li>
+                        <li id="#" class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Setup<span class="caret"></span></a>
+                            <ul class="dropdown-menu">
 
-                            {% if session['logged_in']==True %}
-                            <li><a href="/setup_program">{{_('Program Setup')}}</a></li>
-                            <li class="divider"></li>
-                            <li><a href="/setup_user">{{_('User')}}</a></li>
-                            <li class="divider"></li>
-                            <li><a href="/setup_area">Area</a></li>
-                            <li><a href="/setup_privilege">{{_('Privilege')}}</a></li>
-<!--
-                            <li><a href="/setup_translation">Translation</a></li>
--->
-                            <li><a href="/setup_board_type">{{_('Board Type')}}</a></li>
-                            <li><a href="/setup_board">Board Setup</a></li>
-                            <li><a href="/setup_io_type">{{_('I/O Type')}}</a></li>
-                            <li><a href="/setup_program_type">{{_('Program Type')}}'</a></li>
-                            {% else %}
-                            <li>{{_('Please Login')}}</li>
-                            {% endif %}
-                        </ul>
-                    </li>
+                                {% if session['logged_in']==True %}
+                                <li id="setup_program"><a href="/setup_program">{{_('Program Setup')}}</a></li>
+                                <li class="divider"></li>
+                                <li id="setup_user"><a href="/setup_user">{{_('User')}}</a></li>
+                                <li class="divider"></li>
+                                <li id="setup_area"><a href="/setup_area">Area</a></li>
+                                <li id="setup_privilege"><a href="/setup_privilege">{{_('Privilege')}}</a></li>
+    <!--
+                                <li><a href="/setup_translation">Translation</a></li>
+    -->
+                                <li id="setup_board_type"><a href="/setup_board_type">{{_('Board Type')}}</a></li>
+                                <li id="setup_board"><a href="/setup_board">Board Setup</a></li>
+                                <li id="setup_io_type"><a href="/setup_io_type">{{_('I/O Type')}}</a></li>
+                                <li id="setup_program_type"><a href="/setup_program_type">{{_('Program Type')}}'</a></li>
+                                {% else %}
+                                <li>{{_('Please Login')}}</li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                        <li id="log"><a href="{{ url_for('log')}}">Log</a></li>
+                        <li id="doc"><a href="{{ url_for('doc')}}">Doc</a></li>
+    <!--
+                        <li><a href="/message">Messages</a></li>
+    -->
 
-                    {% if not session.logged_in %}
-                        <li><a href="/login">{{_('Login')}}</a></li>
-                    {% else %}
-                        <li><a href="{{ url_for('logout') }}">{{_('Logout')}} {{ session.user_name }}</a></li>
-                    {% endif %}
-                    <li><a href="/log">Log</a></li>
-                    <li><a href="/doc">Doc</a></li>
-<!--
-                    <li><a href="/message">Messages</a></li>
--->
-                </ul>
+                        {% if not session.logged_in %}
+                            <li id="login"><a href="{{ url_for('login')}}">{{_('Login')}}</a></li>
+                        {% else %}
+                            <li id="logout"><a href="{{ url_for('logout') }}">{{_('Logout')}} {{ session.user_name }}</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
             </nav>
 
         </header>

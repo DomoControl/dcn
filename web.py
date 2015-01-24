@@ -320,11 +320,11 @@ def getTime():
     return jsonify(result=now().strftime("%a %d %b  %H:%M:%S"))
 
 
-@app.route('/status')
-def status():
+@app.route('/menu_status')
+def menu_status():
     setLog()
     if 'logged_in' in session and session['logged_in'] == True:
-        return render_template("status.html")
+        return render_template("menu_status.html")
     else:
         return render_template("login.html")
 
