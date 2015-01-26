@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from flask import *
+from flask import Flask, request, render_template, g, session, jsonify
 from db import Database
 import sys
 import datetime
@@ -326,7 +326,7 @@ def menu_status():
     if 'logged_in' in session and session['logged_in'] == True:
         return render_template("menu_status.html")
     else:
-        return render_template("login.html")
+        return redirect(url_for('login'))
 
 
 @app.route('/getStatus')
@@ -391,8 +391,6 @@ def login():
 
 
 def setup():
-    print 'Setup Domocontrol.py'
-    d.setBus()
     d.setup()
 
 

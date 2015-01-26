@@ -34,21 +34,21 @@
                             <ul class="dropdown-menu">
 
                                 {% if session['logged_in']==True %}
-                                <li id="setup_program"><a href="/setup_program">{{_('Program Setup')}}</a></li>
-                                <li class="divider"></li>
-                                <li id="setup_user"><a href="/setup_user">{{_('User')}}</a></li>
-                                <li class="divider"></li>
-                                <li id="setup_area"><a href="/setup_area">Area</a></li>
-                                <li id="setup_privilege"><a href="/setup_privilege">{{_('Privilege')}}</a></li>
-    <!--
-                                <li><a href="/setup_translation">Translation</a></li>
-    -->
-                                <li id="setup_board_type"><a href="/setup_board_type">{{_('Board Type')}}</a></li>
-                                <li id="setup_board"><a href="/setup_board">Board Setup</a></li>
-                                <li id="setup_io_type"><a href="/setup_io_type">{{_('I/O Type')}}</a></li>
-                                <li id="setup_program_type"><a href="/setup_program_type">{{_('Program Type')}}'</a></li>
+                                    <li id="setup_program"><a href="/setup_program">{{_('Program Setup')}}</a></li>
+                                    <li class="divider"></li>
+                                    <li id="setup_user"><a href="/setup_user">{{_('User')}}</a></li>
+                                    <li class="divider"></li>
+                                    <li id="setup_area"><a href="/setup_area">Area</a></li>
+                                    <li id="setup_privilege"><a href="/setup_privilege">{{_('Privilege')}}</a></li>
+        <!--
+                                    <li><a href="/setup_translation">Translation</a></li>
+        -->
+                                    <li id="setup_board_type"><a href="/setup_board_type">{{_('Board Type')}}</a></li>
+                                    <li id="setup_board"><a href="/setup_board">Board Setup</a></li>
+                                    <li id="setup_io_type"><a href="/setup_io_type">{{_('I/O Type')}}</a></li>
+                                    <li id="setup_program_type"><a href="/setup_program_type">{{_('Program Type')}}'</a></li>
                                 {% else %}
-                                <li>{{_('Please Login')}}</li>
+                                    <li>{{_('Please Login')}}</li>
                                 {% endif %}
                             </ul>
                         </li>

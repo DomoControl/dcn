@@ -2,73 +2,17 @@
 
 {% block content %}
 
-<h2>{{_('Domocontrol documentation')}}</h2>
-
-<h3>{{_('Installation')}}</h3>
-{{_('Domocontrol Version TWO require')}}:<br />
+<h2>{{_('Domocontrol documentation')}} V.2</h2>
 <small>{{_('first version demo is available at http://my-tek.no-ip.org:8080 and on github at address: https://github.com/DomoControl/domocontrol')}}</small><br /><br />
 
-<ul>
-  <li>{{_('Raspberry PI board')}}</li>
-  <li>{{_('One or more board interface with more inputs and outputs to control home devices')}}</li>
-  <li>{{_('python language')}}</li>
-  <li>{{_('Flask Framework with plugins')}}</li>
-  <li>{{_('Sqlite3 to store informations')}}</li>
-  <li>{{_('In second stage, more slave board  I/O with Arduino connected with Raspberry by RS485')}}</li>
-</ul>
-
-<h3>{{_('Main Menu')}}</h3>
-<ul>
-  <li>{{_('Home: project presentation')}}</li>
-  <li>{{_('Status: shows the status of the I/O')}}</li>
-  <li>{{_('Setup')}}</li>
-  <li>{{_('Login / Logout')}}</li>
-  <li>{{_('Log: user access')}}</li>
-  <li>{{_('Doc: software installation and user manual')}}</li>
-</ul>
-
-<h3>{{_('Submenu Setup')}}</h3>
-<ul>
-  <li>{{_('Program Setup: Configuration program, which inputs activate the outputs activated and in which modes')}}</li>
-  <li>{{_('User: User configuration')}}</li>
-  <li>{{_('Area: define in what locations are positioned the I/O')}}</li>
-  <li>{{_('Privilege: defines the types of user privileges')}}</li>
-  <li>{{_('Board Type: defines the types of boards')}}</li>
-  <li>{{_('Board Setup: set the property of boards')}}</li>
-  <li>{{_('I/O Type: set the description of input and output types')}}</li>
-  <li>{{_('Program Type: set the description of modality of the program')}}</li>
-</ul>
-
-<!--
-
-<h1>jQuery Example</h1>
-<p><input type=text size=5 name=a> +
-   <input type=text size=5 name=b> =
-   <span id=result>?</span>
-<p><a href=# id=calculate>calculate server side</a>
-        
+<h3>{{_('Installation')}}</h3>
+To install, please see <a target="_blank" href="https://github.com/DomoControl/dcn/wiki">the wiki documentation</a>
 
 
-    <h2>Documentation</h2>
 
-   <script type=text/javascript>
-  
-  $(function() {
-    $('a#calculate').bind('click', function() {
-      $.getJSON('/_add_numbers', {
-        a: $('input[name="a"]').val(),
-        b: $('input[name="b"]').val()
-      }, function(data) {
-        $("#result").text(data.result);
-      });
-      return false;
-    });
-  });
-</script>
--->
 
 
 {% endblock %}
- 
+
 
 
