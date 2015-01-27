@@ -1,5 +1,6 @@
 #!/usr/bin/python
 from flask import Flask, request, render_template, g, session, jsonify, redirect, url_for
+from flask.ext.bootstrap import Bootstrap
 from db import Database
 import sys
 import datetime
@@ -7,6 +8,16 @@ import threading
 import domocontrol
 from flask.ext.babel import Babel
 from config import LANGUAGES
+from flask.ext.wtf import Form
+from wtforms import StringField, SubmitField, TextAreaField, PasswordField, HiddenField, DateField, DecimalField, RadioField
+from wtforms.validators import Required, Email
+
+
+class FormLogin(Form):
+    username = StringField('Please insert your username', validators=[Required()])
+    password = PasswordField('Please insert your password', validators=[Required()])
+    submit = SubmitField('Submit')
+
 
 print "Begin"
 
@@ -14,6 +25,7 @@ app = Flask(__name__)
 app.config.from_pyfile('config.py')
 app.config.from_object('config')
 babel = Babel(app)
+bootstrap = Bootstrap(app)
 DATABASE = '/home/pi/dcn/db/db.sqlite'
 db = Database(dbname=DATABASE)  # metodi per database
 d = domocontrol.Domocontrol()
@@ -35,7 +47,7 @@ def get_locale():
 
 
 def now():
-    return datetime.datetime.now()
+    return datetime.datetime.utcnow()
 
 
 def setLog():  # Da finire. Serve per tracciare l'IP
@@ -363,31 +375,39 @@ def hello():
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
-    flash('You are logged out')
+    #~ flash('You are logged out')
     return redirect(url_for('login'))
-
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     setLog()
-    error = None
-    if request.method == "POST":
+    error=''
+    form = FormLogin()
+    if form.validate_on_submit():
         q = 'SELECT * FROM user WHERE username = "%s" AND password = "%s"' \
-            % (request.form["username"], request.form["password"])
+            % (form.username.data, form.password.data)
         res = db.query(q)
         if res and len(res[0]) > 0:
             session['logged_in'] = True
             session['user_name'] = res[0]['name']
             session['user_id'] = res[0]['id']
             return render_template("hello.html", error=error)
-        else:
-            session['logged_in'] = None
-            error = "invalid password or username. Please retry"
-    return render_template("login.html", error=error)
+    else:
+        session['logged_in'] = None
+        error = "invalid password or username. Please retry"
+    return render_template("login.html", error=error, form=form)
 
-#~ @app.errorhandler(500)
-#~ def internal_error(error):
-    #~ return render_template("home.html")
+
+@app.errorhandler(404)
+def page_not_found(e):
+    print "Error %s" %e
+    return render_template( 'error_page.html', error=e), 404
+
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    print "Error %s" %e
+    return render_template('error_page.html', error=e ), 500
 
 
 def setup():
@@ -402,9 +422,10 @@ def loop():
     threading.Timer(0.5, loop).start()
 
 
-
-
 if __name__ == '__main__':
     setup()
     loop()
-    app.run(host="0.0.0.0", port=int("5000"), debug=True)
+    try:
+        app.run(host="0.0.0.0", port=int("5000"), debug=False)
+    except InvalidCommand as err:
+        print("*** Error: %s" %err)

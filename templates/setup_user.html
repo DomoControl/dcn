@@ -1,10 +1,13 @@
 {% extends "template.html" %}
+
+{% import "bootstrap/wtf.html" as wtf %}
+
 {% block content %}
    <h1>{{_('User Setup')}}</h1>
   {% if error %}
     <p class=error><strong>Error:</strong> {{ error }}
   {% endif %}
-  
+
   <form action="" method="post">
     <input type="hidden" name=id value="{{ user.id }}">
     <div class="input-group">
@@ -55,11 +58,11 @@
     </div>
   </form>
   <p><small>{{_('Last modified:')}} {{ user.timestamp }}</small></p>
-    
+
   {% for message in get_flashed_messages() %}
     <div class='flash'>
       {{ message }}
     </div>
   {% endfor %}
-  
+
 {% endblock %}
