@@ -1,5 +1,5 @@
 #!/usr/bin/python
-from flask import Flask, request, render_template, g, session, jsonify
+from flask import Flask, request, render_template, g, session, jsonify, redirect, url_for
 from db import Database
 import sys
 import datetime
@@ -17,7 +17,6 @@ babel = Babel(app)
 DATABASE = '/home/pi/dcn/db/db.sqlite'
 db = Database(dbname=DATABASE)  # metodi per database
 d = domocontrol.Domocontrol()
-
 
 @app.route('/lang/it')
 def lang(language=None):
@@ -103,7 +102,8 @@ def setup_board():
             board_type = db.query(q)
             return render_template("setup_board.html", data=res, board_type=board_type)
         elif f['submit'] == 'Edit IO':
-            return redirect(url_for('.setup_board_io', id=f['id']))
+            return redirect(url_for('setup_board_io', id=f['id']))
+
     else:
         q = 'SELECT * FROM board'
         res = db.query(q)
@@ -407,4 +407,4 @@ def loop():
 if __name__ == '__main__':
     setup()
     loop()
-    app.run(host="0.0.0.0", port=int("5000"), debug=False)
+    app.run(host="0.0.0.0", port=int("5000"), debug=True)
