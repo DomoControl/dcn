@@ -10,12 +10,12 @@ from flask.ext.babel import Babel
 from config import LANGUAGES
 from flask.ext.wtf import Form
 from wtforms import StringField, SubmitField, TextAreaField, PasswordField, HiddenField, DateField, DecimalField, RadioField
-from wtforms.validators import Required, Email
+from wtforms.validators import Required, Email, Length
 
 
 class FormLogin(Form):
-    username = StringField('Please insert your username', validators=[Required()])
-    password = PasswordField('Please insert your password', validators=[Required()])
+    username = StringField('Please insert your username', validators=[Required(), Length(min=2, max=15)])
+    password = PasswordField('Please insert your password', validators=[Required(), Length(min=2, max=15)])
     submit = SubmitField('Submit')
 
 
@@ -384,6 +384,7 @@ def login():
     error=''
     form = FormLogin()
     if form.validate_on_submit():
+
         q = 'SELECT * FROM user WHERE username = "%s" AND password = "%s"' \
             % (form.username.data, form.password.data)
         res = db.query(q)

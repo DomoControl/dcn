@@ -14,9 +14,9 @@
     <p class=error><strong>Error:</strong> {{ error }}
   {% endif %}
 
-  <p style="width:300px;">
-    {{ wtf.quick_form(form) }}
 
-  </p>
+<div style="max-width:600px; border:1px dotted gray; padding: 10px;">
+  {{ wtf.quick_form(form) }}
+</div>
 
 {% endblock %}
