@@ -156,7 +156,7 @@ class Domocontrol:
 
     def loop(self):
         for p in self.P:  # p = id of self.P
-            #~ print self.P
+            #print self.P
             if self.P[p]['type_id'] == 4:  # 4 = Manual
                 in_address = self.getAddress('in_id', p)
                 out_address = self.getAddress('out_id', p)
