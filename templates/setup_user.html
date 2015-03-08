@@ -1,63 +1,128 @@
 {% extends "template.html" %}
 
-{% import "bootstrap/wtf.html" as wtf %}
-
 {% block content %}
    <h1>{{_('User Setup')}}</h1>
   {% if error %}
     <p class=error><strong>Error:</strong> {{ error }}
   {% endif %}
 
-  <form action="" method="post">
-    <input type="hidden" name=id value="{{ user.id }}">
+  <form action="{{ url_for('setup_user') }}" method=post name=FormSetupUser role=form >
+
+    <input type='hidden' name=user_id value="{{ user['id'] }}" >
+
     <div class="input-group">
-      <span class="input-group-addon" style="width:200px;">{{_('Username')}}'</span>
-      <input width="200px" type="text" class="form-control" name=username value="{{ user.username }}">
+      <span class="input-group-addon" style="width:200px;">Username</span>
+      <input type="text" name="username" value="{{ user.username }}" >
     </div>
+
     <div class="input-group">
       <span class="input-group-addon" style="width:200px;">Password</span>
-      <input type="password" class="form-control" name=password value="{{ user.password }}">
+      <input type="password" name="password" value="{{ user.password }}" >
     </div>
+
     <div class="input-group">
-      <span class="input-group-addon" style="width:200px;">{{_('Retype Password')}}'</span>
-      <input type="password" class="form-control" name=retype_password value="">
+      <span class="input-group-addon" style="width:200px;">Password Retype</span>
+      <input type="password" name="passwordRetype" value="" >
     </div>
+
     <div class="input-group">
-      <span class="input-group-addon" style="width:200px;">{{_('Name')}}</span>
-      <input type="text" class="form-control" name=name value="{{ user.name }}">
+      <span class="input-group-addon" style="width:200px;">Name</span>
+      <input type="text" name="name" value="{{ user.name }}" >
     </div>
+
     <div class="input-group">
-      <span class="input-group-addon" style="width:200px;">{{_('Surname')}}</span>
-      <input type="text" class="form-control" name=surname value="{{ user.surname }}">
+      <span class="input-group-addon" style="width:200px;">Surname</span>
+      <input type="text" name="surname" value="{{ user.surname }}" >
     </div>
+
     <div class="input-group">
-      <span class="input-group-addon" style="width:200px;">{{_('Language')}}</span>
-      <select name="lang" class="form-control">
-        <option value="en" {% if user.lang == 'en' %} selected {% endif %} >{{_('English')}}</option>
-        <option value="it" {% if user.lang == 'it' %} selected {% endif %} >{{_('Italian')}}</option>
+      <span class="input-group-addon" style="width:200px;">Language</span>
+      <select name="lang" class="form-control btn-xs" style="width:80px;">
+          <option value="en" {% if user.lang == 'en' %} selected {% endif %} >English</option>
+          <option value="it" {% if user.lang == 'it' %} selected {% endif %} >Italiano</option>
+          <option value="de" {% if user.lang == 'de' %} selected {% endif %} >Germnan</option>
+          <option value="fr" {% if user.lang == 'fr' %} selected {% endif %} >French</option>
       </select>
+
     </div>
+
     <div class="input-group">
-      <span class="input-group-addon" style="width:200px;">{{_('Session Timeout')}}</span>
-      <input type="text" class="form-control" name=session value="{{ user.session }}">
+      <span class="input-group-addon" style="width:200px;">Session time (second)</span>
+      <input type="text" name="sessiontime" value="{{ user.session }}" >
     </div>
+
+    <div class="input-group">
+      <span class="input-group-addon" style="width:200px;">Description</span>
+      <input type="text" name="description" value="{{ user.description }}" >
+    </div>
+
+
+
+
     <div style="border:1px dashed gray; width:400px; margin-top:10px; padding:3px;">
+    {% if session['privilege']!='0000' %}
       <p>{{_('Privilege')}}</p>
-      {% for p in privilege %}
-        <div >
-          <div class="input-group" style="width:100%">
-            <span class="input-group-addon" style="width:200px;"> {{ p['name'] }} </span>
-            <span style="margin-left:10px;"><input type="checkbox" name="privilege[{{ p.id }}]" value="{{ p.id }}" {% if user.privilege.find('%s' %p['id']) == -1 %}  {% else %} checked {% endif %}></span>
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-    <div class="input-group">
-      <br />
-      <p style="width:400px; text-align:center;"><input type="submit" class="form-control" name=submit value="Save"></p>
-    </div>
-  </form>
+    {% endif %}
+
+    {% if session['privilege'][0]=='1' or session['privilege'][1]=='1' or session['privilege'][2]=='1' or session['privilege'][3]=='1' %}
+      <div class="input-group">
+        <span class="input-group-addon" style="width:200px;">Log</span>
+        <input   class="form-control" type="checkbox"  name='privilegeLog' {% if user.privilege[3] == '1' %} checked {% endif %}>
+      </div>
+    {% endif %}
+
+    {% if session['privilege'][0]=='1' or session['privilege'][1]=='1' or session['privilege'][2]=='1' %}
+      <div class="input-group">
+        <span class="input-group-addon" style="width:200px;">Viewer</span>
+        <input   class="form-control" type="checkbox"  name='privilegeViewer' {% if user.privilege[2] == '1' %} checked {% endif %}>
+      </div>
+    {% endif %}
+
+    {% if session['privilege'][0]=='1' or session['privilege'][1]=='1' %}
+      <div class="input-group">
+        <span class="input-group-addon" style="width:200px;">Setup</span>
+        <input   class="form-control" type="checkbox"  name='privilegeSetup' {% if user.privilege[1] == '1' %} checked {% endif %}>
+      </div>
+    {% endif %}
+
+    {% if session['privilege'][0]=='1'%}
+      <div class="input-group ">
+        <span class="input-group-addon" style="width:200px;">Admin</span>
+        <input   class="form-control" type="checkbox"  name='privilegeAdmin' {% if user.privilege[0] == '1' %} checked {% endif %}>
+      </div>
+    {% endif %}
+
+      </div>
+
+    <input type="submit" class="btn btn-default" name="submit" value="Save">
+
+
+
   <p><small>{{_('Last modified:')}} {{ user.timestamp }}</small></p>
+
+  {% if session['privilege'][0]=='1'%}
+    <table class="table table-condensed"><tr><th>ID</th><th>Username</th><td>Name</th><th>Privilege</th><th>Edit / Remove</th></tr>
+
+
+    {% for us in users %}
+      <tr>
+        <td><span style="margin: 0 10px 0 10px;">{{us['id']}}</span></td>
+        <td><span style="margin: 0 10px 0 10px;">{{us['username']}}</span></td>
+        <td><span style="margin: 0 10px 0 10px;">{{us['name']}}</span></td>
+        <td><span style="margin: 0 10px 0 10px;">{{us['privilege']}}</span></td>
+        <td>
+          <input type="hidden" class="btn btn-default" name="users" value="{{us['id']}}">
+          <input type="submit" class="btn btn-default" name="submit" value="Edit">
+          <input type="submit" class="btn btn-default" name="submit" value="Delete">
+        </td>
+      </tr>
+    {% endfor %}
+
+    </table>
+    <input type="submit" class="btn btn-default" name="submit" value="New">
+  {%endif%}
+  </form>
+
 
   {% for message in get_flashed_messages() %}
     <div class='flash'>

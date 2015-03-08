@@ -5,7 +5,7 @@ import sqlite3
 class Database:
     """Class to use Database SQLITE"""
 
-    dbname = '/home/pi/dcn/db/db.sqlite'
+    dbname = './db/db.sqlite'
 
     def __init__(self, dbname=dbname):
         self.database = dbname
@@ -27,6 +27,7 @@ class Database:
         elif query.find('INSERT') or query.find('UPDATE') or query.find('DELETE'):
             cur.commit()
             cur.close()
+            return res.lastrowid #Last row
 
     def setForm(self, mode, data, table):
         if mode == 'UPDATE':
@@ -36,9 +37,9 @@ class Database:
                 key = key.replace('[\'', ',')
                 key = key.replace('\']', '')
                 key = key.split(',')
-                q = "SELECT %s FROM %s WHERE id=%s" % (key[1], table, key[0])
+                q = "SELECT {} FROM {} WHERE id={}".format(key[1], table, key[0])
                 res = self.query(q)
                 if str(res[0][key[1]]) != str(value):
-                    q = "UPDATE " + table + " SET %s = '%s' WHERE id=%s" \
-                        % (key[1], value, key[0])
+                    q = "UPDATE {} SET {} = '{}' WHERE id={}" \
+                        .format(table, key[1], value, key[0])
                     self.query(q)

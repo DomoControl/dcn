@@ -11,7 +11,7 @@ class Domocontrol:
     def __init__(self):  # p = program dictionary
         self.i2c = 0  # (dev/i2c_x) Default is 0 but setBus check for right value
         self.db = Database()
-        self.mapping = {0: 0, 1: 1, 2: 2, 3: 4, 4: 8, 5: 16, 6: 32, 7: 64, 8: 128}
+        self.mapping = [0, 1, 2, 4, 8, 16, 32, 64, 128]
         self.setBus()
         # print "*** Show device in /etc/i2c-%s" %self.i2c
         self.P = {}  # Dict with Program
@@ -26,14 +26,14 @@ class Domocontrol:
         return datetime.datetime.now()
 
     def setBus(self):
-        print "Start setBus"
+        print("Start setBus")
         self.device = []
         for a in range(0, 10):
             # print a
             try:
                 i2c = smbus.SMBus(a)
                 self.i2c = a  # address i2c /dev/i2c_x
-                print 'Device i2c: %s' %self.i2c
+                print('Device i2c: {}'.format(self.i2c))
                 for b in range(1, 100):
                     try:
                         # i2c.read_byte_data(b,0)
@@ -45,7 +45,7 @@ class Domocontrol:
                 pass
 
     def setup(self):  # program setup
-        print "Start Domocontrol Setup"
+        print("Start Domocontrol Setup")
         q = 'SELECT id, in_id, delay, inverted, out_id, type_id, name, description, timer, chrono FROM program WHERE enable=1'
         res = self.db.query(q)
         self.P = {}
@@ -86,8 +86,7 @@ class Domocontrol:
         self.A['program_type'] = {}
         for r in res:
             self.A['program_type'].update({r['id']: r})
-        print "End Domocontrol Setup"
-        return
+        print("End Domocontrol Setup")
 
     def resetIO(self):  # To rese all port to begin and to end program
         q = 'SELECT io.board_id, io.address as io_address, io.io_type_id, b.board_type_id, b.address as board_address FROM board_io io, board b WHERE io.board_id=b.id'
@@ -231,8 +230,8 @@ class Domocontrol:
                     tm = c.pop(0)
                     ts = c.pop(0)
 
-                    tfrom = '%s %s:%s:%s' %(date, fh, fm, fs)
-                    tto = '%s %s:%s:%s' %(date, th, tm, ts)
+                    tfrom = '{} {}:{}:{}'.format(date, fh, fm, fs)
+                    tto = '{} {}:{}:{}'.format(date, th, tm, ts)
 
                     FMT = '%Y-%m-%d %H:%M:%S'
 
