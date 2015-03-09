@@ -8,16 +8,7 @@ import threading
 import domocontrol
 from flask.ext.babel import Babel
 from config import LANGUAGES
-from flask.ext.wtf import Form
-from wtforms import StringField, SubmitField, TextAreaField, PasswordField, HiddenField, DateField, DecimalField, RadioField, IntegerField, SelectField, BooleanField
-from wtforms.validators import Required, Email, Length
 import time
-
-class FormLogin(Form):
-    username = StringField('Please insert your username', validators=[Required(), Length(min=2, max=15)])
-    password = PasswordField('Please insert your password', validators=[Required(), Length(min=2, max=15)])
-    submit = SubmitField('Submit')
-
 
 print("Begin")
 
@@ -61,7 +52,6 @@ def setup_user():
     error=''
 
     f = request.form
-    print f
     if request.method == "POST" and f['submit'] == 'Save':
         if len(f['password']) <=2 or f['password'] != f['passwordRetype']:
             error = "Password non impostata o non coincidenti"
@@ -475,27 +465,29 @@ def logout():
 def login():
     setLog()
     error=''
-    form = FormLogin()
-    if form.validate_on_submit():
-        q = 'SELECT * FROM user WHERE username = "{}" AND password = "{}"' \
-            .format(form.username.data, form.password.data)
-        res = db.query(q)
-        if res and len(res[0]) > 0:
-            session['logged_in'] = True
-            session['user_name'] = res[0]['name']
-            session['user_id'] = res[0]['id']
-            session['privilege'] = res[0]['privilege']
-            session['timestamp'] = now()
-            session['sessionTimeout'] = res[0]['session']
-            return render_template("hello.html", error=error)
-    else:
-        print session
-        session['logged_in'] = None
-        #~ print session
-        #~ session.clear()
-        print session
-        error = "invalid password or username. Please retry"
-    return render_template("login.html", error=error, form=form)
+    f = request.form
+    if request.method == "POST" and f['submit'] == 'Enter':
+        if len(f['password']) <=2 or f['username'] <=2:
+            error = "Password o Username not valid"
+        else:
+            q = 'SELECT * FROM user WHERE username = "{}" AND password = "{}"' \
+                .format(f['username'], f['password'])
+            res = db.query(q)
+            if res and len(res[0]) > 0:
+                session['logged_in'] = True
+                session['user_name'] = res[0]['name']
+                session['user_id'] = res[0]['id']
+                session['privilege'] = res[0]['privilege']
+                session['timestamp'] = now()
+                session['sessionTimeout'] = res[0]['session']
+                return render_template("hello.html", error=error)
+            else:
+                session['logged_in'] = None
+                #~ print session
+                session.clear()
+                #~ print session
+                error = "invalid password or username. Please retry"
+    return render_template("login.html", error=error)
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -525,9 +517,9 @@ if __name__ == '__main__':
     setup()
     loop()
     try:
-        app.run(host="0.0.0.0", port=5000, debug=True)
+        app.run(host="0.0.0.0", port=5000, debug=False)
     except:
     #~ except InvalidCommand as err:
-        #~ print("*** Error: {}".format(err))
+        print("*** Error: {}".format(err))
         pass
 

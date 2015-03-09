@@ -1,7 +1,5 @@
 {% extends "template.html" %}
 
-{% import "bootstrap/wtf.html" as wtf %}
-
 {% block content %}
   <h1>{{_('Login')}}</h1>
   <p>{{_('Please insert username and password')}}</p>
@@ -14,9 +12,20 @@
     <p class=error><strong>Error:</strong> {{ error }}
   {% endif %}
 
+  <form action="{{ url_for('login') }}" method=post >
 
-<div style="max-width:600px; border:1px dotted gray; padding: 10px;">
-  {{ wtf.quick_form(form) }}
-</div>
+    <div class="input-group">
+      <span class="input-group-addon" style="width:200px;">Username</span>
+      <input type="text" name="username" value="" >
+    </div>
+
+    <div class="input-group">
+      <span class="input-group-addon" style="width:200px;">Password</span>
+      <input type="password" name="password" value="" >
+    </div>
+
+    <input type="submit" class="btn btn-default" name="submit" value="Enter">
+  </form>
+
 
 {% endblock %}
