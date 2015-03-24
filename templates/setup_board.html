@@ -25,15 +25,33 @@
                                 </option>
                             {% endfor %}
                         </select>
-                    <td><input class="btn btn-default" type="submit" name="submit" value="Save"></td>                
-                    <td><input class="btn btn-default" type="submit" name="submit" value="Edit IO"></td>                
+                    <td><input class="btn btn-default" type="submit" name="submit" value="Save"></td>
+                    <td><input class="btn btn-default" type="submit" name="submit" value="Edit IO"></td>
+                    <td><input class="btn btn-default" type="submit" name="submit" value="Delete"></td>
                 </tr>
                 
                 
             </form>     
         {% endfor %}
         
-      
-    
+        <form action="" method="post"  class="form-horizontal" role="form"> 
+            <tr>
+                    <td></td>
+                    <td><input type="text"  name='name' value=""></td>
+                    <td><input width="200px" type="text"  name='description' value=""></td>
+                    <td><input type="checkbox"  name='enable' ></td>
+                    <td><input width="50px" type="number" min="0" max="64" name='address' value=""></td>
+                    <td>
+                        <select name="board_type"   class="form-control">
+                            {% for b in board_type %}
+                                <option value="{{b.id}}"  >
+                                    {{b.name}} - {{b.description}}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    <td><input class="btn btn-default" type="submit" name="submit" value="Add"></td>
+                </tr>
+            </tr>
+        </form>
     </table>
 {% endblock %}

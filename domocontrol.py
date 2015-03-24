@@ -3,7 +3,7 @@ import time
 import smbus
 from db import Database
 import datetime
-
+import sht21
 
 class Domocontrol:
     """Class DomoControl"""
@@ -153,6 +153,7 @@ class Domocontrol:
         elif dictionary == 'A':
             self.A = dictionary
 
+
     def loop(self):
         for p in self.P:  # p = id of self.P
             #print self.P
@@ -245,5 +246,25 @@ class Domocontrol:
 
                 in_stat = 0 if int(self.P[p]['inverted']) == chronoOpen else 1  # Status inverted is flag inverted = 1
                 self.setIO(out_address, in_stat)
+        
+        #look in there are temperature sensor
+        try:
+            tdiff = self.now() - self.tnow
+            if tdiff.total_seconds() > 300: #Get data every 5 minutes
+                self.tnow = self.now()
+                for t in self.A['board']: 
+                    if self.A['board'][t]['board_type_id'] == 4:
+                        q = 'INSERT INTO sensor (type, value) VALUES("{}", "{}");'.format('1', sht21.SHT21(self.i2c).read_temperature() )
+                        self.db.query(q)
+                        q = 'INSERT INTO sensor (type, value) VALUES("{}", "{}");'.format('2', sht21.SHT21(self.i2c).read_humidity() )
+                        self.db.query(q)
+                        
+        except:
+            self.tnow = self.now() #crea la variabile self.tnow se non esiste
+            
+        
+        
+                
+            
 
 

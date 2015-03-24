@@ -104,11 +104,34 @@ def setup_area():
     #Test if user is logged
     if not checkLogin(): return redirect(url_for('logout'))
     if request.method == "POST":
-        f = request.form  # get inpput value
+        f = request.form  # get input value
         db.setForm('UPDATE', f.to_dict(), 'area')  # recall db.setForm to update query. UPDATE=Update method, f.to_dict=dictionary with input value, area:database table
     q = 'SELECT * FROM area'
     res = db.query(q)
     return render_template("setup_area.html", data=res)
+    
+@app.route('/menu_sensor', methods=["GET", "POST"])
+def menu_sensor(chartID = 'chart_ID', chart_type = 'line', chart_height = 350):
+    q = 'SELECT * FROM sensor WHERE type=1 ORDER BY id DESC LIMIT 288'
+    temperature = db.query(q)
+    temp = []
+    for t in temperature:
+        temp.append(t['value'])
+    
+    q = 'SELECT * FROM sensor WHERE type=2'
+    humidity = db.query(q)
+    hum = []
+    for h in humidity:
+        hum.append(h['value'])
+    
+    chart = {"renderTo": chartID, "type": chart_type, "height": chart_height,}
+    
+    series = [{"name": 'Temperature', "data": temp}]
+    
+    title = {"text": 'Temperature'}
+    xAxis = {"categories": ['Time']}
+    yAxis = {"title": {"text": 'Degree'}}
+    return render_template('menu_sensor.html', chartID=chartID, chart=chart, series=series, title=title, xAxis=xAxis, yAxis=yAxis) 
 
 
 @app.route('/setup_privilege', methods=["GET", "POST"])
@@ -160,22 +183,34 @@ def setup_board():
             else:
                 enable = 0
             q = 'UPDATE board SET id="{}", name="{}", description="{}", enable="{}", address="{}", board_type_id="{}" WHERE id="{}"'\
-            .format(f["id"], f["name"], f["description"], enable, f["address"], f["board_type_id"], f["id"])
+            .format(f["id"], f["name"], f["description"], enable, f["address"], f["board_type"], f["id"])
+            db.query(q)
+            q = 'SELECT * FROM board'
+            res = db.query(q)
+            q = 'SELECT * FROM board_type ORDER BY id'
+            board_type = db.query(q)          
+        elif f['submit'] == 'Edit IO':
+            return redirect(url_for('setup_board_io', id=f['id']))
+        elif f['submit'] == 'Add':
+            if 'enable' in f:
+                enable = 1
+            else:
+                enable = 0
+            q = 'INSERT INTO board (name, description, enable, address, board_type_id) VALUES ("{}", "{}", "{}", "{}", "{}")'\
+            .format(f['name'], f['description'], enable, f['address'], f['board_type'])
             db.query(q)
             q = 'SELECT * FROM board'
             res = db.query(q)
             q = 'SELECT * FROM board_type ORDER BY id'
             board_type = db.query(q)
-            return render_template("setup_board.html", data=res, board_type=board_type)
-        elif f['submit'] == 'Edit IO':
-            return redirect(url_for('setup_board_io', id=f['id']))
-
-    else:
-        q = 'SELECT * FROM board'
-        res = db.query(q)
-        q = 'SELECT * FROM board_type ORDER BY id'
-        board_type = db.query(q)
-        return render_template("setup_board.html", data=res, board_type=board_type)
+        elif f['submit'] == 'Delete':
+            q = 'DELETE FROM board WHERE id="{}"'.format(f['id'])
+            db.query(q)
+    q = 'SELECT * FROM board'
+    res = db.query(q)
+    q = 'SELECT * FROM board_type ORDER BY id'
+    board_type = db.query(q)
+    return render_template("setup_board.html", data=res, board_type=board_type)
 
 
 @app.route('/setup_board_io', methods=["GET", "POST"])
