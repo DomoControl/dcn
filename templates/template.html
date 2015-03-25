@@ -4,21 +4,6 @@
         <title>{{_('DomoContorl V2')}}</title>
         <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.css' ) }}" >
-        <script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"></script>
-        <script type=text/javascript src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
-
-        <script type=text/javascript> //Get Time
-            window.setInterval(function(){
-                $.getJSON('/getTime', {
-                },  function(data) {
-                      $("#time").text(data.result);
-                    }
-                )}, 60000);
-        </script>
-<script>
-  $(document).ready(function () {
-  $("#{{request.endpoint}}").addClass("active"); })
-</script>
 
     </head>
 
@@ -87,6 +72,38 @@
             </nav>
         </footer>
 
+        <script type=text/javascript src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+		<script type="text/javascript">
+			if(!window.jQuery && document.write('<script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"></script>'))
+		</script>
+        <script type=text/javascript> //Get Time
+            window.setInterval(function(){
+                $.getJSON('/getTime', {
+                },  function(data) {
+                      $("#time").text(data.result);
+                    }
+                )}, 60000);
+        </script>
+		<script>
+		  $(document).ready(function () {
+		  $("#{{request.endpoint}}").addClass("active"); })
+		</script>
+
+		<!-- load graph library -->
+		<script>
+			var chart_id = {{ chartID|safe }}
+			var series = {{ series|safe }}
+			var title = {{ title|safe }}
+			var xAxis = {{ xAxis|safe }}
+			var yAxis = {{ yAxis|safe }}
+			var chart = {{ chart|safe }}
+		</script>
+
+		<script src="http://code.highcharts.com/highcharts.js"></script>
+		<script src="../static/js/graph.js"></script> 
+
+	
     </body>
 
 

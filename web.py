@@ -45,6 +45,15 @@ def setLog():  # Da finire. Serve per tracciare l'IP
     userAgentString = request.headers.get('User-Agent')
     res = db.query("INSERT INTO log (command,ip) VALUES('{}', '{}')".format(request.url, request.remote_addr))
 
+# Test is user is logged
+def checkLogin():
+    #~ print session['sessionTimeout'], (now() - session['timestamp']).total_seconds()
+    if 'logged_in' in session and session['logged_in']==True and (now() - session['timestamp']).total_seconds() < session['sessionTimeout']:
+        session['timestamp'] = now()
+        return 1
+    else:
+        return 0
+
 @app.route("/setup_user", methods=["GET", "POST"])
 def setup_user():
     if not checkLogin(): return redirect(url_for('logout')) #Test if user is logged
@@ -113,26 +122,33 @@ def setup_area():
 @app.route('/menu_sensor', methods=["GET", "POST"])
 def menu_sensor(chartID = 'chart_ID', chart_type = 'line', chart_height = 350):
 	#Test if user is logged
-    if not checkLogin(): return redirect(url_for('logout'))
+    if not checkLogin(): return redirect(url_for('login'))
+    
     q = 'SELECT * FROM sensor WHERE type=1 ORDER BY datetime DESC LIMIT 288'
     temperature = db.query(q)
     temp = []
     for t in temperature:
-        temp.append(t['value'])
+        micros = int(time.mktime(time.strptime(t['datetime'], '%Y-%m-%d %H:%M:%S')))
+        temp.append([micros,t['value']])
+    temp.reverse()
     
     q = 'SELECT * FROM sensor WHERE type=2 ORDER BY datetime DESC LIMIT 288'
     humidity = db.query(q)
     hum = []
     for h in humidity:
-        hum.append(h['value'])
+        micros = int(time.mktime(time.strptime(h['datetime'], '%Y-%m-%d %H:%M:%S')))
+        hum.append([micros,h['value']])
+    hum.reverse()
     
     chart = {"renderTo": chartID, "type": chart_type, "height": chart_height,}
     
-    series = [{"name": 'Temperature', "data": temp}]
+    series = [{"yAxis":0, "name": 'Temperature', "data": temp}, {"yAxis":1, "name":'Humidity', "data":hum} ]
     
     title = {"text": 'Temperature'}
     xAxis = {"categories": ['Time']}
-    yAxis = {"title": {"text": 'Degree'}}
+    
+    yAxis = [{"title": {"text": 'Temperature'}},{"title": {"text": 'Humidity'}, "opposite":'true'}]
+    
     return render_template('menu_sensor.html', chartID=chartID, chart=chart, series=series, title=title, xAxis=xAxis, yAxis=yAxis) 
 
 
@@ -478,16 +494,6 @@ def welcome():
 @app.route('/hello')
 def hello():
     return render_template("hello.html")
-
-
-# Test is user is logged
-def checkLogin():
-    print session['sessionTimeout'], (now() - session['timestamp']).total_seconds()
-    if 'logged_in' in session and session['logged_in']==True and (now() - session['timestamp']).total_seconds() < session['sessionTimeout']:
-        session['timestamp'] = now()
-        return 1
-    else:
-        return 0
 
 
 @app.route('/logout')
