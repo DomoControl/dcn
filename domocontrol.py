@@ -254,10 +254,12 @@ class Domocontrol:
                 self.tnow = self.now()
                 for t in self.A['board']: 
                     if self.A['board'][t]['board_type_id'] == 4:
-                        q = 'INSERT INTO sensor (type, value) VALUES("{}", "{}");'.format('1', sht21.SHT21(self.i2c).read_temperature() )
+                        q = 'INSERT INTO sensor (type, value) VALUES("{}", "{}");'.format('1', round(sht21.SHT21(self.i2c).read_temperature(),1) )
+                        print q
                         self.db.query(q)
-                        q = 'INSERT INTO sensor (type, value) VALUES("{}", "{}");'.format('2', sht21.SHT21(self.i2c).read_humidity() )
+                        q = 'INSERT INTO sensor (type, value) VALUES("{}", "{}");'.format('2', round(sht21.SHT21(self.i2c).read_humidity(),1) )
                         self.db.query(q)
+                        print q
                         
         except:
             self.tnow = self.now() #crea la variabile self.tnow se non esiste

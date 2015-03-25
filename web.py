@@ -112,13 +112,13 @@ def setup_area():
     
 @app.route('/menu_sensor', methods=["GET", "POST"])
 def menu_sensor(chartID = 'chart_ID', chart_type = 'line', chart_height = 350):
-    q = 'SELECT * FROM sensor WHERE type=1 ORDER BY id DESC LIMIT 288'
+    q = 'SELECT * FROM sensor WHERE type=1 ORDER BY datetime DESC LIMIT 288'
     temperature = db.query(q)
     temp = []
     for t in temperature:
         temp.append(t['value'])
     
-    q = 'SELECT * FROM sensor WHERE type=2'
+    q = 'SELECT * FROM sensor WHERE type=2 ORDER BY datetime DESC LIMIT 288'
     humidity = db.query(q)
     hum = []
     for h in humidity:
