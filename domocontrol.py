@@ -250,7 +250,7 @@ class Domocontrol:
         #look in there are temperature sensor
         try:
             tdiff = self.now() - self.tnow
-            if tdiff.total_seconds() > 60: #Get data every 5 minutes
+            if tdiff.total_seconds() > 432: #Get data every 5 minutes
                 self.tnow = self.now()
                 for t in self.A['board']: 
                     if self.A['board'][t]['board_type_id'] == 4:

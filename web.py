@@ -124,7 +124,7 @@ def menu_sensor(chartID = 'chart_ID', chart_type = 'line', chart_height = 350):
 	#Test if user is logged
     if not checkLogin(): return redirect(url_for('login'))
     
-    q = 'SELECT * FROM sensor WHERE type=1 ORDER BY datetime DESC LIMIT 288'
+    q = 'SELECT * FROM sensor WHERE type=1 ORDER BY datetime DESC LIMIT 432'
     temperature = db.query(q)
     temp = []
     for t in temperature:
@@ -132,7 +132,7 @@ def menu_sensor(chartID = 'chart_ID', chart_type = 'line', chart_height = 350):
         temp.append([micros,t['value']])
     temp.reverse()
     
-    q = 'SELECT * FROM sensor WHERE type=2 ORDER BY datetime DESC LIMIT 288'
+    q = 'SELECT * FROM sensor WHERE type=2 ORDER BY datetime DESC LIMIT 432'
     humidity = db.query(q)
     hum = []
     for h in humidity:
@@ -145,7 +145,7 @@ def menu_sensor(chartID = 'chart_ID', chart_type = 'line', chart_height = 350):
     series = [{"yAxis":0, "name": 'Temperature', "data": temp}, {"yAxis":1, "name":'Humidity', "data":hum} ]
     
     title = {"text": 'Temperature'}
-    xAxis = {"categories": ['Time']}
+    xAxis = {"categories": ['Time'], "type":'datetime', "dateTimeLabelFormats":{"month":'%m', "year":'%Y'}, "tickPixelInterval": 10}
     
     yAxis = [{"title": {"text": 'Temperature'}},{"title": {"text": 'Humidity'}, "opposite":'true'}]
     
