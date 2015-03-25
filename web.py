@@ -112,6 +112,8 @@ def setup_area():
     
 @app.route('/menu_sensor', methods=["GET", "POST"])
 def menu_sensor(chartID = 'chart_ID', chart_type = 'line', chart_height = 350):
+	#Test if user is logged
+    if not checkLogin(): return redirect(url_for('logout'))
     q = 'SELECT * FROM sensor WHERE type=1 ORDER BY datetime DESC LIMIT 288'
     temperature = db.query(q)
     temp = []
