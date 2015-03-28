@@ -248,16 +248,16 @@ def setup_board_io():
                 enable = 1
             else:
                 enable = 0
-            q = 'UPDATE board_io SET id="{}", io_type_id="{}", name="{}", description="{}", enable="{}", board_id="{}", address="{}" WHERE id="{}"'\
-            .format(f["id"], f['io_type_id'], f["name"], f["description"], enable, f['board_id'], f["address"], f["id"])
+            q = 'UPDATE board_io SET id="{}", io_type_id="{}", name="{}", description="{}", area_id="{}", enable="{}", board_id="{}", address="{}" WHERE id="{}"'\
+            .format(f["id"], f['io_type_id'], f["name"], f["description"], f["area_id"], enable, f['board_id'], f["address"], f["id"])
             db.query(q)
         elif f['submit'] == 'Add IO':
             if 'enable' in f:
                 enable = 1
             else:
                 enable = 0
-            q = 'INSERT INTO board_io (io_type_id, name, description, enable, board_id, address) VALUES ("{}", "{}", "{}", "{}", "{}", "{}")'\
-            .format(f['io_type_id'], f["name"], f["description"], enable, f['board_id'], f["address"])
+            q = 'INSERT INTO board_io (io_type_id, name, description, area_id, enable, board_id, address) VALUES ("{}", "{}", "{}", "{}", "{}", "{}", "{}")'\
+            .format(f['io_type_id'], f["name"], f["description"], f["area_id"], enable, f['board_id'], f["address"])
             db.query(q)
         elif f['submit'] == 'Delete':
             q = "DELETE FROM board_io WHERE id={}".format(f['id'])
@@ -267,13 +267,15 @@ def setup_board_io():
     res = db.query(q)
     q = 'SELECT * FROM board WHERE id={}'.format(id)
     board = db.query(q)
-    q = 'SELECT * FROM board_type WHERE id={}'.format(board[0]['board_type_id'])
+    q = 'SELECT * FROM board_type WHERE id={}  ORDER BY id'.format(board[0]['board_type_id'])
     board_type = db.query(q)
-    q = 'SELECT * FROM io_type'
+    q = 'SELECT * FROM io_type ORDER BY id '
     io_type = db.query(q)
-    q = 'SELECT * FROM board'
+    q = 'SELECT * FROM board ORDER BY id'
     all_board = db.query(q)
-    return render_template("setup_board_io.html", data=res, board=board, board_type=board_type, io_type=io_type, all_board=all_board)
+    q = 'SELECT * FROM area ORDER BY id'
+    area = db.query(q)
+    return render_template("setup_board_io.html", data=res, board=board, board_type=board_type, io_type=io_type, all_board=all_board, area=area)
 
 
 @app.route('/setup_io_type', methods=["GET", "POST"])

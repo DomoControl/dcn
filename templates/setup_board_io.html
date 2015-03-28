@@ -15,7 +15,9 @@
   
     
         <tr><th style="width:50px;" class="text-center">ID</th><th style="width:150px;" class="text-center">Type</th>
-            <th class="text-center">Name</th><th class="text-center">Description</th>
+            <th class="text-center">Name</th>
+            <th class="text-center">Description</th>
+            <th class="text-center">Area</th>
             <th class="text-center">Enable</th><th class="text-center">Board</th><th class="text-center">Address</th><th >&nbsp;</th><th>&nbsp;</th></tr>
         
         {% for p in data %}
@@ -33,6 +35,17 @@
                     </td>
                     <td><input type="text"  name='name' value="{{ p.name }}"></td>
                     <td><input width="100px" type="text"  name='description' value="{{ p.description }}"></td>
+                    
+                    <td>
+                        <select name="area_id" class="form-control" style="width:100px;">
+                                {% for ar in area %}
+                                    <option value="{{ar.id}}" {% if ar.id == p.area_id %} selected {% endif %} >
+                                        {{ar.name}}
+                                    </option>
+                                {% endfor %}
+                        </select>
+                    </td>
+                    
                     <td class="text-center"><input type="checkbox"  name='enable' {% if p.enable == 1 %} checked {% endif %}></td>
                     
                     <td>
@@ -68,6 +81,17 @@
                 </td>
                 <td><input type="text"  name='name' value=""></td>
                 <td><input width="100px" type="text"  name='description' value=""></td>
+                
+                <td>
+                    <select name="area_id" class="form-control" style="width:100px;">
+                            {% for ar in area %}
+                                <option value="{{ar.id}}" >
+                                    {{ar.name}}
+                                </option>
+                            {% endfor %}
+                    </select>
+                    </td>
+                
                 <td><input type="checkbox"  name='enable' ></td>
                 
                 <td>
