@@ -14,6 +14,7 @@
                     <ul class="nav nav-pills" role="tablist">
                         <li id="home"><a href="{{ url_for('home')}}">Home</a></li>
                         <li id="menu_status"><a href="{{ url_for('menu_status')}}">{{_('Status')}}</a></li>
+                        <li id="menu_program"><a href="{{ url_for('menu_program')}}">{{_('Program')}}</a></li>
                         <li id="menu_sensor"><a href="{{ url_for('menu_sensor')}}">{{_('Sensor')}}</a></li>
                         <li id="#" class="dropdown">
                             <a class="dropdown-toggle" data-toggle="dropdown" href="#">Setup<span class="caret"></span></a>
@@ -72,12 +73,12 @@
             </nav>
         </footer>
 
-        <script type=text/javascript src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
-		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
-		<script type="text/javascript">
-			if(!window.jQuery && document.write('<script type=text/javascript src="{{ url_for('static', filename='jquery.js') }}"></script>'))
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+		<script>if (!window.jQuery) { document.write('<script src="/home/pi/dcn/static/jquery.js"><\/script>'); }
 		</script>
-        <script type=text/javascript> //Get Time
+        
+		<script type=text/javascript src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
+        <script type=text/javascript> 
             window.setInterval(function(){
                 $.getJSON('/getTime', {
                 },  function(data) {
@@ -97,6 +98,7 @@
 			var title = {{ title|safe }}
 			var xAxis = {{ xAxis|safe }}
 			var yAxis = {{ yAxis|safe }}
+            var tooltip = {{ tooltip|safe }}
 			var chart = {{ chart|safe }}
 		</script>
 

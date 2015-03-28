@@ -61,7 +61,8 @@ def setup_user():
     error=''
 
     f = request.form
-    if request.method == "POST" and f['submit'] == 'Save':
+    print f
+    if request.method == "POST" and submit in f and f['submit'] == 'Save':
         if len(f['password']) <=2 or f['password'] != f['passwordRetype']:
             error = "Password non impostata o non coincidenti"
         else:
@@ -124,32 +125,36 @@ def menu_sensor(chartID = 'chart_ID', chart_type = 'line', chart_height = 350):
 	#Test if user is logged
     if not checkLogin(): return redirect(url_for('login'))
     
-    q = 'SELECT * FROM sensor WHERE type=1 ORDER BY datetime DESC LIMIT 432'
+    q = 'SELECT * FROM sensor WHERE type=1 ORDER BY datetime DESC LIMIT 248'
     temperature = db.query(q)
     temp = []
+    categories = []
     for t in temperature:
-        micros = int(time.mktime(time.strptime(t['datetime'], '%Y-%m-%d %H:%M:%S')))
-        temp.append([micros,t['value']])
+        micros = float(time.mktime(time.strptime(t['datetime'], '%Y-%m-%d %H:%M:%S'))*1000) 
+        temp.append(t['value'])
+        categories.append(micros)
     temp.reverse()
+    categories.reverse()
     
-    q = 'SELECT * FROM sensor WHERE type=2 ORDER BY datetime DESC LIMIT 432'
+    q = 'SELECT * FROM sensor WHERE type=2 ORDER BY datetime DESC LIMIT 248'
     humidity = db.query(q)
     hum = []
     for h in humidity:
         micros = int(time.mktime(time.strptime(h['datetime'], '%Y-%m-%d %H:%M:%S')))
-        hum.append([micros,h['value']])
+        hum.append(h['value'])
     hum.reverse()
     
     chart = {"renderTo": chartID, "type": chart_type, "height": chart_height,}
     
     series = [{"yAxis":0, "name": 'Temperature', "data": temp}, {"yAxis":1, "name":'Humidity', "data":hum} ]
-    
-    title = {"text": 'Temperature'}
-    xAxis = {"categories": ['Time'], "type":'datetime', "dateTimeLabelFormats":{"month":'%m', "year":'%Y'}, "tickPixelInterval": 10}
+    tooltip = {"backgroundColor": '#00FFC5', "borderColor": 'black', "borderRadius": 10, "borderWidth": 3}
+    title = {"text": 'Temperature / Humidity'}
+    xAxis = {"title": {"text": 'Date'}, "type":'datetime', "categories":categories, "dateTimeLabelFormats": { "month": '%e. %b', "year": '%b' }, "tickPixelInterval": 20}
     
     yAxis = [{"title": {"text": 'Temperature'}},{"title": {"text": 'Humidity'}, "opposite":'true'}]
+    tooltip = { "headerFormat": '<b>{series.name}</b><br>', "pointFormat": '{point.x:%e. %b}: {point.y:.2f} m' }
     
-    return render_template('menu_sensor.html', chartID=chartID, chart=chart, series=series, title=title, xAxis=xAxis, yAxis=yAxis) 
+    return render_template('menu_sensor.html', chartID=chartID, chart=chart, series=series, title=title, xAxis=xAxis, yAxis=yAxis, tooltip=tooltip) 
 
 
 @app.route('/setup_privilege', methods=["GET", "POST"])
@@ -278,7 +283,7 @@ def setup_io_type():
     if request.method == "POST":
         f = request.form
         db.setForm('UPDATE', f.to_dict(), 'io_type')
-    q = 'SELECT * FROM io_type ORDER BY name'
+    q = 'SELECT * FROM io_type ORDER BY id'
     res = db.query(q)
     return render_template("setup_io_type.html", data=res)
 
@@ -455,20 +460,23 @@ def home():
 def getTime():
     return jsonify(result=now().strftime("%a %d %b  %H:%M:%S"))
 
-
 @app.route('/menu_status')
 def menu_status():
+    return render_template("menu_status.html")
+
+@app.route('/menu_program')
+def menu_program():
     #Test if user is logged
     if not checkLogin(): return redirect(url_for('logout'))
     setLog()
     if 'logged_in' in session and session['logged_in'] == True:
-        return render_template("menu_status.html")
+        return render_template("menu_program.html")
     else:
         return redirect(url_for('login'))
 
 
-@app.route('/getStatus')
-def getStatus():  # return array with all status informations
+@app.route('/getProgramStatus')
+def getProgram():  # return array with all program informations
     P = d.getDict('P')
     A = d.getDict('A')
     # d.A = dict with all database information. d.Z dict program

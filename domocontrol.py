@@ -23,7 +23,7 @@ class Domocontrol:
         self.Z = self.P
 
     def now(self):
-        return datetime.datetime.now()
+        return datetime.datetime.utcnow()
 
     def setBus(self):
         print("Start setBus")
@@ -253,7 +253,8 @@ class Domocontrol:
             if tdiff.total_seconds() > 432: #Get data every 5 minutes
                 self.tnow = self.now()
                 for t in self.A['board']: 
-                    if self.A['board'][t]['board_type_id'] == 4:
+                    if self.A['board'][t]['board_type_id'] == 4: #SHT21 sensor Temparature + Humidity
+                        print self.A['board_io']
                         q = 'INSERT INTO sensor (type, value) VALUES("{}", "{}");'.format('1', round(sht21.SHT21(self.i2c).read_temperature(),1) )
                         print q
                         self.db.query(q)

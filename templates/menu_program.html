@@ -1,0 +1,123 @@
+{% extends "template.html"  %}
+{% block content %}
+<h2>{{_('Program page')}}</h2>
+
+
+<script type=text/javascript>
+    A = {} //Dict with all other data
+    B={}
+    window.setInterval(function(){
+            A_len = Object.keys(B).length
+            $.getJSON('/getProgramStatus', { A_len:A_len
+        },
+
+        function(data) {
+            //~ alert(JSON.stringify(data))
+            P = data.resultP; //Dict with Program data
+            A = data.resultA; //Dict with all other informations
+            t = '';
+
+            //Header
+            var f = '<table class="table table-condensed">';
+
+            for( var p in P ){
+                //First program row
+                f += '<tr  class="active"><td colspan=8 class="text-center">';
+                f += '<span style="margin: 0 10px 0 10px;"><small>ID: </small><b>'+P[p]['id']+'</b></span>';
+                f += '<span style="margin: 0 10px 0 10px;"><small>Name: </small><b>'+P[p]['name']+'</b></span>';
+                f += '<span style="margin: 0 10px 0 10px;"><small>Description: </small><b>'+P[p]['description']+'</b></span>'
+                f += '<span style="margin: 0 10px 0 10px;"><small>Type: </small><b>'+A['program_type'][P[p]['type_id']]['name']+'</b></span>';
+                f += '</td></tr>'
+
+                //~ t = JSON.stringify(P[p])
+
+                var board_id = A['board_io'][P[p]['in_id']]['board_id']
+                var board_type_id = A['board'][board_id]['board_type_id']
+
+                if( board_type_id == 1 ){ //Board i2c
+                    if( P[p]['IN'] == 1 ){var in_img = '<img src="static/img/in_on.png" height=40px>';}else{var in_img = '<img src="static/img/in_off.png" height=40px>';}
+                }
+                else if ( board_type_id == 3 ){ //Board Web
+                    if( P[p]['IN'] == 1 ){var in_img = '<img src="static/img/in_push_on.png" height=40px onclick="setIN('+P[p]['id']+',0)">'} else {var in_img = '<img src="static/img/in_push_off.png" height=40px onclick="setIN('+P[p]['id']+',1)" >'}
+                }
+                f += '<tr>'
+                var fin_desc = '<td style="vertical-align:middle;" class="text-center"><abbr title="'+A['board_io'][P[p]['in_id']]['description']+'">'+A['board_io'][P[p]['in_id']]['name']+'</abbr>&nbsp;'
+
+                if (P[p]['type_id'] == 3) {var in_img = ''; fin_desc = '<td style="vertical-align:middle;" class="text-center">';}
+
+
+
+                f += fin_desc + in_img + '</td>';
+
+                if( P[p]['type_id'] == 1 ){ //Timer
+                    if (P[p]['TIMER'] == undefined ){timer = 'Timer: ' + P[p]['timer']} else{ timer = 'Timer: ' + P[p]['TIMER']; }
+                }
+                else if ( P[p]['type_id'] == 2 ){ //Timeout
+                    if (P[p]['TIMER'] == undefined ){timer = 'Timer: ' + P[p]['timer']} else{ timer = 'Timer: ' + P[p]['TIMER']; }
+                }
+                else if ( P[p]['type_id'] == 3 ){ //Automatic
+                    var timer = P[p]['chrono'];
+                    timer1 = timer.split(';');
+                    var d = '';
+                    var week = {0:'Mon',1:'Tue', 2:'Wed', 3:'Thu', 4:'Fri', 5:'Sat', 6:'Sun', 7:'All'};
+                    for( r in timer1 ) {
+                        data = timer1[r].split('-');
+                        d += 'From: ' + week[data[0]];
+                        d += ' ' + data[1];
+                        d += '.' + data[2];
+                        d += '.' + data[3];
+                        d += '&nbsp;&nbsp;  To: ' + week[data[4]];
+                        d += ' ' + data[5];
+                        d += '.' + data[6];
+                        d += '.' + data[7];
+                        d += '<br />'
+                    }
+                    timer = d;
+                }
+                else if ( P[p]['type_id'] == 4 ){ //Manual
+                    timer = '';
+                }
+
+                f += '<td style="vertical-align:middle;" class="text-center">'+timer+'</td>';
+
+                if( P[p]['OUT'] == 1 ){var out_img = '<img src="static/img/out_on.png" height=50px>';}else{var out_img = '<img src="static/img/out_off.png" height=50px>';}
+
+                f += '<td style="vertical-align:middle;" class="text-center"><abbr title="'+A['board_io'][P[p]['out_id']]['description']+'">'+A['board_io'][P[p]['out_id']]['name']+'</abbr>&nbsp;'+out_img+'</td>';
+                if( P[p]['inverted'] == 1 ){var inverted = '<span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>';}else{var inverted = '<span class="glyphicon glyphicon glyphicon glyphicon-remove" aria-hidden="true"></span>';}
+                f += '<td style="vertical-align:middle;" class="text-center">Inverted &nbsp;&nbsp;'+inverted+'</td>'
+
+
+                f += '</tr>';
+
+
+            }
+            f += '</table>';
+            f += '<hr><p><input  class="btn btn-default" type="submit" value="Program Edit" onclick="ProgramEdit('+P[p]['id']+')" ></p>'
+
+
+            document.getElementById('program').innerHTML = f;
+            document.getElementById('test').innerHTML = t;
+
+        }
+        )
+
+    }, 1000);
+
+    function setIN(id,mode){
+        //~ alert(id+' '+mode);
+        $.getJSON('/setIN', {id:id, mode:mode}, function(test){var a = 123;}  )
+    }
+
+    function ProgramEdit(id){
+        window.location.href = "/setup_program";
+    }
+
+
+</script>
+
+
+<div id='program'></div>
+<div id='test'></div>
+
+{% endblock %}
+
