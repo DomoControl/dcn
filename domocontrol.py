@@ -17,7 +17,11 @@ class Domocontrol:
         # print "*** Show device in /etc/i2c-%s" %self.i2c
         self.P = {}  # Dict with Program
         self.Q = {}  # Copy of Program
-        self.A = {}  # All other db information
+        self.A = {}  # All other db information        
+        self.IO = {}
+        self.setup()
+
+        self.initializeIO()
 
     def now(self):
         return date.now()
@@ -49,6 +53,13 @@ class Domocontrol:
         self.A['area'] = {}
         for r in res:
             self.A['area'].update({r['id']: r})
+        
+        # IO_Type informations    
+        q = 'SELECT id, name, description FROM io_type'
+        res = self.db.query(q)
+        self.A['io_type'] = {}
+        for r in res:
+            self.A['io_type'].update({r['id']: r})
 
         # Board informations
         q = 'SELECT * FROM board'
@@ -77,6 +88,7 @@ class Domocontrol:
         self.A['program_type'] = {}
         for r in res:
             self.A['program_type'].update({r['id']: r})
+            
         print("End Domocontrol Setup")
 
     def resetIO(self):  # To rese all port to begin and to end program
@@ -128,6 +140,7 @@ class Domocontrol:
 
         elif int(data['board_type_id']) == 3:  # Web board
             self.P[data['program_id']]['OUT'] = value
+            
 
     def setIN(self, id, mode):
         self.P[int(id)]['IN'] = mode
@@ -137,8 +150,75 @@ class Domocontrol:
             return self.P
         elif dictionary == 'A':
             return self.A
+        elif dictionary == 'IO':
+            return self.IO
+            
+    def binary(self, x): #Transform INT to binary list
+        if x == 0: return [0]
+        bit = []
+        while x:
+            bit.append(x % 2)
+            x >>= 1
+        bit = bit[::-1]
+        bit.reverse()
+        return bit
 
+    def getVal(self,board_io_id): #get IO Status from board_io ID       
+        #~ print board_io_id
+        board_io = self.A['board_io'][board_io_id]
+        #~ print board_io
+        board_id = self.A['board_io'][board_io_id]['board_id']
+        #~ print board_id
+        board =  self.A['board'][board_id]
+        io_type = self.A['io_type']
+        
+        if board['enable'] == 0:
+            #~ print 'Board enable = 0. Do nothing'
+            pass
+            
+        elif board['board_type_id'] == 0: #Board not defined
+            #~ print 'Board enable = 0. Do nothing'
+            pass
+            
+        elif board['board_type_id'] == 1: #Board I2C
+            #~ print 'Board I2C'
+            bus = smbus.SMBus(self.i2c)
+            IOvalue = bus.read_byte(int(board['address']))
+            IOvalue = self.binary(IOvalue)
+            value = IOvalue[int(board_io['address'])-1]
+            io_type = io_type[board_io['io_type_id']]['name']
+            self.IO.update({'IO%s'%board_io_id : {'value': value, 'type':io_type, 'area':board_io['area_id'], 'id':board_io_id  }})
+            
+        elif board['board_type_id'] == 2: #Board RS485
+            #~ print 'Board RS485'
+            pass
+        
+        elif board['board_type_id'] == 3: #Board WEB (virtual)
+            #~ print 'Board WEB'
+            pass
+        
+        elif board['board_type_id'] == 4: #Board Sensor SHT21
+            #~ print 'Board SHT21'
+            io_type = io_type[board_io['io_type_id']]['name']
+            if io_type == 'temperature':
+                value = round(sht21.SHT21(self.i2c).read_temperature(),1)
+            elif io_type == 'humidity':
+                value = round(sht21.SHT21(self.i2c).read_humidity(),1)
+            self.IO.update({'IO%s'%board_io_id : {'value': value, 'type': io_type, 'id':board_io_id }})
+
+    def initializeIO(self):
+        #~ print 'initialize'
+        q = 'SELECT * FROM board_io ORDER BY id LIMIT 250'
+        res = self.db.query(q)
+        for r in res:
+            self.getVal(r['id'])
+        #~ print self.IO
+            
     def loop(self):
+        
+        self.initializeIO()
+        #~ print self.IO
+        
         for p in self.P:  # p = id of self.P
             #print self.P
             if self.P[p]['type_id'] == 4:  # 4 = Manual
@@ -248,10 +328,3 @@ class Domocontrol:
                         
         except:
             self.tnow = self.now() #crea la variabile self.tnow se non esiste
-            
-        
-        
-                
-            
-
-

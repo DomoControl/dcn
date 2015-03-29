@@ -1,0 +1,7 @@
+To backup DATABASE:
+sudo apt-get install sqlite3 #-->> to install database
+
+sqlite3 db.sqlite .dump > db.sqlite.sql  #to dump
+
+mv db.sqlite db.sqlite_old
+sqlite3 db.sqlite < db.sqlite.sql

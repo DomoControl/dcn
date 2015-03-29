@@ -51,12 +51,23 @@ def checkLogin():
     else:
         return 0
 
+@app.route('/menu_status')
+def menu_status():
+    if not checkLogin(): return redirect(url_for('logout'))
+    setLog()
+    return render_template("menu_status.html")
+
+@app.route('/getStatus')
+def getStatus():  # return array with all program informations
+    IO = d.getDict('IO')
+    A = d.getDict('A')
+    return jsonify(resultIO=IO,resultA=A)
+
 @app.route("/setup_user", methods=["GET", "POST"])
 def setup_user():
     if not checkLogin(): return redirect(url_for('logout')) #Test if user is logged
     setLog()
     error=''
-
     f = request.form
     print f
     if request.method == "POST" and submit in f and f['submit'] == 'Save':
@@ -71,7 +82,6 @@ def setup_user():
             %(f['user_id'],f['username'],f['password'],f['name'],f['surname'],f['lang'],f['sessiontime'],f['description'],privilegeAdmin,privilegeSetup,privilegeViewer,privilegeLog,f['user_id'])
             print q
             db.query(q)
-
     try:
         if f['submit'] == 'Edit':
             user_id = f['users']
@@ -79,29 +89,24 @@ def setup_user():
             user_id=f['user_id']
         else:
             user_id = session['user_id']
-
         if f['submit'] == 'Delete':
             q='DELETE FROM user WHERE id=%s' %(f['users'])
             db.query(q)
-
         if f['submit'] == 'New':
             q='INSERT INTO user ("username","name","surname","password","privilege","session","lang") VALUES ("prova","prova","prova","prova","0000","300","en")'
             user_id = db.query(q)
     except:
         pass
-
     try:
         print user_id
     except:
         user_id = session['user_id']
-
     q = 'SELECT * FROM user WHERE id={}'.format(user_id)
     user = db.query(q)[0]
     q = 'SELECT * FROM privilege'
     privilege = db.query(q)
     q = 'SELECT * FROM user WHERE id !={}'.format(user_id)
     users = db.query(q)
-
     return render_template(
         "setup_user.html", user=user, privilege=privilege, error=error, users=users)
 
@@ -341,7 +346,6 @@ def setup_program():
             'VALUES("{}", "{}", "{}", "{}", "{}", "{}", "{}", "{}", "{}")'.format(f['in_id'], inverted, f['out_id'], f['type_id'], f['name'], f['description'], enable, timer, chrono)
         #~ print q
         db.query(q)
-        d.setup()
         d.loop()
 
     elif request.method == "POST" and 'btn' in request.form.to_dict() and request.form.to_dict()['btn'] == 'Delete':
@@ -459,10 +463,6 @@ def home():
 def getTime():
     return jsonify(result=now().strftime("%a %d/%m/%y  %H:%M"))
 
-@app.route('/menu_status')
-def menu_status():
-    return render_template("menu_status.html")
-
 @app.route('/menu_program')
 def menu_program():
     #Test if user is logged
@@ -550,21 +550,16 @@ def internal_server_error(e):
     print("Error {}" .format(e))
     return render_template('error_page.html', error=e ), 500
 
-
-def setup():
-    d.setup()
-
 def loop():
     try:
         d.loop()
     except:
         print('Error Domocontrol.py')
         time.sleep(600)
-    threading.Timer(0.5, loop).start()
+    threading.Timer(1, loop).start()
 
 
 if __name__ == '__main__':
-    setup()
     loop()
     try:
         app.run(host="0.0.0.0", port=5000, debug=False)

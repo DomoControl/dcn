@@ -5,5 +5,92 @@
         <p class=error><strong>Error:</strong> {{ error }}
     {% endif %}
     
+    <style type="text/css">
+        .sensor {
+            text-align:center; 
+            border:1px dotted gray; 
+            padding:5px; 
+            margin:5px; 
+            float:left;
+            width:100px;
+        }
+    </style> 
+    
+<script type=text/javascript>
+    A = {} //Dict with all other data
+    B={}
+    window.setInterval(function(){
+            A_len = Object.keys(B).length
+            $.getJSON('/getStatus', { A_len:A_len
+        },
+
+        function(data) {
+            //~ alert(JSON.stringify(data))
+            IO = data.resultIO; //Dict with IO status
+            A = data.resultA; //Dict with all data
+            t = '';
+            //Header
+            var f = '';
+            for( var c in IO ){
+                
+                
+                
+                if(IO[c]['type'] == 'out' && IO[c]['value'] == 1){
+                    f += '<div class="sensor">';
+                    f += A['board_io'][IO[c]['id']]['name'];
+                    f += '<br>';
+                    f += '<img src="static/img/out_on.png" height=50px>';
+                    f += '</div>';
+                }
+                else if (IO[c]['type'] == 'out' &&  IO[c]['value'] == 0){
+                    f += '<div class="sensor">';
+                    f += A['board_io'][IO[c]['id']]['name'];
+                    f += '<br>';
+                    f += '<img src="static/img/out_off.png" height=50px>';
+                    f += '</div>';
+                }
+                else if (IO[c]['type'] == 'temperature'){
+                    f += '<div class="sensor">';
+                    f += A['board_io'][IO[c]['id']]['name'];
+                    f += '<br>';
+                    f += '<img src="static/img/temperature.png" height=50px><br>'+IO[c]['value'];
+                    f += '</div>';
+                }
+                else if (IO[c]['type'] == 'humidity'){
+                    f += '<div class="sensor">';
+                    f += A['board_io'][IO[c]['id']]['name'];
+                    f += '<br>';
+                    f += '<img src="static/img/humidity.png" height=50px><br>'+IO[c]['value'];
+                    f += '</div>';
+                }
+                //~ else {var img = IO[c]['value'];}
+                
+                
+                
+                f += '</div>';
+            //~ f += JSON.stringify(IO[c]);
+            
+            document.getElementById('status').innerHTML = f;
+            document.getElementById('test').innerHTML = t;
+
+        }
+        }
+        )
+    }, 1000) ;
+
+    function setIN(id,mode){
+        //~ alert(id+' '+mode);
+        $.getJSON('/setIN', {id:id, mode:mode}, function(test){var a = 123;}  )
+    }
+
+    function ProgramEdit(id){
+        window.location.href = "/setup_program";
+    }
+
+
+</script>
+
+<div id='status'></div>
+<div id='test'></div>
 
 {% endblock %}
