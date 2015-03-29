@@ -19,10 +19,6 @@ class Domocontrol:
         self.Q = {}  # Copy of Program
         self.A = {}  # All other db information
 
-    def setWebStatus(self):  # Set all Status informations into Z Dict
-        self.setup()
-        self.Z = self.P
-    
     def now(self):
         return date.now()
 
@@ -35,13 +31,6 @@ class Domocontrol:
                 i2c = smbus.SMBus(a)
                 self.i2c = a  # address i2c /dev/i2c_x
                 print('Device i2c: {}'.format(self.i2c))
-                for b in range(1, 100):
-                    try:
-                        # i2c.read_byte_data(b,0)
-                        # self.device.append({a : b})
-                        pass
-                    except:
-                        pass
             except:
                 pass
 
@@ -81,6 +70,7 @@ class Domocontrol:
         self.A['board_type'] = {}
         for r in res:
             self.A['board_type'].update({r['id']: r})
+            
         # Program_type informations
         q = 'SELECT * FROM program_type'
         res = self.db.query(q)
@@ -147,13 +137,6 @@ class Domocontrol:
             return self.P
         elif dictionary == 'A':
             return self.A
-
-    def setDict(self, dictionary):
-        if dictionary == 'P':
-            self.P = dictionary
-        elif dictionary == 'A':
-            self.A = dictionary
-
 
     def loop(self):
         for p in self.P:  # p = id of self.P
