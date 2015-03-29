@@ -62,7 +62,7 @@
             {% endblock %}
         </div>
 
-        <footer style="margin-top:100px;">
+        <footer style="margin-top:50px;">
             <nav class="navbar navbar-default navbar-fixed-bottom" role="navigation">
                 <div class="col-md-3">
                     {% if session.logged_in %}
@@ -78,13 +78,14 @@
 		</script>
         
 		<script type=text/javascript src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
-        <script type=text/javascript> 
-            window.setInterval(function(){
+        <script type=text/javascript> <!-- Show time in status bar -->
+            window.setInterval(getTime = function(){
                 $.getJSON('/getTime', {
                 },  function(data) {
                       $("#time").text(data.result);
                     }
                 )}, 60000);
+            getTime();
         </script>
 		<script>
 		  $(document).ready(function () {

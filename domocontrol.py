@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import date
 import time
 import smbus
 from db import Database
@@ -21,9 +22,9 @@ class Domocontrol:
     def setWebStatus(self):  # Set all Status informations into Z Dict
         self.setup()
         self.Z = self.P
-
+    
     def now(self):
-        return datetime.datetime.utcnow()
+        return date.now()
 
     def setBus(self):
         print("Start setBus")

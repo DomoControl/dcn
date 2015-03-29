@@ -3,7 +3,8 @@ from flask import Flask, request, render_template, g, session, jsonify, redirect
 from flask.ext.bootstrap import Bootstrap
 from db import Database
 import sys
-import datetime
+#~ import datetime
+from date import now #get time function
 import threading
 import domocontrol
 from flask.ext.babel import Babel
@@ -35,10 +36,6 @@ def get_locale():
     # otherwise try to guess the language from the user accept
     # header the browser transmits.  We support de/fr/en in this
     return request.accept_languages.best_match(['it', 'en'])
-
-
-def now():
-    return datetime.datetime.utcnow()
 
 
 def setLog():  # Da finire. Serve per tracciare l'IP
@@ -460,7 +457,7 @@ def home():
 
 @app.route('/getTime')  # return datetime now() to show in footer
 def getTime():
-    return jsonify(result=now().strftime("%a %d %b  %H:%M:%S"))
+    return jsonify(result=now().strftime("%a %d/%m/%y  %H:%M"))
 
 @app.route('/menu_status')
 def menu_status():
