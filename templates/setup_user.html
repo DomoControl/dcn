@@ -67,28 +67,28 @@
     {% if session['privilege'][0]=='1' or session['privilege'][1]=='1' or session['privilege'][2]=='1' or session['privilege'][3]=='1' %}
       <div class="input-group">
         <span class="input-group-addon" style="width:200px;">Log</span>
-        <input   class="form-control" type="checkbox"  name='privilegeLog' {% if user.privilege[3] == '1' %} checked {% endif %}>
+        <input  type="checkbox"  name='privilegeLog' {% if user.privilege[3] == '1' %} checked {% endif %}>
       </div>
     {% endif %}
 
     {% if session['privilege'][0]=='1' or session['privilege'][1]=='1' or session['privilege'][2]=='1' %}
       <div class="input-group">
         <span class="input-group-addon" style="width:200px;">Viewer</span>
-        <input   class="form-control" type="checkbox"  name='privilegeViewer' {% if user.privilege[2] == '1' %} checked {% endif %}>
+        <input type="checkbox"  name='privilegeViewer' {% if user.privilege[2] == '1' %} checked {% endif %}>
       </div>
     {% endif %}
 
     {% if session['privilege'][0]=='1' or session['privilege'][1]=='1' %}
       <div class="input-group">
         <span class="input-group-addon" style="width:200px;">Setup</span>
-        <input   class="form-control" type="checkbox"  name='privilegeSetup' {% if user.privilege[1] == '1' %} checked {% endif %}>
+        <input type="checkbox"  name='privilegeSetup' {% if user.privilege[1] == '1' %} checked {% endif %}>
       </div>
     {% endif %}
 
     {% if session['privilege'][0]=='1'%}
       <div class="input-group ">
         <span class="input-group-addon" style="width:200px;">Admin</span>
-        <input   class="form-control" type="checkbox"  name='privilegeAdmin' {% if user.privilege[0] == '1' %} checked {% endif %}>
+        <input type="checkbox"  name='privilegeAdmin' {% if user.privilege[0] == '1' %} checked {% endif %}>
       </div>
     {% endif %}
 

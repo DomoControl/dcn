@@ -58,7 +58,10 @@ def no_permission(error=''):
 
 @app.route('/menu_status')
 def menu_status():
-    if not checkLogin('menu_status'): return redirect(url_for('logout'))
+    if not checkLogin(): return redirect(url_for('logout'))
+    if int(session['privilege'][0:1]) == 0 and int(session['privilege'][1:2]) == 0:
+        error='Insufficient privilege for Setup Status Menu!'
+        return render_template( "no_permission.html", error=error)
     setLog()
     return render_template("menu_status.html")
 
@@ -102,22 +105,18 @@ def setup_user():
                     error = 'There must be at least one administrator user!'
                     privilegeAdmin = 1
             
-            
             privilege = "{}{}{}{}".format(privilegeAdmin,privilegeSetup,privilegeViewer,privilegeLog) 
             q='UPDATE user SET id=%s, username="%s", password="%s", name="%s", surname="%s", lang="%s", session="%s", description="%s", privilege="%s", timestamp="%s" WHERE id=%s'\
             %(f['user_id'],f['username'],f['password'],f['name'],f['surname'],f['lang'],f['sessiontime'],f['description'],privilege,now(),f['user_id'])
-            print q
             db.query(q)
             
             #reload session privilege when user is changed
             if int(session['user_id']) == int(f['user_id']):
-                print 'session reload'
                 session['user_name'] = f['name']
                 session['user_id'] = f['user_id']
                 session['privilege'] = privilege
                 session['timestamp'] = now()
-                session['sessionTimeout'] = f['sessiontime']
-                
+                session['sessionTimeout'] = f['sessiontime']                
                 return redirect(url_for('setup_user'))
     try:
         if f['submit'] == 'Edit':

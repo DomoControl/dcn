@@ -94,19 +94,20 @@
 		</script>
 
 		<!-- load graph library -->
-		<script>
-			var chart_id = {{ chartID|safe }}
-			var series = {{ series|safe }}
-			var title = {{ title|safe }}
-			var xAxis = {{ xAxis|safe }}
-			var yAxis = {{ yAxis|safe }}
-            var tooltip = {{ tooltip|safe }}
-			var chart = {{ chart|safe }}
-		</script>
+        {% if chartID %}
+            <script>
+                var chart_id = {{ chartID|safe }}
+                var series = {{ series|safe }}
+                var title = {{ title|safe }}
+                var xAxis = {{ xAxis|safe }}
+                var yAxis = {{ yAxis|safe }}
+                var tooltip = {{ tooltip|safe }}
+                var chart = {{ chart|safe }}
+            </script>
 
-		<script src="http://code.highcharts.com/highcharts.js"></script>
-		<script src="../static/js/graph.js"></script> 
-
+            <script src="http://code.highcharts.com/highcharts.js"></script>
+            <script src="../static/js/graph.js"></script> 
+        {% endif %}
 	
     </body>
 
