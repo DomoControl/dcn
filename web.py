@@ -39,6 +39,7 @@ def get_locale():
 
 
 def setLog():  # Da finire. Serve per tracciare l'IP
+    #~ if session['privilege']
     userAgentString = request.headers.get('User-Agent')
     res = db.query("INSERT INTO log (command,ip) VALUES('{}', '{}')".format(request.url, request.remote_addr))
 
@@ -51,26 +52,36 @@ def checkLogin():
     else:
         return 0
 
+@app.route('/no_permission')
+def no_permission(error=''):
+    return render_template("no_permission.html", error=error)
+
 @app.route('/menu_status')
 def menu_status():
-    if not checkLogin(): return redirect(url_for('logout'))
+    if not checkLogin('menu_status'): return redirect(url_for('logout'))
     setLog()
     return render_template("menu_status.html")
 
 @app.route('/getStatus')
-def getStatus():  # return array with all program informations
+def getStatus(a=10):  # return array with all program informations
+    print a
     IO = d.getDict('IO')
     A = d.getDict('A')
+    print A
     return jsonify(resultIO=IO,resultA=A)
 
 @app.route("/setup_user", methods=["GET", "POST"])
 def setup_user():
     if not checkLogin(): return redirect(url_for('logout')) #Test if user is logged
-    setLog()
     error=''
+    if int(session['privilege'][0:1]) == 0:
+        error='Insufficient privilege for Setup User Menu!'
+        return render_template( "no_permission.html", error=error)
+        
+    setLog()
+
     f = request.form
-    print f
-    if request.method == "POST" and submit in f and f['submit'] == 'Save':
+    if request.method == "POST" and 'submit' in f and f['submit'] == 'Save':
         if len(f['password']) <=2 or f['password'] != f['passwordRetype']:
             error = "Password non impostata o non coincidenti"
         else:
@@ -78,10 +89,36 @@ def setup_user():
             privilegeViewer = 1 if 'privilegeViewer' in f else '0'
             privilegeSetup = 1 if 'privilegeSetup' in f else '0'
             privilegeAdmin = 1 if 'privilegeAdmin' in f else '0'
-            q='UPDATE user SET id=%s, username="%s", password="%s", name="%s", surname="%s", lang="%s", session="%s", description="%s", privilege="%s%s%s%s" WHERE id=%s'\
-            %(f['user_id'],f['username'],f['password'],f['name'],f['surname'],f['lang'],f['sessiontime'],f['description'],privilegeAdmin,privilegeSetup,privilegeViewer,privilegeLog,f['user_id'])
+            
+            #Check if there are at least ONE ADMINISTRATOR
+            if int(privilegeAdmin) == 0:
+                q = 'SELECT privilege FROM user'
+                res = db.query(q)
+                priv = 0
+                for r in res:
+                    if r['privilege'][0:1] == '1':
+                        priv += 1
+                if priv == 1:
+                    error = 'There must be at least one administrator user!'
+                    privilegeAdmin = 1
+            
+            
+            privilege = "{}{}{}{}".format(privilegeAdmin,privilegeSetup,privilegeViewer,privilegeLog) 
+            q='UPDATE user SET id=%s, username="%s", password="%s", name="%s", surname="%s", lang="%s", session="%s", description="%s", privilege="%s", timestamp="%s" WHERE id=%s'\
+            %(f['user_id'],f['username'],f['password'],f['name'],f['surname'],f['lang'],f['sessiontime'],f['description'],privilege,now(),f['user_id'])
             print q
             db.query(q)
+            
+            #reload session privilege when user is changed
+            if int(session['user_id']) == int(f['user_id']):
+                print 'session reload'
+                session['user_name'] = f['name']
+                session['user_id'] = f['user_id']
+                session['privilege'] = privilege
+                session['timestamp'] = now()
+                session['sessionTimeout'] = f['sessiontime']
+                
+                return redirect(url_for('setup_user'))
     try:
         if f['submit'] == 'Edit':
             user_id = f['users']
@@ -107,8 +144,7 @@ def setup_user():
     privilege = db.query(q)
     q = 'SELECT * FROM user WHERE id !={}'.format(user_id)
     users = db.query(q)
-    return render_template(
-        "setup_user.html", user=user, privilege=privilege, error=error, users=users)
+    return render_template( "setup_user.html", user=user, privilege=privilege, error=error, users=users)
 
 
 @app.route('/setup_area', methods=["GET", "POST"])
@@ -409,49 +445,6 @@ def doc():
     return render_template("doc.html")
 
 
-
-@app.route('/setup_user123', methods=["GET", "POST"])
-def setup_user123():
-    setLog()
-    error = ''
-    if request.method == "POST":
-        print request.form["submit"]
-        print request.form
-        # save form data
-        if request.form["password"] != request.form["retype_password"]:  # check password and retype_password
-            error = "Password not equal"
-        else:
-            # get privilege
-            x = 0
-            privilege = ''
-            while x < 10:
-                try:
-                    privilege = '{}{}{}'.format(privilege, request.form['privilege[{}]'.format(x)], ";")
-                except:
-                    pass
-                x = x+1
-            q = 'UPDATE user SET id="{}", username="{}", name="{}", surname="{}", password="{}", session="{}", lang="{}", privilege="{}", timestamp="{}" WHERE id="{}" '\
-            .format(request.form["id"], request.form["username"], request.form["name"], request.form["surname"], request.form["password"], request.form["session"],
-                request.form["lang"], privilege[:-1], now(), request.form["id"])
-            print q
-            db.query(q)
-    # read data
-    if 'logged_in' in session and session['logged_in'] == True:
-        # flash('New entry was successfully posted')
-
-        q = 'SELECT * FROM user WHERE id={}'.format(session['user_id'])
-        user = db.query(q)[0]
-        q = 'SELECT * FROM privilege'
-        privilege = db.query(q)
-        q = 'SELECT * FROM user WHERE id !={}'.format(session['user_id'])
-        users = db.query(q)
-        return render_template(
-            "setup_user.html", user=user, privilege=privilege, error=error, users=users)
-    else:
-        return render_template("login.html")
-
-
-
 @app.route("/")
 @app.route('/home')
 def home():
@@ -521,7 +514,7 @@ def login():
             error = "Password o Username not valid"
         else:
             q = 'SELECT * FROM user WHERE username = "{}" AND password = "{}"' \
-                .format(f['username'], f['password'])
+            .format(f['username'], f['password'])
             res = db.query(q)
             if res and len(res[0]) > 0:
                 session['logged_in'] = True

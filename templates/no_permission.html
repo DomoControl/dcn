@@ -1,0 +1,14 @@
+{% extends "template.html"  %}
+
+{% block content %}
+
+<h2>Sorry but you have not sufficient privileges</h2>
+{% if error %}
+    <p class=error><strong>Error:</strong> {{ error }} </p>
+{% endif %}
+
+
+{% endblock %}
+
+
+
