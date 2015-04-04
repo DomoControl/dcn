@@ -17,23 +17,43 @@
     </style> 
     
 <script type=text/javascript>
-    A = {} //Dict with all other data
-    B={}
+    A = {}; //Dict with all other data
+    ACopy = {};
+    IO = {};
+    IOCopy = {};
+    var reloadDictA='';
+    var reloadDictIO='';
+    var debug='';
     window.setInterval(function(){
-            A_len = Object.keys(B).length
-            $.getJSON('/getStatus', { A_len:A_len
-        },
-
+            $.getJSON('/getStatus', {'reloadDictA':reloadDictA, 'reloadDictIO':reloadDictIO, 'debug':debug},
         function(data) {
             //~ alert(JSON.stringify(data))
-            IO = data.resultIO; //Dict with IO status
-            A = data.resultA; //Dict with all data
-            t = '';
+            IOCopy = data.resultIO; //Dict with IO status
+            ACopy = data.resultA; //Dict with all data
+            
+            //Get A dict if empty
+            if(jQuery.isEmptyObject(ACopy) != true){
+                A = $.extend(A, ACopy);
+            }
+            if(Object.keys(A).length == '0'){
+                reloadDictA='true';
+            } else {
+                reloadDictA='false';
+            }
+            
+            //Get IO dict if empty
+            if(jQuery.isEmptyObject(IOCopy) != true){
+                IO = $.extend(IO, IOCopy);
+            }
+            if(Object.keys(IO).length == '0'){
+                reloadDictIO='true';
+            } else {
+                reloadDictIO='false';
+            }
+            
             //Header
             var f = '';
             for( var c in IO ){
-                
-                
                 
                 if(IO[c]['type'] == 'out' && IO[c]['value'] == 1){
                     f += '<div class="sensor">';
@@ -71,7 +91,7 @@
             //~ f += JSON.stringify(IO[c]);
             
             document.getElementById('status').innerHTML = f;
-            document.getElementById('test').innerHTML = t;
+            document.getElementById('debug').innerHTML = debug;
 
         }
         }
@@ -91,6 +111,6 @@
 </script>
 
 <div id='status'></div>
-<div id='test'></div>
+<div id='debug'></div>
 
 {% endblock %}

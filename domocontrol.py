@@ -16,12 +16,13 @@ class Domocontrol:
         self.setBus()
         # print "*** Show device in /etc/i2c-%s" %self.i2c
         self.P = {}  # Dict with Program
-        self.Q = {}  # Copy of P
+        self.PCopy = {}  #Copy P dictionary
         self.A = {}  # All other db information        
-        self.B = {}  # Copy of A
-        self.IO = {}
+        self.ACopy = {} #Copy A dictionary
+        self.IO = {} #Content IO status (menu status)
+        self.IOCopy = {} #Copy IO dictionary
+        
         self.setup()
-
         self.initializeIO()
 
     def now(self):
@@ -146,18 +147,26 @@ class Domocontrol:
     def setIN(self, id, mode):
         self.P[int(id)]['IN'] = mode
 
-    def getDict(self, dictionary):
+    def getDict(self, dictionary, reloadDict=False):
         if dictionary == 'P':
+            if self.P == self.PCopy and reloadDict==False:
+                return {}
+            else:
+               self.PCopy = self.P.copy()
             return self.P
         
         elif dictionary == 'A':
-            #~ if self.A == self.B:
-                #~ return {}
-            #~ else:
-               #~ self.B = self.A.copy()
+            if self.A == self.ACopy and reloadDict==False:
+                return {}
+            else:
+               self.ACopy = self.A.copy()
             return self.A
                 
         elif dictionary == 'IO':
+            if self.IO == self.IOCopy and reloadDict==False:
+                return {}
+            else:
+               self.IOCopy = self.IO.copy()
             return self.IO
             
     def binary(self, x): #Transform INT to binary list

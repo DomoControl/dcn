@@ -63,6 +63,7 @@
             {% endblock %}
         </div>
 
+        
         <footer style="margin-top:50px;">
             <nav class="navbar navbar-default navbar-fixed-bottom" role="navigation">
                 <div class="col-md-3">
@@ -71,6 +72,7 @@
                     {% endif %}
                 </div>
                 <div id="time" class="col-md-2"></div>
+                
             </nav>
         </footer>
 
@@ -88,6 +90,9 @@
                 )}, 60000);
             getTime();
         </script>
+
+
+
 		<script>
 		  $(document).ready(function () {
 		  $("#{{request.endpoint}}").addClass("active"); })

@@ -56,6 +56,10 @@ def checkLogin():
 def no_permission(error=''):
     return render_template("no_permission.html", error=error)
 
+@app.route('/getTime')  # return datetime now() to show in footer
+def getTime():
+    return jsonify(result=now().strftime("%a %d/%m/%y  %H:%M"))
+
 @app.route('/menu_status')
 def menu_status():
     if not checkLogin(): return redirect(url_for('logout'))
@@ -65,12 +69,17 @@ def menu_status():
     setLog()
     return render_template("menu_status.html")
 
-@app.route('/getStatus')
-def getStatus(a=10):  # return array with all program informations
-    print a
-    IO = d.getDict('IO')
-    A = d.getDict('A')
-    print A
+@app.route('/getStatus', methods=["GET", "POST"])
+def getStatus(reloadADict=False):  # return array with all data informations only if required
+    if request.args['reloadDictA'] == 'true':
+        A = d.getDict('A',reloadDict=True)
+    else:
+        A = d.getDict('A')
+    
+    if request.args['reloadDictIO'] == 'true':
+        IO = d.getDict('IO',reloadDict=True)
+    else:
+        IO = d.getDict('IO')
     return jsonify(resultIO=IO,resultA=A)
 
 @app.route("/setup_user", methods=["GET", "POST"])
@@ -449,11 +458,6 @@ def doc():
 def home():
     setLog()
     return render_template("home.html")
-
-
-@app.route('/getTime')  # return datetime now() to show in footer
-def getTime():
-    return jsonify(result=now().strftime("%a %d/%m/%y  %H:%M"))
 
 @app.route('/menu_program')
 def menu_program():
