@@ -10,6 +10,7 @@ import domocontrol
 from flask.ext.babel import Babel
 from config import LANGUAGES
 import time
+import copy
 
 print("Begin")
 
@@ -21,6 +22,13 @@ bootstrap = Bootstrap(app)
 DATABASE = './db/db.sqlite'
 db = Database(dbname=DATABASE)  # metodi per database
 d = domocontrol.Domocontrol()
+P = {}  # Dict with Program
+PCopy = {}  #Copy P dictionary
+A = {}  # All other db information        
+ACopy = {} #Copy A dictionary
+IO = {} #Content IO status (menu status)
+IOCopy = {} #Copy IO dictionary
+
 
 @app.route('/lang/it')
 def lang(language=None):
@@ -70,7 +78,7 @@ def menu_status():
     return render_template("menu_status.html")
 
 @app.route('/getStatus', methods=["GET", "POST"])
-def getStatus(reloadADict=False):  # return array with all data informations only if required
+def getStatus():  # return array with all data informations only if required
     if request.args['reloadDictA'] == 'true':
         A = d.getDict('A',reloadDict=True)
     else:
@@ -80,7 +88,42 @@ def getStatus(reloadADict=False):  # return array with all data informations onl
         IO = d.getDict('IO',reloadDict=True)
     else:
         IO = d.getDict('IO')
+        
+    print A,IO
     return jsonify(resultIO=IO,resultA=A)
+
+@app.route('/getProgramStatus', methods=["GET", "POST"])
+def getProgram(reloadDict=False):  # return array with all program informations
+    global PCopy
+    if reloadDict == True:
+        request.args['reloadDictA'] == 'true'
+        request.args['reloadDictP'] == 'true'
+        
+    if request.args['reloadDictA'] == 'true':
+        A = d.getDict('A',reloadDict=True)
+    else:
+        A = d.getDict('A')
+        
+    if request.args['reloadDictP'] == 'true':
+        P = d.getDict('P',reloadDict=True)
+    else:
+        P = d.getDict('P')
+        
+    print P,A
+
+    return jsonify(resultP=P, resultA=A)
+
+@app.route('/setIN', methods=['GET', 'POST'])
+def setIN():
+    pid = request.args.get('id')  # Program id
+    # print pid
+    mode = request.args.get('mode')  # to set IN = mode
+    print("Set Button", pid, mode)
+    d.setIN(pid, mode)
+    #~ d.loop()
+    #~ getProgram(reloadDict=True)
+    return jsonify(result=123)
+
 
 @app.route("/setup_user", methods=["GET", "POST"])
 def setup_user():
@@ -470,23 +513,10 @@ def menu_program():
         return redirect(url_for('login'))
 
 
-@app.route('/getProgramStatus')
-def getProgram():  # return array with all program informations
-    P = d.getDict('P')
-    A = d.getDict('A')
-    # d.A = dict with all database information. d.Z dict program
-    return jsonify(resultP=P, resultA=A)
 
 
-@app.route('/setIN', methods=['GET', 'POST'])
-def setIN():
-    pid = request.args.get('id')  # Program id
-    # print pid
-    mode = request.args.get('mode')  # to set IN = mode
-    print("Set Button", pid, mode)
-    d.setIN(pid, mode)
-    d.loop()
-    return jsonify(result=123)
+
+
 
 
 @app.route('/welcome')

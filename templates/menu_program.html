@@ -4,17 +4,41 @@
 
 
 <script type=text/javascript>
-    A = {} //Dict with all other data
-    B={}
+    A = {}; //Dict with all other data
+    ACopy = {};
+    P = {};
+    PCopy = {};
+    var reloadDictA = '';
+    var reloadDictP = '';
+    
     window.setInterval(function(){
-            A_len = Object.keys(B).length
-            $.getJSON('/getProgramStatus', { A_len:A_len
-        },
+            $.getJSON('/getProgramStatus', {'reloadDictA':reloadDictA, 'reloadDictP':reloadDictP},
 
         function(data) {
             //~ alert(JSON.stringify(data))
-            P = data.resultP; //Dict with Program data
-            A = data.resultA; //Dict with all other informations
+            PCopy = data.resultP; //Dict with IO status
+            ACopy = data.resultA; //Dict with all data
+            
+            //Get A dict if empty
+            if(jQuery.isEmptyObject(ACopy) != true){
+                A = $.extend(A, ACopy);
+            }
+            if(Object.keys(A).length == '0'){
+                reloadDictA='true';
+            } else {
+                reloadDictA='false';
+            }
+            
+            //Get P dict if empty
+            if(jQuery.isEmptyObject(PCopy) != true){
+                P = $.extend(P, PCopy);
+            }
+            if(Object.keys(P).length == '0'){
+                reloadDictP='true';
+            } else {
+                reloadDictP='false';
+            }
+            
             t = '';
 
             //Header
@@ -105,6 +129,8 @@
 
     function setIN(id,mode){
         //~ alert(id+' '+mode);
+        reloadDictA = 'true';
+        reloadDictP = 'true';
         $.getJSON('/setIN', {id:id, mode:mode}, function(test){var a = 123;}  )
     }
 

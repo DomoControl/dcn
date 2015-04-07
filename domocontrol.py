@@ -4,6 +4,7 @@ import time
 import smbus
 from db import Database
 import datetime
+import copy
 import sht21
 
 class Domocontrol:
@@ -21,6 +22,8 @@ class Domocontrol:
         self.ACopy = {} #Copy A dictionary
         self.IO = {} #Content IO status (menu status)
         self.IOCopy = {} #Copy IO dictionary
+        
+        self.n = 0
         
         self.setup()
         self.initializeIO()
@@ -148,26 +151,29 @@ class Domocontrol:
         self.P[int(id)]['IN'] = mode
 
     def getDict(self, dictionary, reloadDict=False):
+        #~ print self.P[4]
         if dictionary == 'P':
-            if self.P == self.PCopy and reloadDict==False:
+            if self.PCopy == self.P and reloadDict==False:
+                print "P Uguale"
                 return {}
             else:
-               self.PCopy = self.P.copy()
-            return self.P
-        
+                print "P diverso"
+                self.PCopy = copy.deepcopy(self.P)
+                return self.P
+                
         elif dictionary == 'A':
             if self.A == self.ACopy and reloadDict==False:
                 return {}
             else:
-               self.ACopy = self.A.copy()
-            return self.A
+                self.ACopy = copy.deepcopy(self.A)
+                return self.A
                 
         elif dictionary == 'IO':
             if self.IO == self.IOCopy and reloadDict==False:
                 return {}
             else:
-               self.IOCopy = self.IO.copy()
-            return self.IO
+                self.IOCopy = copy.deepcopy(self.IO)
+                return self.IO
             
     def binary(self, x): #Transform INT to binary list
         if x == 0: return [0]
@@ -236,7 +242,7 @@ class Domocontrol:
         #~ print self.IO
         
         for p in self.P:  # p = id of self.P
-            #print self.P
+            #~ print self.P[4]
             if self.P[p]['type_id'] == 4:  # 4 = Manual
                 in_address = self.getAddress('in_id', p)
                 out_address = self.getAddress('out_id', p)
@@ -246,6 +252,8 @@ class Domocontrol:
                 self.setIO(out_address, in_stat)
 
             elif self.P[p]['type_id'] == 1:  # 1 = Timer (luci scale)
+                #~ print self.P[4]
+                #~ print 'Domo',id(self.P)
                 in_address = self.getAddress('in_id', p)
                 out_address = self.getAddress('out_id', p)
                 in_status = self.IOStatus(in_address)
@@ -266,7 +274,7 @@ class Domocontrol:
                     if 'TIMER' in self.P[p]:
                         del self.P[p]['TIMER']
                     self.setIO(out_address, int(self.P[p]['inverted']))
-
+                
             elif self.P[p]['type_id'] == 2:  # 2 = Timeout (Pompa irrigazione)
                 in_address = self.getAddress('in_id', p)
                 out_address = self.getAddress('out_id', p)
