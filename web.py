@@ -89,7 +89,7 @@ def getStatus():  # return array with all data informations only if required
     else:
         IO = d.getDict('IO')
         
-    print A,IO
+    #~ print A,IO
     return jsonify(resultIO=IO,resultA=A)
 
 @app.route('/getProgramStatus', methods=["GET", "POST"])
@@ -109,8 +109,7 @@ def getProgram(reloadDict=False):  # return array with all program informations
     else:
         P = d.getDict('P')
         
-    print P,A
-
+    #~ print P,A
     return jsonify(resultP=P, resultA=A)
 
 @app.route('/setIN', methods=['GET', 'POST'])
@@ -120,7 +119,7 @@ def setIN():
     mode = request.args.get('mode')  # to set IN = mode
     print("Set Button", pid, mode)
     d.setIN(pid, mode)
-    #~ d.loop()
+    d.loop()
     #~ getProgram(reloadDict=True)
     return jsonify(result=123)
 
@@ -324,11 +323,29 @@ def setup_board():
     board_type = db.query(q)
     return render_template("setup_board.html", data=res, board_type=board_type)
 
+def checkEnable(id, enable=0):
+    if enable == 1:
+        return 1
+    P = d.P
+    A = d.A
+    io_type_id = A['board_io'][int(id)]['io_type_id']
+    if A['io_type'][io_type_id]['type'] == 0:
+        type = 'out_id'
+    else:
+        type = 'in_id'
+    
+    for r in P:
+        print P[r][type], id
+        if int(P[r][type]) == int(id):
+            print "ERROR**************************"
+    return 0
+        
 
 @app.route('/setup_board_io', methods=["GET", "POST"])
 def setup_board_io():
     #Test if user is logged
     if not checkLogin(): return redirect(url_for('logout'))
+    error=''
     if request.method == "POST":
         f = request.form
         print(f)
@@ -337,9 +354,13 @@ def setup_board_io():
                 enable = 1
             else:
                 enable = 0
-            q = 'UPDATE board_io SET id="{}", io_type_id="{}", name="{}", description="{}", area_id="{}", enable="{}", board_id="{}", address="{}" WHERE id="{}"'\
-            .format(f["id"], f['io_type_id'], f["name"], f["description"], f["area_id"], enable, f['board_id'], f["address"], f["id"])
-            db.query(q)
+            
+            if checkEnable(f["id"], enable) == 0:
+                error='Cannot disable I/O used in Program, first change Program '
+            else:
+                q = 'UPDATE board_io SET id="{}", io_type_id="{}", name="{}", description="{}", area_id="{}", enable="{}", board_id="{}", address="{}" WHERE id="{}"'\
+                .format(f["id"], f['io_type_id'], f["name"], f["description"], f["area_id"], enable, f['board_id'], f["address"], f["id"])
+                db.query(q)
         elif f['submit'] == 'Add IO':
             if 'enable' in f:
                 enable = 1
@@ -349,8 +370,11 @@ def setup_board_io():
             .format(f['io_type_id'], f["name"], f["description"], f["area_id"], enable, f['board_id'], f["address"])
             db.query(q)
         elif f['submit'] == 'Delete':
-            q = "DELETE FROM board_io WHERE id={}".format(f['id'])
-            db.query(q)
+            if checkEnable(f["id"]) == 0:
+                error='Cannot delete I/O used in Program, first change Program '
+            else:
+                q = "DELETE FROM board_io WHERE id={}".format(f['id'])
+                db.query(q)
     id = request.args['id']
     q = 'SELECT * FROM board_io WHERE board_id={}'.format(id)
     res = db.query(q)
@@ -360,11 +384,12 @@ def setup_board_io():
     board_type = db.query(q)
     q = 'SELECT * FROM io_type ORDER BY id '
     io_type = db.query(q)
-    q = 'SELECT * FROM board ORDER BY id'
+    q = 'SELECT * FROM board WHERE enable=1 ORDER BY id'
     all_board = db.query(q)
     q = 'SELECT * FROM area ORDER BY id'
     area = db.query(q)
-    return render_template("setup_board_io.html", data=res, board=board, board_type=board_type, io_type=io_type, all_board=all_board, area=area)
+    d.setup() #reload database
+    return render_template("setup_board_io.html", error=error, data=res, board=board, board_type=board_type, io_type=io_type, all_board=all_board, area=area)
 
 
 @app.route('/setup_io_type', methods=["GET", "POST"])
@@ -374,7 +399,7 @@ def setup_io_type():
     if request.method == "POST":
         f = request.form
         db.setForm('UPDATE', f.to_dict(), 'io_type')
-    q = 'SELECT * FROM io_type ORDER BY id'
+    q = 'SELECT * FROM io_type ORDER BY type, id'
     res = db.query(q)
     return render_template("setup_io_type.html", data=res)
 
@@ -463,9 +488,9 @@ def setup_program():
     cr = []  # chrono list
     for c in chrono:
         cr.append(c.split('-'))
-    q = 'SELECT * FROM board_io WHERE io_type_id = 0 OR io_type_id = 1 AND enable = 1'
+    q = 'SELECT bi.* FROM board_io bi, io_type it WHERE bi.io_type_id=it.id AND it.type=1 AND  bi.enable=1 '
     board_io_in = db.query(q)
-    q = 'SELECT * FROM board_io WHERE io_type_id = 2 OR io_type_id = 3 AND enable = 1'
+    q = 'SELECT bi.* FROM board_io bi, io_type it WHERE bi.io_type_id=it.id AND it.type=0 AND  bi.enable=1 '
     board_io_out = db.query(q)
     print(board_io_out)
     q = 'SELECT * FROM program_type'
@@ -577,13 +602,16 @@ def internal_server_error(e):
     return render_template('error_page.html', error=e ), 500
 
 def loop():
+    timebegin = now()
     try:
         d.loop()
     except:
         print('Error Domocontrol.py')
-        time.sleep(600)
-    threading.Timer(1, loop).start()
+        
 
+    threading.Timer(1, loop).start()
+    print now() - timebegin
+    print '-----------------------------------------------------------------'    
 
 if __name__ == '__main__':
     loop()

@@ -60,7 +60,7 @@ class Domocontrol:
             self.A['area'].update({r['id']: r})
         
         # IO_Type informations    
-        q = 'SELECT id, name, description FROM io_type'
+        q = 'SELECT id, type, name, description FROM io_type'
         res = self.db.query(q)
         self.A['io_type'] = {}
         for r in res:
@@ -150,14 +150,14 @@ class Domocontrol:
     def setIN(self, id, mode):
         self.P[int(id)]['IN'] = mode
 
-    def getDict(self, dictionary, reloadDict=False):
+    def getDict(self, dictionary, reloadDict=False): #Send DICT to web.py when request. If Dict is equal, send empty.
         #~ print self.P[4]
         if dictionary == 'P':
             if self.PCopy == self.P and reloadDict==False:
-                print "P Uguale"
+                #~ print "P Uguale"
                 return {}
             else:
-                print "P diverso"
+                #~ print "P diverso"
                 self.PCopy = copy.deepcopy(self.P)
                 return self.P
                 
@@ -220,29 +220,30 @@ class Domocontrol:
             pass
         
         elif board['board_type_id'] == 4: #Board Sensor SHT21
-            #~ print 'Board SHT21'
-            io_type = io_type[board_io['io_type_id']]['name']
-            if io_type == 'temperature':
-                value = round(sht21.SHT21(self.i2c).read_temperature(),1)
-            elif io_type == 'humidity':
-                value = round(sht21.SHT21(self.i2c).read_humidity(),1)
-            self.IO.update({'IO%s'%board_io_id : {'value': value, 'type': io_type, 'id':board_io_id }})
+            try:
+                #~ print 'Board SHT21'
+                io_type = io_type[board_io['io_type_id']]['name']
+                if io_type == 'temperature':
+                    value = round(sht21.SHT21(self.i2c).read_temperature(),1)
+                elif io_type == 'humidity':
+                    value = round(sht21.SHT21(self.i2c).read_humidity(),1)
+                self.IO.update({'IO%s'%board_io_id : {'value': value, 'type': io_type, 'id':board_io_id }})
+            except:
+                print "Error SHT21"
 
     def initializeIO(self):
-        #~ print 'initialize'
-        q = 'SELECT * FROM board_io ORDER BY id LIMIT 250'
-        res = self.db.query(q)
-        for r in res:
-            self.getVal(r['id'])
-        #~ print self.IO
+        for r in self.A['board_io']:
+            if self.A['board_io'][r]['enable'] == 1:
+                #~ print r
+                self.getVal(r)
             
     def loop(self):
-        
+        #~ timebegin = self.now()
         self.initializeIO()
         #~ print self.IO
         
         for p in self.P:  # p = id of self.P
-            #~ print self.P[4]
+            #~ print self.P
             if self.P[p]['type_id'] == 4:  # 4 = Manual
                 in_address = self.getAddress('in_id', p)
                 out_address = self.getAddress('out_id', p)
@@ -252,7 +253,7 @@ class Domocontrol:
                 self.setIO(out_address, in_stat)
 
             elif self.P[p]['type_id'] == 1:  # 1 = Timer (luci scale)
-                #~ print self.P[4]
+                #~ print self.P[p]
                 #~ print 'Domo',id(self.P)
                 in_address = self.getAddress('in_id', p)
                 out_address = self.getAddress('out_id', p)
@@ -276,6 +277,7 @@ class Domocontrol:
                     self.setIO(out_address, int(self.P[p]['inverted']))
                 
             elif self.P[p]['type_id'] == 2:  # 2 = Timeout (Pompa irrigazione)
+                #~ print self.P[p]
                 in_address = self.getAddress('in_id', p)
                 out_address = self.getAddress('out_id', p)
                 in_status = self.IOStatus(in_address)
@@ -352,3 +354,7 @@ class Domocontrol:
                         
         except:
             self.tnow = self.now() #crea la variabile self.tnow se non esiste
+        
+        #~ timeend=self.now()
+        #~ print "Time cycle: ", timeend-timebegin
+        #~ print '-'*80

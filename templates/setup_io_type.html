@@ -8,9 +8,13 @@
     <form action="" method="post"  class="form-horizontal" role="form">
         <div class="form-group">
             <label class="col-sm-2 control-label">{{_('Name')}}</label>
-        
-            <div class="col-sm-10">
-                <label class="col-sm-2 control-label">{{_('Description')}}</label>
+            
+            <div class="col-sm-2">
+                <label class="col-sm-2 control-label">{{_('Type')}}</label>
+            </div>
+            
+            <div class="col-sm-8">
+                <label class="col-sm-8 control-label">{{_('Description')}}</label>
             </div>
         </div>
         {% for p in data %}
@@ -18,7 +22,16 @@
             <input type="hidden" name={{ p.id }}['id'] id="id" value="{{ p.id }}">
             
             <label class="col-sm-2 control-label">{{ p.name }}</label>
-            <div class="col-sm-10">
+            
+            <div class="col-sm-2">
+                {% if p.type==0 %} 
+                    <label class="col-sm-2 control-label">Output</label>
+                {% elif p.type==1 %} 
+                    <label class="col-sm-2 control-label">Input</label>
+                {% endif %}
+            </div>
+            
+            <div class="col-sm-8">
                 <input width="200px" type="text"  name={{ p.id }}['description'] value="{{ p.description }}">
             </div>
         </div>
