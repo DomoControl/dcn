@@ -11,22 +11,35 @@ class Domocontrol:
     """Class DomoControl"""
 
     def __init__(self):  # p = program dictionary
-        self.i2c = 0  # (dev/i2c_x) Default is 0 but setBus check for right value
         self.db = Database()
         self.mapping = [0, 1, 2, 4, 8, 16, 32, 64, 128]
-        self.setBus()
-        # print "*** Show device in /etc/i2c-%s" %self.i2c
+        
+        self.i2c = 0  # (dev/i2c_x) Default is 0 but setBus check for right value
+        self.setBus() #set /dev/i2c_x
+        
+        self.B = {} #IN / OUT value
+        self.BCopy = {} #Copy B dictionary
+        
+        self.C = {} #Sensor value
+        self.CCopy = {} #Copy C dictionary
+        
+        self.S = {}
+        self.SCopy = {}
+        
         self.P = {}  # Dict with Program
         self.PCopy = {}  #Copy P dictionary
+        
         self.A = {}  # All other db information        
         self.ACopy = {} #Copy A dictionary
+        
         self.IO = {} #Content IO status (menu status)
         self.IOCopy = {} #Copy IO dictionary
+        
         
         self.n = 0
         
         self.setup()
-        self.initializeIO()
+        #~ self.initializeIO()
 
     def now(self):
         return date.now()
@@ -45,7 +58,46 @@ class Domocontrol:
 
     def setup(self):  # program setup
         print("Start Domocontrol Setup")
-        q = 'SELECT id, in_id, delay, inverted, out_id, type_id, name, description, timer, chrono FROM program WHERE enable=1'
+        
+        #Board_io DICT with all i
+        self.A['board_io'] = {}
+        
+        q_board_io = 'SELECT * FROM board_io' # WHERE id=13'
+        r_board_io = self.db.query(q_board_io)
+        for rr_board_io in r_board_io:
+            q_io_type = 'SELECT * FROM io_type WHERE id=%s' %rr_board_io['io_type_id']
+            r_io_type = self.db.query(q_io_type)[0]
+            
+            q_board = 'SELECT * FROM board WHERE id=%s' %rr_board_io['board_id']
+            r_board = self.db.query(q_board)[0]
+            
+            q_area = 'SELECT * FROM area WHERE id=%s' %rr_board_io['area_id']
+            r_area = self.db.query(q_area)[0]
+            
+            self.A['board_io'].update( {rr_board_io['id']: { 
+                    'id':rr_board_io['id'] ,
+                    'io_type_id': r_io_type ,
+                    'name': rr_board_io['name'] ,
+                    'description': rr_board_io['description'] ,
+                    'enable': rr_board_io['enable'] ,
+                    'timestamp': rr_board_io['timestamp'] ,
+                    'board_id': r_board,
+                    'address': rr_board_io['address'] ,
+                    'area_id': r_area,
+                }
+            })
+        
+        #matrix board_io to get board_io.id for board and address
+        self.A.update({'board_io_m':{}})
+        q = 'SELECT * FROM board_io'
+        r = self.db.query(q)
+        for rr in r:
+            #~ print rr
+            self.A['board_io_m'].update({(int(rr['board_id']), int(rr['address'])): int(rr['id'])})
+        print self.A['board_io_m']
+        
+        
+        q = 'SELECT id, in_id, delay, inverted, out_id, type_id, name, description, timer, chrono, enable FROM program WHERE enable = 1'
         res = self.db.query(q)
         self.P = {}
         for r in res:
@@ -72,13 +124,6 @@ class Domocontrol:
         self.A['board'] = {}
         for r in res:
             self.A['board'].update({r['id']: r})
-
-        # Board_io informations
-        q = 'SELECT * FROM board_io'
-        res = self.db.query(q)
-        self.A['board_io'] = {}
-        for r in res:
-            self.A['board_io'].update({r['id']: r})
 
         # Board_type informations
         q = 'SELECT * FROM board_type'
@@ -175,6 +220,20 @@ class Domocontrol:
                 self.IOCopy = copy.deepcopy(self.IO)
                 return self.IO
             
+        elif dictionary == 'B':
+            if self.B == self.BCopy and reloadDict==False:
+                return {}
+            else:
+                self.BCopy = copy.deepcopy(self.B)
+                return self.B
+        
+        elif dictionary == 'C':
+            if self.C == self.CCopy and reloadDict==False:
+                return {}
+            else:
+                self.CCopy = copy.deepcopy(self.C)
+                return self.C
+            
     def binary(self, x): #Transform INT to binary list
         if x == 0: return [0]
         bit = []
@@ -236,11 +295,72 @@ class Domocontrol:
             if self.A['board_io'][r]['enable'] == 1:
                 #~ print r
                 self.getVal(r)
+    
+    ##### New Version
+    
+    def getInStatus(self):  # get Byte Status of all board
+        for board_id in self.A['board']: #get status of boards
+            board = self.A['board'][board_id]
+            if int(board['board_type_id']) == 1:  # i2c board
+                bus = smbus.SMBus(self.i2c)
+                #~ print board                
+                self.B.update({board['id'] : bus.read_byte(int(board['address']))})
+            elif int(board['board_type_id']) == 2:  # RS485 board
+                pass  # To Do
+            elif int(board['board_type_id']) == 3:  # WEB - virtual board
+                #~ return self.P[data['program_id']]['IN']
+                self.B.update({board['id'] : 0})
+            
+    def getSensorStatus(self): #MAP 
+        for board_id in self.A['board']: #get status of boards
+            board = self.A['board'][board_id]
+            if int(board['board_type_id']) == 4:  # SHT21 Temperature / Humidity sensor
+                try:
+                    self.C.update({board['id'] : {'temperature' : round(sht21.SHT21(self.i2c).read_temperature(),1) , 'humidity' : round(sht21.SHT21(self.i2c).read_humidity(),1) }})
+                    self.tnow = self.now()
+                except: #initialize self.tnow and set temp + hum immediately
+                    print "getSensorStatus Error"
+                    
+    def getBit(self, byteval, idx): #Return if bit in the byte is 0 or 1
+        
+        return ((byteval&(1<<idx))!=0)
+
+
+    #dictionary definition:
+    #Self.A = contain all database data
+    #self.B = in / out / sensor value
+    #self.P = program database
+    def loop(self):
+        
+        if self.B != self.BCopy:
+            B = set(self.B.items())
+            BCopy = set(self.BCopy.items())
+            diff = B-BCopy
+            #~ print self.B, self.BCopy, diff
+            for board_id, v in diff:
+                #~ print board_id, v
+                #~ print 'key not exist', board_id
+                for address in xrange(0,len(bin(v))-2):
+                    
+                    board_io_id = self.A['board_io_m'].get((board_id, address), 0)
+                    
+                    if board_io_id > 0:
+                        print 'board_io_id', board_io_id
+                        #~ print "Qua", board_io_id
+                        #~ print self.A['board_io'][board_io_id], v, address, self.getBit(v, address) 
+                        self.S.update({board_io_id: self.getBit(v, address)})
+                        
+        
+            self.BCopy = copy.deepcopy(self.B)
+        #~ print self.B
         
             
-    def loop(self):
+            
+    ###### End NEW VERSION
+            
+    def loop11(self):
         #~ timebegin = self.now()
-        self.initializeIO()
+        print self.initializeIO()
         #~ print self.IO
         
         for p in self.P:  # p = id of self.P

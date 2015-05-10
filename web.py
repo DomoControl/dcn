@@ -49,7 +49,8 @@ def get_locale():
 def setLog():  # Da finire. Serve per tracciare l'IP
     #~ if session['privilege']
     userAgentString = request.headers.get('User-Agent')
-    res = db.query("INSERT INTO log (command,ip) VALUES('{}', '{}')".format(request.url, request.remote_addr))
+    if not request.remote_addr[0:9] == '192.168.1':
+        res = db.query("INSERT INTO log (command,ip) VALUES('{}', '{}')".format(request.url, request.remote_addr))
 
 # Test is user is logged
 def checkLogin():
@@ -359,7 +360,7 @@ def setup_board_io():
                 error='Cannot disable I/O used in Program, first change Program '
             else:
                 q = 'UPDATE board_io SET id="{}", io_type_id="{}", name="{}", description="{}", area_id="{}", enable="{}", board_id="{}", address="{}" WHERE id="{}"'\
-                .format(f["id"], f['io_type_id'], f["name"], f["description"], f["area_id"], enable, f['board_id'], f["address"], f["id"])
+                .format(f['id'], f['io_type_id'], f['name'], f['description'], f['area_id'], enable, f['board_id'], f['address'], f['id'])
                 db.query(q)
         elif f['submit'] == 'Add IO':
             if 'enable' in f:
@@ -458,6 +459,7 @@ def setup_program():
             'VALUES("{}", "{}", "{}", "{}", "{}", "{}", "{}", "{}", "{}")'.format(f['in_id'], inverted, f['out_id'], f['type_id'], f['name'], f['description'], enable, timer, chrono)
         #~ print q
         db.query(q)
+        d.setup()
         d.loop()
 
     elif request.method == "POST" and 'btn' in request.form.to_dict() and request.form.to_dict()['btn'] == 'Delete':
@@ -601,20 +603,43 @@ def internal_server_error(e):
     print("Error {}" .format(e))
     return render_template('error_page.html', error=e ), 500
 
-def loop():
+def loop(): #main loop
     timebegin = now()
+    print '-'*50
     try:
         d.loop()
     except:
         print('Error Domocontrol.py')
-        
-
     threading.Timer(1, loop).start()
     print now() - timebegin
-    print '-----------------------------------------------------------------'    
+    
+def loop1(): #To update board IO values
+    timebegin = now()
+    #~ print '='*50
+    try:
+        d.getInStatus()
+        pass
+    except:
+        print('Error Domocontrol.py getStatus()')
+    threading.Timer(0.5, loop1).start()
+    #~ print now() - timebegin
+
+def loop2(): #To update sensors value
+    timebegin = now()
+    #~ print '='*50
+    try:
+        d.getSensorStatus()
+        pass
+    except:
+        print('Error Domocontrol.py getStatus()')
+    threading.Timer(30, loop2).start()
+    #~ print now() - timebegin
+
 
 if __name__ == '__main__':
     loop()
+    #~ loop1()
+    #~ loop2()
     try:
         app.run(host="0.0.0.0", port=5000, debug=False)
     except:

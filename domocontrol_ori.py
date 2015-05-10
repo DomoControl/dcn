@@ -236,9 +236,14 @@ class Domocontrol:
             if self.A['board_io'][r]['enable'] == 1:
                 #~ print r
                 self.getVal(r)
+    
+    def loop(self):
+        pass
+        
+        
         
             
-    def loop(self):
+    def loop1(self):
         #~ timebegin = self.now()
         self.initializeIO()
         #~ print self.IO
