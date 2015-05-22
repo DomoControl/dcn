@@ -1,9 +1,8 @@
 #!/usr/bin/python
-from flask import Flask, request, render_template, g, session, jsonify, redirect, url_for
+from flask import Flask, request, render_template, g, session, jsonify, redirect, url_for, Response
 from flask.ext.bootstrap import Bootstrap
 from db import Database
 import sys
-#~ import datetime
 from date import now #get time function
 import threading
 import domocontrol
@@ -11,10 +10,44 @@ from flask.ext.babel import Babel
 from config import LANGUAGES
 import time
 import copy
+import traceback
+import threading
+
+import gevent
+from gevent.wsgi import WSGIServer
+from gevent.queue import Queue
+#~ socketio = SocketIO(app)
+
+import time
+
+# SSE "protocol" is described here: http://mzl.la/UPFyxY
+class ServerSentEvent(object):
+
+    def __init__(self, data):
+        self.data = data
+        self.event = None
+        self.id = None
+        self.desc_map = {
+            self.data : "data",
+            self.event : "event",
+            self.id : "id"
+        }
+
+    def encode(self):
+        if not self.data:
+            return ""
+        lines = ["%s: %s" % (v, k) 
+                 for k, v in self.desc_map.iteritems() if k]
+        print "LINES", lines
+        
+        return "%s\n\n" % "\n".join(lines)
+
+
 
 print("Begin")
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'secret!'
 app.config.from_pyfile('config.py')
 app.config.from_object('config')
 babel = Babel(app)
@@ -28,6 +61,57 @@ A = {}  # All other db information
 ACopy = {} #Copy A dictionary
 IO = {} #Content IO status (menu status)
 IOCopy = {} #Copy IO dictionary
+
+
+
+
+# Client code consumes like this.
+subscriptions = []
+@app.route('/menu_program1')
+def menu_program1():
+    #Test if user is logged
+    if not checkLogin(): return redirect(url_for('logout'))
+    setLog()
+    if 'logged_in' in session and session['logged_in'] == True:
+        return render_template("menu_program1.html")
+    else:
+        return redirect(url_for('login'))
+
+
+@app.route("/debug")
+def debug():
+    return "Currently %d subscriptions" % len(subscriptions)
+
+@app.route("/publish")
+def publish():
+    #Dummy data - pick up from request for real data
+    def notify():
+        msg = str(now())
+        print subscriptions[:]
+        for sub in subscriptions[:]:
+            sub.put(msg)
+    
+    gevent.spawn(notify)
+    
+    return "OK"
+
+@app.route("/subscribe")
+def subscribe():
+    def gen():
+        q = Queue()
+        subscriptions.append(q)
+        try:
+            while True:
+                result = q.get()
+                ev = ServerSentEvent(str(result))
+                yield ev.encode()
+        except GeneratorExit: # Or maybe use flask signals
+            subscriptions.remove(q)
+
+    return Response(gen(), mimetype="text/event-stream")
+
+
+
 
 
 @app.route('/lang/it')
@@ -81,17 +165,55 @@ def menu_status():
 @app.route('/getStatus', methods=["GET", "POST"])
 def getStatus():  # return array with all data informations only if required
     if request.args['reloadDictA'] == 'true':
-        A = d.getDict('A',reloadDict=True)
+        A = d.getDict('A',reloadDict=True)        
     else:
         A = d.getDict('A')
+    if 'board_io' in A:
+        A = A['board_io']
     
     if request.args['reloadDictIO'] == 'true':
         IO = d.getDict('IO',reloadDict=True)
     else:
-        IO = d.getDict('IO')
-        
-    #~ print A,IO
-    return jsonify(resultIO=IO,resultA=A)
+        IO = d.getDict('IO',reloadDict=True)
+    
+    if len(A) > 0:
+        data = {}
+        for a in A:
+            if not A[a]['area_id']['id'] in data:
+                data[A[a]['area_id']['id']] = {}
+                
+            data[A[a]['area_id']['id']].update({a: {
+                'area_name': A[a]['area_id']['name'],
+                'area_description': A[a]['area_id']['description'],
+                'name': A[a]['name'],
+                'description': A[a]['description'],
+                'id': A[a]['id'],
+            }})
+            #~ print A[a]
+    else:
+        data = {}
+    return jsonify(resultA=data, resultIO=IO)
+    
+@app.route('/setup_program_type', methods=["GET", "POST"])
+def setup_program_type():
+    #Test if user is logged
+    if not checkLogin(): return redirect(url_for('logout'))
+    if request.method == "POST":
+        f = request.form
+        db.setForm('UPDATE', f.to_dict(), 'program_type')
+    q = 'SELECT * FROM program_type'
+    res = db.query(q)
+    return render_template("setup_program_type.html", data=res)    
+
+@app.route('/menu_program')
+def menu_program():
+    #Test if user is logged
+    if not checkLogin(): return redirect(url_for('logout'))
+    setLog()
+    if 'logged_in' in session and session['logged_in'] == True:
+        return render_template("menu_program.html")
+    else:
+        return redirect(url_for('login'))
 
 @app.route('/getProgramStatus', methods=["GET", "POST"])
 def getProgram(reloadDict=False):  # return array with all program informations
@@ -104,14 +226,20 @@ def getProgram(reloadDict=False):  # return array with all program informations
         A = d.getDict('A',reloadDict=True)
     else:
         A = d.getDict('A')
-        
+    
     if request.args['reloadDictP'] == 'true':
         P = d.getDict('P',reloadDict=True)
     else:
         P = d.getDict('P')
-        
+    
+    if request.args['reloadDictP'] == 'true':
+        IO = d.getDict('IO',reloadDict=True)
+    else:
+        IO = d.getDict('IO')
+    
+    #~ print IO
     #~ print P,A
-    return jsonify(resultP=P, resultA=A)
+    return jsonify(resultP=P, resultA=A, resultIO=IO)
 
 @app.route('/setIN', methods=['GET', 'POST'])
 def setIN():
@@ -405,18 +533,6 @@ def setup_io_type():
     return render_template("setup_io_type.html", data=res)
 
 
-@app.route('/setup_program_type', methods=["GET", "POST"])
-def setup_program_type():
-    #Test if user is logged
-    if not checkLogin(): return redirect(url_for('logout'))
-    if request.method == "POST":
-        f = request.form
-        db.setForm('UPDATE', f.to_dict(), 'program_type')
-    q = 'SELECT * FROM program_type'
-    res = db.query(q)
-    return render_template("setup_program_type.html", data=res)
-
-
 @app.route('/setup_program', methods=["GET", "POST"])
 def setup_program():
     #Test if user is logged
@@ -528,23 +644,7 @@ def doc():
 def home():
     setLog()
     return render_template("home.html")
-
-@app.route('/menu_program')
-def menu_program():
-    #Test if user is logged
-    if not checkLogin(): return redirect(url_for('logout'))
-    setLog()
-    if 'logged_in' in session and session['logged_in'] == True:
-        return render_template("menu_program.html")
-    else:
-        return redirect(url_for('login'))
-
-
-
-
-
-
-
+    
 
 @app.route('/welcome')
 def welcome():
@@ -603,47 +703,50 @@ def internal_server_error(e):
     print("Error {}" .format(e))
     return render_template('error_page.html', error=e ), 500
 
-def loop(): #main loop
+
+def getInStatus(start='y'): #To update board IO values
     timebegin = now()
-    print '-'*50
-    try:
-        d.loop()
-    except:
-        print('Error Domocontrol.py')
-    threading.Timer(1, loop).start()
-    print now() - timebegin
-    
-def loop1(): #To update board IO values
-    timebegin = now()
-    #~ print '='*50
+    print '='*80
     try:
         d.getInStatus()
         pass
     except:
-        print('Error Domocontrol.py getStatus()')
-    threading.Timer(0.5, loop1).start()
-    #~ print now() - timebegin
-
-def loop2(): #To update sensors value
+        print('Error Domocontrol.py getInStatus')
+        traceback.print_exc()
+    if start=='y':
+        threading.Timer(1, getInStatus).start()
+    else:
+        threading.Timer(1, getInStatus).cancel()
+    print "IOStatus ==>> ", now() - timebegin
+    print 
+    
+def getSensorStatus(start='y'): #To update sensor values
     timebegin = now()
-    #~ print '='*50
     try:
         d.getSensorStatus()
-        pass
     except:
-        print('Error Domocontrol.py getStatus()')
-    threading.Timer(30, loop2).start()
-    #~ print now() - timebegin
-
+        print('Error Domocontrol.py getSensorStatus')
+    if start=='y':
+        threading.Timer(30, getSensorStatus).start()
+    else:
+        threading.Timer(1, getSensorStatus).cancel()
+    #~ print "SensorStatus ==>> ", now() - timebegin
 
 if __name__ == '__main__':
-    loop()
-    #~ loop1()
-    #~ loop2()
+    getInStatus() #loop to update IO and sensors
+    getSensorStatus() #loop to update IO and sensors
     try:
-        app.run(host="0.0.0.0", port=5000, debug=False)
+        #~ app.run(host="0.0.0.0", port=5000, debug=False)
+        #~ socketio = SocketIO(app)
+        #~ app.debug = False
+        #~ app.host = '0.0.0.0'
+        app.debug = False
+        server = WSGIServer(("0.0.0.0", 5000), app)
+        server.serve_forever()
+        
     except:
-    #~ except InvalidCommand as err:
-        #~ print("*** Error: {}".format(err))
         pass
+    getInStatus('n')
+    getSensorStatus('n')
+    print "FINE"
 

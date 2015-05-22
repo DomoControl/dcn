@@ -1,0 +1,49 @@
+{% extends "template.html"  %}
+{% block content %}
+<h2>{{_('Program page')}}</h2>
+<!--
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
+-->
+
+<div id="event"></div>
+
+
+<script type=text/javascript>
+    A = {}; //Dict with all other data
+    ACopy = {};
+    P = {};
+    PCopy = {};
+    IO = {};
+    IOCopy = {};
+    var reloadDictA = '';
+    var reloadDictP = '';
+    var reloadDictIO = '';
+    
+    var eventOutputContainer = document.getElementById("event");
+    var evtSrc = new EventSource("/subscribe");
+
+    evtSrc.onmessage = function(e) {
+        console.log(e.data);
+        eventOutputContainer.innerHTML = e.data;
+    };
+
+    
+    function setIN(id,mode){
+        //~ alert(id+' '+mode);
+        reloadDictA = 'true';
+        reloadDictP = 'true';
+        $.getJSON('/setIN', {id:id, mode:mode}, function(test){var a = 123;}  )
+    }
+
+    function ProgramEdit(id){
+        window.location.href = "/setup_program";
+    }
+
+
+</script>
+
+<div id='program'></div>
+<div id='test'></div>
+
+{% endblock %}
+

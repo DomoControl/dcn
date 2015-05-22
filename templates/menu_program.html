@@ -2,22 +2,25 @@
 {% block content %}
 <h2>{{_('Program page')}}</h2>
 
-
 <script type=text/javascript>
     A = {}; //Dict with all other data
     ACopy = {};
     P = {};
     PCopy = {};
+    IO = {};
+    IOCopy = {};
     var reloadDictA = '';
     var reloadDictP = '';
+    var reloadDictIO = '';
     
     window.setInterval(function(){
-            $.getJSON('/getProgramStatus', {'reloadDictA':reloadDictA, 'reloadDictP':reloadDictP},
+            $.getJSON('/getProgramStatus', {'reloadDictA':reloadDictA, 'reloadDictP':reloadDictP, 'reloadDictIO':reloadDictIO},
 
         function(data) {
             //~ alert(JSON.stringify(data))
             PCopy = data.resultP; //Dict with IO status
             ACopy = data.resultA; //Dict with all data
+            IOCopy = data.resultIO; //Dict with all data
             
             //Get A dict if empty
             if(jQuery.isEmptyObject(ACopy) != true){
@@ -39,6 +42,16 @@
                 reloadDictP='false';
             }
             
+            //Get IO dict if empty
+            if(jQuery.isEmptyObject(IOCopy) != true){
+                IO = $.extend(IO, IOCopy);
+            }
+            if(Object.keys(IO).length == '0'){
+                reloadDictIO='true';
+            } else {
+                reloadDictIO='false';
+            }
+            
             t = '';
 
             //Header
@@ -50,26 +63,25 @@
                 f += '<span style="margin: 0 10px 0 10px;"><small>ID: </small><b>'+P[p]['id']+'</b></span>';
                 f += '<span style="margin: 0 10px 0 10px;"><small>Name: </small><b>'+P[p]['name']+'</b></span>';
                 f += '<span style="margin: 0 10px 0 10px;"><small>Description: </small><b>'+P[p]['description']+'</b></span>'
+                
                 f += '<span style="margin: 0 10px 0 10px;"><small>Type: </small><b>'+A['program_type'][P[p]['type_id']]['name']+'</b></span>';
                 f += '</td></tr>'
-
-                //~ t = JSON.stringify(P[p])
-
-                var board_id = A['board_io'][P[p]['in_id']]['board_id']
+                                
+                var board_id = A['board_io'][P[p]['in_id']]['board_id']['id']
                 var board_type_id = A['board'][board_id]['board_type_id']
-
+                
+                //~ t = JSON.stringify(IO['board_io'][P[p]['in_id']] == 1);                
                 if( board_type_id == 1 ){ //Board i2c
-                    if( P[p]['IN'] == 1 ){var in_img = '<img src="static/img/in_on.png" height=40px>';}else{var in_img = '<img src="static/img/in_off.png" height=40px>';}
+                    if( IO['board_io'][P[p]['in_id']] == 1 ){var in_img = '<img src="static/img/in_on.png" height=40px>';}else{var in_img = '<img src="static/img/in_off.png" height=40px>';}
                 }
                 else if ( board_type_id == 3 ){ //Board Web
-                    if( P[p]['IN'] == 1 ){var in_img = '<img src="static/img/in_push_on.png" height=40px onclick="setIN('+P[p]['id']+',0)">'} else {var in_img = '<img src="static/img/in_push_off.png" height=40px onclick="setIN('+P[p]['id']+',1)" >'}
+                    if( IO['board_io'][P[p]['in_id']] == 1 ){var in_img = '<img src="static/img/in_push_on.png" height=40px onclick="setIN('+P[p]['id']+',0)">'} else {var in_img = '<img src="static/img/in_push_off.png" height=40px onclick="setIN('+P[p]['id']+',1)" >'}
                 }
+                
                 f += '<tr>'
                 var fin_desc = '<td style="vertical-align:middle;" class="text-center"><abbr title="'+A['board_io'][P[p]['in_id']]['description']+'">'+A['board_io'][P[p]['in_id']]['name']+'</abbr>&nbsp;'
-
+                
                 if (P[p]['type_id'] == 3) {var in_img = ''; fin_desc = '<td style="vertical-align:middle;" class="text-center">';}
-
-
 
                 f += fin_desc + in_img + '</td>';
 
@@ -104,7 +116,7 @@
 
                 f += '<td style="vertical-align:middle;" class="text-center">'+timer+'</td>';
 
-                if( P[p]['OUT'] == 1 ){var out_img = '<img src="static/img/out_on.png" height=50px>';}else{var out_img = '<img src="static/img/out_off.png" height=50px>';}
+                if( IO['board_io'][P[p]['out_id']] == 1 ){var out_img = '<img src="static/img/out_on.png" height=50px>';}else{var out_img = '<img src="static/img/out_off.png" height=50px>';}
 
                 f += '<td style="vertical-align:middle;" class="text-center"><abbr title="'+A['board_io'][P[p]['out_id']]['description']+'">'+A['board_io'][P[p]['out_id']]['name']+'</abbr>&nbsp;'+out_img+'</td>';
                 if( P[p]['inverted'] == 1 ){var inverted = '<span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>';}else{var inverted = '<span class="glyphicon glyphicon glyphicon glyphicon-remove" aria-hidden="true"></span>';}
@@ -116,7 +128,8 @@
 
             }
             f += '</table>';
-            f += '<hr><p><input  class="btn btn-default" type="submit" value="Program Edit" onclick="ProgramEdit('+P[p]['id']+')" ></p>'
+            
+            f += '<hr><p><input  class="btn btn-default" type="submit" value="Program Edit" onclick="ProgramEdit('+p+')" ></p>'
 
 
             document.getElementById('program').innerHTML = f;

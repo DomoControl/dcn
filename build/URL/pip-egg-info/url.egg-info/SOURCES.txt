@@ -1,0 +1,7 @@
+setup.cfg
+url.py
+pip-egg-info/url.egg-info/PKG-INFO
+pip-egg-info/url.egg-info/SOURCES.txt
+pip-egg-info/url.egg-info/dependency_links.txt
+pip-egg-info/url.egg-info/requires.txt
+pip-egg-info/url.egg-info/top_level.txt

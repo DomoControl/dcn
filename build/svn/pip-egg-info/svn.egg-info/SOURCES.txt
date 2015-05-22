@@ -1,0 +1,17 @@
+MANIFEST.in
+setup.cfg
+pip-egg-info/svn.egg-info/PKG-INFO
+pip-egg-info/svn.egg-info/SOURCES.txt
+pip-egg-info/svn.egg-info/dependency_links.txt
+pip-egg-info/svn.egg-info/not-zip-safe
+pip-egg-info/svn.egg-info/requires.txt
+pip-egg-info/svn.egg-info/top_level.txt
+svn/__init__.py
+svn/common.py
+svn/constants.py
+svn/local.py
+svn/remote.py
+svn/utility.py
+svn/resources/README.rst
+svn/resources/requirements.txt
+svn/resources/unicode_test.txt

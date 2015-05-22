@@ -1,0 +1,6 @@
+README
+publicsuffix.py
+pip-egg-info/publicsuffix.egg-info/PKG-INFO
+pip-egg-info/publicsuffix.egg-info/SOURCES.txt
+pip-egg-info/publicsuffix.egg-info/dependency_links.txt
+pip-egg-info/publicsuffix.egg-info/top_level.txt

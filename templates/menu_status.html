@@ -21,91 +21,113 @@
     ACopy = {};
     IO = {};
     IOCopy = {};
-    var reloadDictA='';
+    var reloadDictA = '';
     var reloadDictIO='';
     var debug='';
     window.setInterval(function(){
-            $.getJSON('/getStatus', {'reloadDictA':reloadDictA, 'reloadDictIO':reloadDictIO, 'debug':debug},
-        function(data) {
-            //~ alert(JSON.stringify(data))
-            IOCopy = data.resultIO; //Dict with IO status
-            ACopy = data.resultA; //Dict with all data
-            
-            //Get A dict if empty
-            if(jQuery.isEmptyObject(ACopy) != true){
-                A = $.extend(A, ACopy);
-            }
-            if(Object.keys(A).length == '0'){
-                reloadDictA='true';
-            } else {
-                reloadDictA='false';
-            }
-            
-            //Get IO dict if empty
-            if(jQuery.isEmptyObject(IOCopy) != true){
-                IO = $.extend(IO, IOCopy);
-            }
-            if(Object.keys(IO).length == '0'){
-                reloadDictIO='true';
-            } else {
-                reloadDictIO='false';
-            }
-            
-            //Header
-            var f = '';
-            for( var c in IO ){
-                
-                if(IO[c]['type'] == 'out' && IO[c]['value'] == 1){
-                    f += '<div class="sensor">';
-                    f += A['board_io'][IO[c]['id']]['name'];
-                    f += '<br>';
-                    f += '<img src="static/img/out_on.png" height=50px>';
-                    f += '</div>';
+            $.getJSON('/getStatus', {'reloadDictA':reloadDictA, 'reloadDictIO':reloadDictIO},
+            function(data) {
+                //~ alert(JSON.stringify(data))
+                IOCopy = data.resultIO; //Dict with IO status
+                ACopy = data.resultA; //Dict with all data
+                //Get A dict if empty
+                if(jQuery.isEmptyObject(ACopy) != true){
+                    A = $.extend(A, ACopy);
                 }
-                else if (IO[c]['type'] == 'out' &&  IO[c]['value'] == 0){
-                    f += '<div class="sensor">';
-                    f += A['board_io'][IO[c]['id']]['name'];
-                    f += '<br>';
-                    f += '<img src="static/img/out_off.png" height=50px>';
-                    f += '</div>';
+                if(Object.keys(A).length == '0'){
+                    reloadDictA='true';
+                } else {
+                    reloadDictA='false';
                 }
-                else if (IO[c]['type'] == 'temperature'){
-                    f += '<div class="sensor">';
-                    f += A['board_io'][IO[c]['id']]['name'];
-                    f += '<br>';
-                    f += '<img src="static/img/temperature.png" height=50px><br>'+IO[c]['value'];
-                    f += '</div>';
+                //~ debug=JSON.stringify(A);
+                //Get IO dict if empty
+                if(jQuery.isEmptyObject(IOCopy) != true){
+                    IO = $.extend(IO, IOCopy);
                 }
-                else if (IO[c]['type'] == 'humidity'){
-                    f += '<div class="sensor">';
-                    f += A['board_io'][IO[c]['id']]['name'];
-                    f += '<br>';
-                    f += '<img src="static/img/humidity.png" height=50px><br>'+IO[c]['value'];
-                    f += '</div>';
+                if(Object.keys(IO).length == '0'){
+                    reloadDictIO='true';
+                } else {
+                    reloadDictIO='false';
                 }
-                //~ else {var img = IO[c]['value'];}
                 
+                //Header
+                var f = '';
+                for( var a in A ){
+                    n = 0;
+                    for(aa in A[a]){
+                        if(n == 0){
+                            f += '<div style="clear:both;">'+ A[a][aa]["area_description"] +'</div>';
+                        }
+                        f += '<div style="border:1px dotted gray;" class="sensor">';
+                        f += '<p title="'+ A[a][aa]['description'] +'">'+A[a][aa]['name']+'</p>';
+                        id = A[a][aa]['id'];
+                        f += IO['board_io'][id]
+                        //~ f += A[c]['VALUE']+'<br>';
+                        n++;
+                    
+                    f += '</div>';
+                    
+                        
+                    }
+                    
+                    
+                    /*
+                    if(A[c]['type'] == 'out' && IO[c]['value'] == 1){
+                        f += '<div class="sensor">';
+                        f += A['board_io'][IO[c]['id']]['name'];
+                        f += '<br>';
+                        cf += '<img src="static/img/out_on.png" height=50px>';
+                        f += '</div>';
+                    }
+                    else if (IO[c]['type'] == 'out' &&  IO[c]['value'] == 0){
+                        f += '<div class="sensor">';
+                        f += A['board_io'][IO[c]['id']]['name'];
+                        f += '<br>';
+                        f += '<img src="static/img/out_off.png" height=50px>';
+                        f += '</div>';
+                    }
+                    else if (IO[c]['type'] == 'temperature'){
+                        f += '<div class="sensor">';
+                        f += A['board_io'][IO[c]['id']]['name'];
+                        f += '<br>';
+                        f += '<img src="static/img/temperature.png" height=50px><br>'+IO[c]['value'];
+                        f += '</div>';
+                    }
+                    else if (IO[c]['type'] == 'humidity'){
+                        f += '<div class="sensor">';
+                        f += A['board_io'][IO[c]['id']]['name'];
+                        f += '<br>';
+                        f += '<img src="static/img/humidity.png" height=50px><br>'+IO[c]['value'];
+                        f += '</div>';
+                    }
+                    //~ else {var img = IO[c]['value'];}
+                    */
+                    
+                    
+                    f += '</div>';
+                //~ f += JSON.stringify(IO[c]);
                 
+                document.getElementById('status').innerHTML = f;
                 
-                f += '</div>';
-            //~ f += JSON.stringify(IO[c]);
+            } 
             
-            document.getElementById('status').innerHTML = f;
             document.getElementById('debug').innerHTML = debug;
-
-        }
         }
         )
     }, 1000) ;
 
+    /*
     function setIN(id,mode){
         //~ alert(id+' '+mode);
         $.getJSON('/setIN', {id:id, mode:mode}, function(test){var a = 123;}  )
     }
+    */
 
+    /*
     function ProgramEdit(id){
         window.location.href = "/setup_program";
     }
+    */
 
 
 </script>
