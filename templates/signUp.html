@@ -1,0 +1,43 @@
+{% extends "template.html"  %}
+{% block content %}
+    <div class="container">
+
+      <form class="form-signin"  role="form">
+        <h2 class="form-signin-heading">Please Sign Up</h2>
+        <input type="email" id="txtUsername" name="username" class="form-control" placeholder="Email address" required autofocus>
+        <input type="password" id="txtPassword" name="password" class="form-control" placeholder="Password" required>        
+        <button class="btn btn-lg btn-primary btn-block" type="button">Register</button>
+      </form>
+
+    </div>
+    <div id="event"></div>
+
+<script type=text/javascript>   
+    
+    $(function(){
+	$('button').click(function(){
+		var user = $('#txtUsername').val();
+		var pass = $('#txtPassword').val();
+		$.ajax({
+			url: '/signUpUser',
+			data: $('form').serialize(),
+			type: 'POST',
+			success: function(response){
+				//~ console.log(response);
+                //~ JSON.stringify(data)
+                document.getElementById('test').innerHTML = response['pass']+' '+response['user'];
+			},
+			error: function(error){
+				console.log(error);
+			}
+		});
+	});
+});
+    
+    var eventOutputContainer = document.getElementById("event");
+    
+</script>
+    
+<div id='test'></div>    
+    
+{% endblock %}

@@ -1,11 +1,49 @@
 {% extends "template.html"  %}
 {% block content %}
 <h2>{{_('Program page')}}</h2>
-<!--
-<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
--->
+ 
+ 
+ 
+ <script type=text/javascript>   
+     
+ function() {
+     
+     
+    $('button').click(function() {
+        var user = $('#txtUsername').val();
+        var pass = $('#txtPassword').val();
+        $.ajax({
+            url: '/signUpUser',
+            data: $('form').serialize(),
+            type: 'POST',
+            success: function(response) {
+                console.log(response);
+            },
+            error: function(error) {
+                console.log(error);
+            }
+        });
+    });
+}
+</script>
 
-<div id="event"></div>
+
+    <div class="container">
+ 
+         <form class="form-signin" action="/signUp" method="post" role="form">
+             <h2 class="form-signin-heading">Please Sign Up </h2>
+             <input type="email" name="username" class="form-control" placeholder="Email address" required autofocus>
+             <input type="password" name="password" class="form-control" placeholder="Password" required>
+ 
+             <button class="btn btn-lg btn-primary btn-block" type="button">Register </button>
+         </form>
+      
+     </div>
+
+
+
+
+
 
 
 <script type=text/javascript>
@@ -19,13 +57,7 @@
     var reloadDictP = '';
     var reloadDictIO = '';
     
-    var eventOutputContainer = document.getElementById("event");
-    var evtSrc = new EventSource("/subscribe");
-
-    evtSrc.onmessage = function(e) {
-        console.log(e.data);
-        eventOutputContainer.innerHTML = e.data;
-    };
+   
 
     
     function setIN(id,mode){
