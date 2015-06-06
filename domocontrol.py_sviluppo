@@ -6,6 +6,7 @@ from db import Database
 import datetime
 import copy
 import sht21
+import os
 
 class Domocontrol:
     """Class DomoControl"""
@@ -39,6 +40,8 @@ class Domocontrol:
         self.MCopy = {}
         
         self.n = 0
+        
+        self.dir_root = os.path.dirname(os.path.abspath(__file__)) #path of program
         
         self.setup()
         #~ self.initializeIO()
@@ -86,6 +89,8 @@ class Domocontrol:
                     'board_id': r_board,
                     'address': rr_board_io['address'] ,
                     'area_id': r_area,
+                    'icon_on': rr_board_io['icon_on'],
+                    'icon_off': rr_board_io['icon_off']
                 }
             })
         
@@ -96,7 +101,13 @@ class Domocontrol:
         for rr in r:
             self.M['board_io_m'].update({(int(rr['board_id']), int(rr['address'])): int(rr['id'])})
         #~ print self.M['board_io_m']
-                    
+        
+        #icon list
+        icon_path =  os.path.join(self.dir_root, 'static/icon')
+        files = [fn for fn in os.listdir(icon_path) ];
+        self.A['icon'] = files
+        
+        # program data
         q = 'SELECT id, in_id, delay, inverted, out_id, type_id, name, description, timer, chrono, enable FROM program WHERE enable = 1'
         res = self.db.query(q)
         self.P = {}

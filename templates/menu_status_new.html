@@ -43,25 +43,41 @@
                     if(jQuery.isEmptyObject(ACopy) != true){
                         A = $.extend(A, ACopy);
                     }
-                    if(Object.keys(A).length == '0'){
-                        reloadDictA='true';
-                    } else {
-                        reloadDictA='false';
-                    }
-                    //~ 
+                   
                     if(jQuery.isEmptyObject(IOCopy) != true){
                         debug += "passa da ui";
                         IO = $.extend(IO, IOCopy);
                     }
-                    //~ if(Object.keys(IO).length == '0'){
-                        //~ reloadDictIO='true';
-                    //~ } else {
-                        //~ reloadDictIO='false';
-                    //~ }
+                   
                     debug = JSON.stringify(IO);
-                    
-        
-        
+                    f = '';
+                    for( var a in A ){
+                        n = 0;
+                        for(aa in A[a]){
+                            if(n == 0){
+                                f += '<div style="clear:both;">'+ A[a][aa]["area_description"] +'</div>';
+                            }
+                            f += '<div style="border:1px dotted gray;" class="sensor">';
+                            f += '<span title="'+ A[a][aa]['description'] +'">'+A[a][aa]['name']+'</span><br>';
+                            id = A[a][aa]['id'];
+                            IO_val = IO['board_io'][id] //status value
+                            if(IO_val == 0){
+                                f += '<span><img src="static/icon/' + A[a][aa]['icon_off'] + '" style="height:40px; max-width:50px;" ></span><br>';
+                            } else {
+                                f += '<span><img src="static/icon/' + A[a][aa]['icon_on'] + '" style="height:40px; max-width:50px;" ></span><br>';
+                            }
+                            //~ debug += JSON.stringify( A[a][aa]['icon']);    
+                            
+                            f += IO_val;
+                            //~ f += A[c]['VALUE']+'<br>';
+                            n++;
+                        
+                        f += '</div>';
+                        
+                            
+                        }
+                    }
+            
         
         
         
@@ -76,7 +92,7 @@
                     //~ IO = $.parseJSON(msg.data[0]);
                     //~ debug = IO['board_io'][43];
                     
-                    
+                    document.getElementById('status').innerHTML = f;
                     document.getElementById('debug').innerHTML = debug;
                 }
             }

@@ -16,6 +16,95 @@
         }
     </style> 
     
+    <div id="status"></div>
+    <div id="debug"></div>
+            
+        <script type="text/javascript">
+            A = {}; //Dict with all other data
+            ACopy = {};
+            IO = {};
+            IOCopy = {};
+            var reloadDictA = '';
+            var reloadDictIO='';
+            var debug='';
+            
+            function listen() {
+                var source = new EventSource("/get_menu_status");
+                var target = document.getElementById("status");
+                source.onmessage = function(msg) {
+        
+                    
+        
+        
+                    IOCopy = $.parseJSON(msg.data)[1]; //Dict with IO status
+                    ACopy = $.parseJSON(msg.data)[0]; //Dict with all data
+                    //~ 
+                    //~ 
+                    if(jQuery.isEmptyObject(ACopy) != true){
+                        A = $.extend(A, ACopy);
+                    }
+                   
+                    if(jQuery.isEmptyObject(IOCopy) != true){
+                        debug += "passa da ui";
+                        IO = $.extend(IO, IOCopy);
+                    }
+                   
+                    debug = JSON.stringify(IO);
+                    f = '';
+                    for( var a in A ){
+                        n = 0;
+                        for(aa in A[a]){
+                            if(n == 0){
+                                f += '<div style="clear:both;">'+ A[a][aa]["area_description"] +'</div>';
+                            }
+                            f += '<div style="border:1px dotted gray;" class="sensor">';
+                            f += '<span title="'+ A[a][aa]['description'] +'">'+A[a][aa]['name']+'</span><br>';
+                            id = A[a][aa]['id'];
+                            IO_val = IO['board_io'][id] //status value
+                            if(IO_val == 0){
+                                f += '<span><img src="static/icon/' + A[a][aa]['icon_off'] + '" style="height:40px; max-width:50px;" ></span><br>';
+                            } else {
+                                f += '<span><img src="static/icon/' + A[a][aa]['icon_on'] + '" style="height:40px; max-width:50px;" ></span><br>';
+                            }
+                            //~ debug += JSON.stringify( A[a][aa]['icon']);    
+                            
+                            f += IO_val;
+                            //~ f += A[c]['VALUE']+'<br>';
+                            n++;
+                        
+                        f += '</div>';
+                        
+                            
+                        }
+                    }
+            
+        
+        
+        
+        
+        
+                    
+                    
+                    //~ target.innerHTML = 'status: ' + msg.data + '<hr>';
+                    
+                    
+                    //~ debug += JSON.stringify(msg)
+                    //~ IO = $.parseJSON(msg.data[0]);
+                    //~ debug = IO['board_io'][43];
+                    
+                    document.getElementById('status').innerHTML = f;
+                    document.getElementById('debug').innerHTML = debug;
+                }
+            }
+
+            listen();
+    </script>
+    
+    
+    
+<!--
+    
+
 <script type=text/javascript>
     A = {}; //Dict with all other data
     ACopy = {};
@@ -131,7 +220,7 @@
 
 
 </script>
-
+-->
 <div id='status'></div>
 <div id='debug'></div>
 

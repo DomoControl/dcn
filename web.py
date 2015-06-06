@@ -80,14 +80,11 @@ def getTime():
     return jsonify(result=now().strftime("%a %d/%m/%y  %H:%M"))
 
 
-
-
-def event_menu_status_new():
+def event_menu_status():
     """For something more intelligent, take a look at Redis pub/sub
         stuff. A great example can be found here__.
         __ https://github.com/jakubroztocil/chat
     """
-    print "Passa di QUA"
     request = True
     A = d.getDict('A',reloadDict=True)
     while True:
@@ -95,67 +92,43 @@ def event_menu_status_new():
         A = d.getDict('A',reloadDict=request)
         request = False
         
-        print IO
-        yield 'data: ' + json.dumps([A,IO])  + '\n\n'
-        gevent.sleep(1)
+        if len(A) > 0:
+            data = {}
+            A = A['board_io']
+            for a in A:
+                if not A[a]['area_id']['id'] in data:
+                    data[A[a]['area_id']['id']] = {}
+                    
+                data[A[a]['area_id']['id']].update({a: {
+                    'area_name': A[a]['area_id']['name'],
+                    'area_description': A[a]['area_id']['description'],
+                    'name': A[a]['name'],
+                    'description': A[a]['description'],
+                    'id': A[a]['id'],
+                    'icon_on': A[a]['icon_on'],
+                    'icon_off': A[a]['icon_off']
+                }})
+                print A[a]
+        else:
+            data = {}
+        yield 'data: ' + json.dumps([data,IO])  + '\n\n'
+        gevent.sleep(0.1)
         
-
-
-@app.route('/menu_status_new')
-def menu_status_new():
-    if not checkLogin(): return redirect(url_for('logout'))
-    if int(session['privilege'][0:1]) == 0 and int(session['privilege'][1:2]) == 0:
-        error='Insufficient privilege for Setup Status Menu!'
-        return render_template( "no_permission.html", error=error)
-    return render_template("menu_status_new.html")
-
-@app.route('/get_menu_status_new', methods=['GET', 'POST'])
-def get_menu_status_new():
-    return Response(event_menu_status_new(), mimetype="text/event-stream")
-
-
-
-
 @app.route('/menu_status')
 def menu_status():
     if not checkLogin(): return redirect(url_for('logout'))
     if int(session['privilege'][0:1]) == 0 and int(session['privilege'][1:2]) == 0:
         error='Insufficient privilege for Setup Status Menu!'
         return render_template( "no_permission.html", error=error)
-    setLog()
     return render_template("menu_status.html")
 
-@app.route('/getStatus', methods=["GET", "POST"])
-def getStatus():  # return array with all data informations only if required
-    if request.args['reloadDictA'] == 'true':
-        A = d.getDict('A',reloadDict=True)        
-    else:
-        A = d.getDict('A')
-    if 'board_io' in A:
-        A = A['board_io']
+@app.route('/get_menu_status', methods=['GET', 'POST'])
+def get_menu_status():
+    return Response(event_menu_status(), mimetype="text/event-stream")
+
+
+
     
-    if request.args['reloadDictIO'] == 'true':
-        IO = d.getDict('IO',reloadDict=True)
-    else:
-        IO = d.getDict('IO',reloadDict=True)
-    
-    if len(A) > 0:
-        data = {}
-        for a in A:
-            if not A[a]['area_id']['id'] in data:
-                data[A[a]['area_id']['id']] = {}
-                
-            data[A[a]['area_id']['id']].update({a: {
-                'area_name': A[a]['area_id']['name'],
-                'area_description': A[a]['area_id']['description'],
-                'name': A[a]['name'],
-                'description': A[a]['description'],
-                'id': A[a]['id'],
-            }})
-            #~ print A[a]
-    else:
-        data = {}
-    return jsonify(resultA=data, resultIO=IO)
     
 @app.route('/setup_program_type', methods=["GET", "POST"])
 def setup_program_type():
@@ -450,8 +423,8 @@ def setup_board_io():
             if checkEnable(f["id"], enable) == 0:
                 error='Cannot disable I/O used in Program, first change Program '
             else:
-                q = 'UPDATE board_io SET id="{}", io_type_id="{}", name="{}", description="{}", area_id="{}", enable="{}", board_id="{}", address="{}" WHERE id="{}"'\
-                .format(f['id'], f['io_type_id'], f['name'], f['description'], f['area_id'], enable, f['board_id'], f['address'], f['id'])
+                q = 'UPDATE board_io SET id="{}", io_type_id="{}", name="{}", description="{}", area_id="{}", enable="{}", board_id="{}", address="{}", icon_on="{}", icon_off="{}" WHERE id="{}"'\
+                .format(f['id'], f['io_type_id'], f['name'], f['description'], f['area_id'], enable, f['board_id'], f['address'], f['icon_on'], f['icon_off'], f['id'])
                 db.query(q)
         elif f['submit'] == 'Add IO':
             if 'enable' in f:
@@ -481,7 +454,11 @@ def setup_board_io():
     q = 'SELECT * FROM area ORDER BY id'
     area = db.query(q)
     d.setup() #reload database
-    return render_template("setup_board_io.html", error=error, data=res, board=board, board_type=board_type, io_type=io_type, all_board=all_board, area=area)
+    
+    icon = d.A['icon']
+    print icon
+    
+    return render_template("setup_board_io.html", error=error, data=res, board=board, board_type=board_type, io_type=io_type, all_board=all_board, area=area, icon=icon)
 
 
 @app.route('/setup_io_type', methods=["GET", "POST"])

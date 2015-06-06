@@ -14,18 +14,26 @@
     <table class="table table-hover">
   
     
-        <tr><th style="width:50px;" class="text-center">ID</th><th style="width:150px;" class="text-center">Type</th>
+        <tr><th style="width:50px;" class="text-center">ID</th>
+            <th style="width:150px;" class="text-center">Type</th>
+            <th style="width:80px;" class="text-center">Icon ON</th>
+            <th style="width:80px;" class="text-center">Icon OFF</th>
             <th class="text-center">Name</th>
             <th class="text-center">Description</th>
             <th class="text-center">Area</th>
-            <th class="text-center">Enable</th><th class="text-center">Board</th><th class="text-center">Address</th><th >&nbsp;</th><th>&nbsp;</th></tr>
+            <th class="text-center">Enable</th>
+            <th class="text-center">Board</th>
+            <th class="text-center">Address</th>
+            <th >&nbsp;</th>
+            <th>&nbsp;</th>
+        </tr>
         
         {% for p in data %}
             <form action="" method="post"  class="form-horizontal" role="form">    
                 <tr>
                     <td class="text-center"><input type="hidden"  name='id' value="{{ p.id }}">{{ p.id }}</td>
                     <td>
-                        <select name="io_type_id" class="form-control" style="width:100px;">
+                        <select name="io_type_id" class="form-control" style="width:auto;" >
                                 {% for io in io_type %}
                                     <option value="{{io.id}}" {% if io.id == p.io_type_id %} selected {% endif %} >
                                         {{io.name}}
@@ -33,6 +41,29 @@
                                 {% endfor %}
                         </select>
                     </td>
+                    
+                    <td>
+                        <select name="icon_on" class="form-control  styled-select" style="width:60px; background: url(static/icon/{{p.icon_on}}) no-repeat center;background-size:30px">
+                                {% for ic_on in icon %}
+                                    <option  
+                                        style="background: url(static/icon/{{ic_on}}) center no-repeat; padding:20px; background-size:30px;" 
+                                        value="{{ic_on}}" {% if ic_on == p.icon_on %} selected {% endif %} >
+                                    </option>
+                                {% endfor %}
+                        </select>
+                    </td>
+                    
+                    <td>
+                        <select name="icon_off" class="form-control  styled-select" style="width:60px; background: url(static/icon/{{p.icon_off}}) no-repeat center;background-size:30px">
+                                {% for ic_off in icon %}
+                                    <option  
+                                        style="background: url(static/icon/{{ic_off}}) center no-repeat; padding:20px; background-size:30px;" 
+                                        value="{{ic_off}}" {% if ic_off == p.icon_off %} selected {% endif %} >
+                                    </option>
+                                {% endfor %}
+                        </select>
+                    </td>
+                    
                     <td><input type="text"  name='name' value="{{ p.name }}"></td>
                     <td><input width="100px" type="text"  name='description' value="{{ p.description }}"></td>
                     
@@ -78,6 +109,28 @@
                                 </option>
                             {% endfor %}
                     </select>
+                </td>
+                <td>
+                    <select name="icon_on" class="form-control  styled-select" >
+                        {% for ic_on in icon %}
+                            <option  
+                                style="background: url(static/icon/{{ic_on}}) center no-repeat; padding:20px; background-size:30px;" 
+                                value="{{ic_on}}" >
+                            </option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+
+                    <select name="icon_off" class="form-control  styled-select">
+                        {% for ic_off in icon %}
+                            <option  
+                                style="background: url(static/icon/{{ic_off}}) center no-repeat; padding:20px; background-size:30px;" 
+                                value="{{ic_off}}">
+                            </option>
+                        {% endfor %}
+                    </select>
+
                 </td>
                 <td><input type="text"  name='name' value=""></td>
                 <td><input width="100px" type="text"  name='description' value=""></td>
