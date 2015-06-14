@@ -15,8 +15,8 @@ class Domocontrol:
         self.db = Database()
         self.mapping = [0, 1, 2, 4, 8, 16, 32, 64, 128]
         
-        self.i2c = 0  # (dev/i2c_x) Default is 0 but setBus check for right value
-        self.setBus() #set /dev/i2c_x
+        self.i2c = 0  # (dev/i2c_x) Default is 0 but getBusValue check for right value
+        self.getBusValue() #set /dev/i2c_x
         
         self.B = {} #IN / OUT value
         self.BCopy = {} #Copy B dictionary
@@ -35,6 +35,7 @@ class Domocontrol:
         
         self.IO = {'io':{}, 'sensor':{}, 'board_io':{}} #Content IO status (menu status)
         self.IOCopy = {'io':{}, 'sensor':{}, 'board_io':{}} #Copy IO dictionary
+        self.IOCopy8 = {1:1}
         
         self.M = {} #matrix dict
         self.MCopy = {}
@@ -47,10 +48,16 @@ class Domocontrol:
         #~ self.initializeIO()
 
     def now(self):
+        """
+        Ritorna l'ora corrente
+        """
         return date.now()
 
-    def setBus(self):
-        print("Start setBus")
+    def getBusValue(self):
+        """
+        Controlla il numero del divice I2C
+        """
+        print("Start getBusValue")
         self.device = []
         for a in range(0, 10):
             # print a
@@ -62,14 +69,40 @@ class Domocontrol:
                 pass
 
     def setup(self):  # program setup
+        """
+        Funzione di setup
+        Imposta il valore di tutti i dizionari per il corretto funzionamento
+        """
         print("Start Domocontrol Setup")
+        
+        #Dict IO['io']
+        q_board = 'SELECT * FROM board WHERE board_type_id=1 OR board_type_id=2 OR board_type_id=3'
+        r_board = self.db.query(q_board)
+        for rr_board in r_board:
+            #~ print rr_board, r_board
+            self.IO['io'].update( {rr_board['id']: {'value':0, 'update':0} })
+        
+        #Dict IO['board_io']
+        q_board_io = 'SELECT * FROM board_io'
+        r_board_io = self.db.query(q_board_io)
+        for rr_board_io in r_board_io:
+            self.IO['board_io'].update( {rr_board_io['id']: {
+                'id':rr_board_io['id'], 
+                'io_type_id':rr_board_io['io_type_id'],
+                'board_id':rr_board_io['board_id'],
+                'address':rr_board_io['address'],
+                'SA':0, #Stato attuale
+                'TA':0, #Timer
+                } 
+            })
         
         #Board_io DICT with all i
         self.A['board_io'] = {}
-        
+        self.IO['timer'] = {}
         q_board_io = 'SELECT * FROM board_io' # WHERE id=13'
         r_board_io = self.db.query(q_board_io)
         for rr_board_io in r_board_io:
+            
             q_io_type = 'SELECT * FROM io_type WHERE id=%s' %rr_board_io['io_type_id']
             r_io_type = self.db.query(q_io_type)[0]
             
@@ -81,26 +114,39 @@ class Domocontrol:
             
             self.A['board_io'].update( {rr_board_io['id']: { 
                     'id':rr_board_io['id'] ,
-                    'io_type_id': r_io_type ,
+                    'io_type': r_io_type ,
                     'name': rr_board_io['name'] ,
                     'description': rr_board_io['description'] ,
                     'enable': rr_board_io['enable'] ,
                     'timestamp': rr_board_io['timestamp'] ,
-                    'board_id': r_board,
+                    'board': r_board,
                     'address': rr_board_io['address'] ,
-                    'area_id': r_area,
+                    'area': r_area,
                     'icon_on': rr_board_io['icon_on'],
                     'icon_off': rr_board_io['icon_off']
                 }
             })
         
         #matrix board_io_m to get board_io.id for board and address
+        """
+        Matrix Dict to get quickly data
+        """
         self.M.update({'board_io_m': {} })
         q = 'SELECT * FROM board_io'
         r = self.db.query(q)
         for rr in r:
             self.M['board_io_m'].update({(int(rr['board_id']), int(rr['address'])): int(rr['id'])})
         #~ print self.M['board_io_m']
+        
+        #Select program_id form in_id
+        self.M.update({'program_m': {} })
+        q = 'SELECT * FROM program'
+        r = self.db.query(q)
+        for rr in r:
+            self.M['program_m'].update({int(rr['in_id']): int(rr['id'])})
+        
+        #-------------- End Matrix
+        
         
         #icon list
         icon_path =  os.path.join(self.dir_root, 'static/icon')
@@ -153,60 +199,6 @@ class Domocontrol:
             
         print("End Domocontrol Setup")
 
-    def resetIO(self):  # To rese all port to begin and to end program
-        q = 'SELECT io.board_id, io.address as io_address, io.io_type_id, b.board_type_id, b.address as board_address FROM board_io io, board b WHERE io.board_id=b.id'
-        res = db.query(q)
-        for r in res:
-            if r['io_type_id'] == 1 and int(r['board_address']) > 0:  # input type
-                # print "INPUT  type %s" %r
-                d.IOStatus('read', r['board_address'], r['io_address'], 1)
-            elif r['io_type_id'] == 2 and int(r['board_address']) > 0:  # output type
-                # print "OUTPUT type %s" %r
-                d.IOStatus('write', r['board_address'], r['io_address'], 0)
-
-    def getAddress(self, IO, id):  # return io_address, board_address. IO = in_id | out_id, id = Program ID
-        io_id = self.P[id][IO]
-        io_address = self.A['board_io'][io_id]['address']
-        board_id = self.A['board_io'][io_id]['board_id']
-        board_address = self.A['board'][board_id]['address']
-        board_type_id = self.A['board'][board_id]['board_type_id']
-        ret = {'program_id': id, 'io_address': io_address, 'board_address': board_address, 'board_type_id': board_type_id, 'IO': IO}
-        # print ret
-        return ret
-
-    def IOStatus(self, data):  # get I/O Status
-        # print rw, data, value
-        if int(data['board_type_id']) == 1:  # i2c board
-            bus = smbus.SMBus(self.i2c)
-            IOvalue = bus.read_byte(int(data['board_address']))
-            bit_value = (IOvalue >> (int(data['io_address'])-1)) & 1
-            return bit_value
-        elif int(data['board_type_id']) == 2:  # RS485 board
-            pass  # To Do
-
-        elif int(data['board_type_id']) == 3:  # WEB - virtual board
-            return self.P[data['program_id']]['IN']
-
-    def setIO_OLD(self, data, value):  # Set I/O status
-        #~ print data, value
-        if int(data['board_type_id']) == 1:  # I2C board
-            bus = smbus.SMBus(self.i2c)
-            IOvalue = bus.read_byte(int(data['board_address']))
-            self.P[data['program_id']]['OUT'] = value
-            if int(value) == 1:
-                val = int(IOvalue) | self.mapping[int(data['io_address'])]
-                bus.write_byte(int(data['board_address']), val)
-            else:
-                val = int(IOvalue) & (0xffff - self.mapping[int(data['io_address'])])
-                bus.write_byte(int(data['board_address']), val)
-
-        elif int(data['board_type_id']) == 3:  # Web board
-            self.P[data['program_id']]['OUT'] = value
-            
-
-    def setIN(self, id, mode):
-        self.P[int(id)]['IN'] = mode
-
     def getDict(self, dictionary, reloadDict=False): #Send DICT to web.py when request. If Dict is equal, send empty.
         #~ print self.P[4]
         if dictionary == 'P':
@@ -245,126 +237,89 @@ class Domocontrol:
             else:
                 self.CCopy = copy.deepcopy(self.C)
                 return self.C
-    
-    """        
-    def binary(self, x): #Transform INT to binary list
-        if x == 0: return [0]
-        bit = []
-        while x:
-            bit.append(x % 2)
-            x >>= 1
-        bit = bit[::-1]
-        bit.reverse()
-        return bit
 
-    def getVal(self,board_io_id): #get IO Status from board_io ID       
-        #~ print board_io_id
-        board_io = self.A['board_io'][board_io_id]
-        #~ print board_io
-        board_id = self.A['board_io'][board_io_id]['board_id']
-        #~ print board_id
-        board =  self.A['board'][board_id]
-        io_type = self.A['io_type']
-        
-        if board['enable'] == 0:
-            #~ print 'Board enable = 0. Do nothing'
-            pass
-            
-        elif board['board_type_id'] == 0: #Board not defined
-            #~ print 'Board enable = 0. Do nothing'
-            pass
-            
-        elif board['board_type_id'] == 1: #Board I2C
-            #~ print 'Board I2C'
-            bus = smbus.SMBus(self.i2c)
-            IOvalue = bus.read_byte(int(board['address']))
-            IOvalue = self.binary(IOvalue)
-            value = IOvalue[int(board_io['address'])-1]
-            io_type = io_type[board_io['io_type_id']]['name']
-            self.IO.update({'IO%s'%board_io_id : {'value': value, 'type':io_type, 'area':board_io['area_id'], 'id':board_io_id  }})
-            
-        elif board['board_type_id'] == 2: #Board RS485
-            #~ print 'Board RS485'
-            pass
-        
-        elif board['board_type_id'] == 3: #Board WEB (virtual)
-            #~ print 'Board WEB'
-            pass
-        
-        elif board['board_type_id'] == 4: #Board Sensor SHT21
-            try:
-                #~ print 'Board SHT21'
-                io_type = io_type[board_io['io_type_id']]['name']
-                if io_type == 'temperature':
-                    value = round(sht21.SHT21(self.i2c).read_temperature(),1)
-                elif io_type == 'humidity':
-                    value = round(sht21.SHT21(self.i2c).read_humidity(),1)
-                self.IO.update({'IO%s'%board_io_id : {'value': value, 'type': io_type, 'id':board_io_id }})
-            except:
-                print "Error SHT21"
 
-    def initializeIO(self):
-        for r in self.A['board_io']:
-            if self.A['board_io'][r]['enable'] == 1:
-                #~ print r
-                self.getVal(r)
-    """
-    
+
     ##### New Version #####
-
-    def getBit(self, byteval, idx): #Return if bit in the byte is 0 or 1
-        return 1 if (byteval&(1<<idx))!=0 else 0
     
-    def getInStatus(self):  # get Byte Status of all board
+    def loop(self): #Loop principale
+        self.getInStatus() #Leggo lo stato delle schede e aggiorno dizionario se e' cambiato
+        #~ print self.IO['io'] #stampo dizionario
+        self.updateIO() #aggiorna in self.IO['board_io'] lo stato dei singoli ingressi / uscite
+        #~ print self.IO['board_io']
+
+    def getInStatus(self):
+        """
+        Get Byte Status of all board
+        Legge il valore degli ingressi/uscite delle varie schede
+        """
         for board_id in self.A['board']: #get status of boards
             board = self.A['board'][board_id]
+            
             if int(board['board_type_id']) == 1:  # i2c board
                 bus = smbus.SMBus(self.i2c)
-                data = bus.read_byte(int(board['address']))
-                self.IO['io'].update({board['id']: data})
+                data = bus.read_byte(int(board['address'])) #legge lo stato degli ingressi
+                data_old = self.IO['io'][board['id']]['value']
+                if data != data_old:
+                    diff = int(data) ^ int(data_old)
+                    #~ print "Diff :", diff
+                    self.IO['io'].update({board['id']: {'value': data, 'update': diff }}) #aggiorna  dizionario
+                    
             elif int(board['board_type_id']) == 2:  # RS485 board
                 pass  # To Do
                 self.IO['io'].update({board['id']: 0})
             elif int(board['board_type_id']) == 3:  # WEB - virtual board
-                self.IO['io'].update({board['id']: 0})
-        
-        if self.IO['io'] != self.IOCopy['io']:
-            IO = set(self.IO['io'].items())            
-            IOCopy = set(self.IOCopy['io'].items())
-            diff = IO-IOCopy
-            
-            for board_id, v in diff:
-                address=7
-                
-                for val in bin(v|256)[3:] :
-                    board_io_id = self.M['board_io_m'].get((board_id, address), 0) #return board_io_id from board_id and bit address
-                    if board_io_id > 0:
-                        self.IO['board_io'].update({board_io_id: self.getBit(v, address)})
-                    address -= 1
-            self.IOCopy = copy.deepcopy(self.IO)
-            print "diverso"
-            self.loop()
-        
-        
-        
-    def getSensorStatus(self): #MAP 
+                self.IO['io'].update({board['id']: {'value': 0, 'update': 0 }}) #aggiorna  dizionario
+   
+    def updateIO(self):
+        """
+        funzione che aggiorna self.IO['board_io'] 
+        """
+        for board_id, data in self.IO['io'].iteritems(): #iterazione degli IO (byte)
+            address = 0
+            while data['update'] > 0: #se update e' >0 significa che e' cambiato lo stato IO
+                if data['update'] & 1 == 1: #se 1 il bit meno significativo e' cambiato
+                    board_io_id = self.M['board_io_m'].get((board_id, address), 0) #seleziono il board_io_id da cambiare
+                    if board_io_id > 0: #se >0 il board_io_id e' mappato, esiste nel database
+                        bit_value = self.getBitValue(data['value'], address) #vede il valore del bit cambiato
+                        self.IO['board_io'][board_io_id]['SA'] = bit_value #imposta lo stato del bit nel dizionario
+                data['update'] = int(data['update'])/2 #divide per 2 il data['update'] per vedere il secondo bit
+                address += 1
+            self.IO['io'][board_id]['update'] = 0 #0 significa che le operazioni sono state eseguite
+
+    def getSensorStatus(self):
+        """
+        Legge i valori dei vari sensori
+        """
         #~ print "----------------- Get Sensor Values ---------------"
         for board_id in self.A['board']: #get status of boards
             board = self.A['board'][board_id]
             if int(board['board_type_id']) == 4:  # SHT21 Temperature / Humidity sensor
                 try:
                     board_io_id = self.M['board_io_m'].get((board_id, 0), 0) #return board_io_id temperature
-                    self.IO['board_io'].update({board_io_id: round(sht21.SHT21(self.i2c).read_temperature(),1)})
+                    self.IO['board_io'][board_io_id]['SA'] = round(sht21.SHT21(self.i2c).read_temperature(),1)
                     
                     board_io_id = self.M['board_io_m'].get((board_id, 1), 0) #return board_io_id humidity
-                    self.IO['board_io'].update({board_io_id: round(sht21.SHT21(self.i2c).read_humidity(),1)})
+                    if board_io_id > 0:
+                        self.IO['board_io'][board_io_id]['SA'] =  round(sht21.SHT21(self.i2c).read_humidity(),1)
                 except: #initialize self.tnow and set temp + hum immediately
                     print "getSensorStatus Error"
+
+        
+    def getBitValue(self, byteval, idx): 
+        """
+        Return if bit in the byte is 0 or 1
+        Ritorna il valore del BIT di un Byte
+        """
+        return 1 if (byteval&(1<<idx))!=0 else 0
+
                     
-    def setBit(self, byte, index, x): 
-        """Set bit of byte to x 
-           Example:  (0b0000, 2, 1) = 0b0100
-           Example:  (0b0111, 2, 0) = 0b0011
+    def setBit(self, byte, index, x): #forse non serve e si puo' cancellare
+        """
+        Set bit of byte to x 
+        Setta a 0 o a 1 il bit di un byte
+        Example:  (0b0000, 2, 1) = 0b0100
+        Example:  (0b0111, 2, 0) = 0b0011
         """
         byte = int(byte)
         index = int(index)
@@ -375,7 +330,10 @@ class Domocontrol:
             byte |= mask
         return byte
      
-    def setIO(self,update):  # Set I2C status
+    def setIO(self,update):
+        """
+        Set I2C status
+        """  
         for u in update:
             address = int(self.A['board'][u]['address'])
             data = int(self.IO['io'][u])
@@ -383,17 +341,81 @@ class Domocontrol:
             bus = smbus.SMBus(self.i2c)
             bus.write_byte(address, data)
      
+
+
+    def programUpdate(self, board_io_id, bitVal, board_id): 
+        """
+        Setta le uscite in base al valore degli ingressi
+        """
+        itid = int(self.A['board_io'][board_io_id]['io_type']['id']) #check is board_io is input
+        program_id = self.M['program_m'].get(board_io_id, 0)
+        if (itid == 0 or itid == 1) and program_id > 0 : #board_io_id e' un ingresso
+            print board_id, board_io_id, bitVal, itid, program_id, self.IO 
+            type_id = self.P[program_id]['type_id']
+        
+            #~ print "Type_id: %s   In_in: %s" %(type_id, board_io_id)
+            out_id = self.P[program_id]['out_id']
+            inverted = self.P[program_id]['inverted']
+            if inverted:
+                bitVal = not bitVal
+            
+            if type_id == 1: #Timer
+                print "Timer"
+                print self.P[program_id]
+                if bitVal == 1:
+                    print "TIMER 111111111111111"
+                    self.IO['board_io'].update({out_id: int(bitVal)})
+                    timer = self.P[program_id]['timer']
+                    timer = timer.split('-')
+                    timer = (int(timer[0]) * 24 * 3600) + (int(timer[1]) * 3600) + (int(timer[2]) * 60) + int(timer[3])
+                    self.IO['timer'].update({board_io_id: timer})
+                
+                else:
+                    print "TIMER 000000000000000", out_id, int(bitVal)
+                    self.IO['board_io'].update({out_id: int(bitVal)})
+                                
+            elif  type_id == 2: #Timeout
+                print "Timeout"
+                pass
+            elif  type_id == 3: #Automatic
+                print "Automatic"
+                pass
+            elif  type_id == 4: #Manuale
+                self.IO['board_io'].update({out_id: int(bitVal)})
+                pass           
+     
+     
+    def counter(self):
+        #~ print "counter", self.IO['timer']   
+        
+        for board_io_id in self.IO['timer']:
+            program_id = self.M['program_m'][board_io_id]
+            bitVal = self.IO['board_io'][board_io_id]
+            board_id = self.A['board_io'][board_io_id]['board']['id']
+            
+            print "board_io_id:", board_io_id, "  program_id:", program_id, "  bitVal:", bitVal, "  board_id", board_id
+            
+            if self.IO['timer'][board_io_id] > 0:
+                self.IO['timer'][board_io_id] = self.IO['timer'][board_io_id] - 1
+            else:
+                
+                self.programUpdate(board_io_id, int(0), board_id )
+                del self.IO['timer'][board_io_id]
+            
+            if len(self.IO['timer']) == 0:
+                return    
+     
     #dictionary definition:
     #Self.A = contain all database information
     #self.IO = in / out / sensor value
     #self.P = program database
-    def loop(self):
+    def loop1(self):
         update = {}
         for p in self.P:  # p = id of self.P
             #~ print self.P
             out_id = self.P[p]['out_id'] #get board_io_id OUTPUT
             in_id = self.P[p]['in_id'] #get board_io_id INPUT
-            out_board_id = self.A['board_io'][out_id]['board_id']['id']
+            out_board_id = self.A['board_io'][out_id]['board']['id']
             out_address = self.A['board_io'][out_id]['address']
             
             if self.P[p]['type_id'] == 4:  # 4 = Manual
@@ -408,14 +430,21 @@ class Domocontrol:
                     self.IO['io'].update({out_board_id: self.setBit(self.IO['io'][out_board_id], out_address, 1)})
         
             elif self.P[p]['type_id'] == 1:  # 1 = Timer (luci scale)
-                pass
-                #~ print self.P[p]
-                #~ print 'Domo',id(self.P)
+                print "Timer Luci Scale"
+                #~ print "Self.P", self.P[p]
+                #~ print "board_io_m", self.IO
+                
+                if self.IO['board_io'][self.P[p]['in_id']] == 1:
+                    timer = self.P[p]['timer'].split('-')
+                    timer = (int(timer[0]) * 24 * 3600) + (int(timer[1]) * 3600) + (int(timer[2]) * 60) + int(timer[3])
+                    self.IO['timer'].update({in_id: timer})
+                    print "TIMER", in_id, timer
+                    
                 #~ in_address = self.getAddress('in_id', p)
                 #~ out_address = self.getAddress('out_id', p)
                 #~ in_status = self.IOStatus(in_address)
                 #~ self.P[p]['IN'] = in_status
-#~ 
+                
                 #~ if int(in_status) == 1:
                     #~ timer = self.P[p]['timer'].split('-')
                     #~ timer = (int(timer[0]) * 24 * 3600) + (int(timer[1]) * 3600) + (int(timer[2]) * 60) + int(timer[3])

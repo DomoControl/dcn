@@ -1,35 +1,41 @@
 #!/usr/bin/python
 from flask import Flask, request, render_template, g, session, jsonify, redirect, url_for, Response, json
 from flask.ext.bootstrap import Bootstrap
+#~ from flask_sse import sse, send_event
+
 from db import Database
 import sys
 from date import now #get time function
 import threading
+from threading import Thread
 import domocontrol
 from flask.ext.babel import Babel
 from config import LANGUAGES
 import time
 import copy
 import traceback
-import threading
 
-import gevent
-from gevent.pywsgi import WSGIServer
 from gevent import monkey
 monkey.patch_all()
 
-from numpy import random
-
+from flask.ext.socketio import SocketIO, emit, join_room, leave_room, close_room, disconnect
+#~ import gevent
+#~ from gevent.pywsgi import WSGIServer
 import time
 
 print("Begin")
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
+app.debug = True
+app.config['SECRET_KEY'] = 'secret!123654887'
 app.config.from_pyfile('config.py')
 app.config.from_object('config')
+socketio = SocketIO(app)
+thread = None
+
 babel = Babel(app)
 bootstrap = Bootstrap(app)
+
 DATABASE = './db/db.sqlite'
 db = Database(dbname=DATABASE)  # metodi per database
 d = domocontrol.Domocontrol()
@@ -80,39 +86,43 @@ def getTime():
     return jsonify(result=now().strftime("%a %d/%m/%y  %H:%M"))
 
 
+reloadD=False
 def event_menu_status():
     """For something more intelligent, take a look at Redis pub/sub
         stuff. A great example can be found here__.
         __ https://github.com/jakubroztocil/chat
     """
-    request = True
-    A = d.getDict('A',reloadDict=True)
     while True:
+        global reloadD
+        if reloadD == True:
+            request=True
+        else:
+            request=False
         IO = d.getDict('IO',reloadDict=request)
         A = d.getDict('A',reloadDict=request)
-        request = False
-        
+        reloadD=False
+
         if len(A) > 0:
-            data = {}
+            AA = {}
             A = A['board_io']
             for a in A:
-                if not A[a]['area_id']['id'] in data:
-                    data[A[a]['area_id']['id']] = {}
+                if not A[a]['area']['id'] in AA:
+                    AA[A[a]['area']['id']] = {}
                     
-                data[A[a]['area_id']['id']].update({a: {
-                    'area_name': A[a]['area_id']['name'],
-                    'area_description': A[a]['area_id']['description'],
+                AA[A[a]['area']['id']].update({a: {
+                    'area_name': A[a]['area']['name'],
+                    'area_description': A[a]['area']['description'],
                     'name': A[a]['name'],
                     'description': A[a]['description'],
                     'id': A[a]['id'],
                     'icon_on': A[a]['icon_on'],
                     'icon_off': A[a]['icon_off']
                 }})
-                print A[a]
         else:
-            data = {}
-        yield 'data: ' + json.dumps([data,IO])  + '\n\n'
-        gevent.sleep(0.1)
+            AA = {}
+        #~ print "DATA:", len(IO), len(AA)
+        socketio.emit('my response',  {'AA':AA, 'IO':IO}, namespace='/menu_status')
+        time.sleep(0.5)
         
 @app.route('/menu_status')
 def menu_status():
@@ -120,13 +130,21 @@ def menu_status():
     if int(session['privilege'][0:1]) == 0 and int(session['privilege'][1:2]) == 0:
         error='Insufficient privilege for Setup Status Menu!'
         return render_template( "no_permission.html", error=error)
+    global thread
+    if thread is None:
+        thread = Thread(target=event_menu_status)
+        thread.start()
     return render_template("menu_status.html")
+    
+@socketio.on('menu_status_back', namespace='/menu_status')
+def test_message(message):
+    global reloadD
+    reloadD = True
+    print "menu_status_back:", message
 
-@app.route('/get_menu_status', methods=['GET', 'POST'])
-def get_menu_status():
-    return Response(event_menu_status(), mimetype="text/event-stream")
-
-
+@socketio.on('change_menu_status', namespace='/menu_status')
+def test_broadcast_message(message):
+    print "ID:", message['id']
 
     
     
@@ -139,6 +157,7 @@ def setup_program_type():
         db.setForm('UPDATE', f.to_dict(), 'program_type')
     q = 'SELECT * FROM program_type'
     res = db.query(q)
+    print "Setup_Program ",res
     return render_template("setup_program_type.html", data=res)    
 
 @app.route('/menu_program')
@@ -393,7 +412,7 @@ def checkEnable(id, enable=0):
         return 1
     P = d.P
     A = d.A
-    io_type_id = A['board_io'][int(id)]['io_type_id']
+    io_type_id = A['board_io'][int(id)]['io_type']
     if A['io_type'][io_type_id]['type'] == 0:
         type = 'out_id'
     else:
@@ -513,10 +532,10 @@ def setup_program():
         elif request.form.to_dict()['btn'] == 'Copy':
             q = 'INSERT INTO program (in_id, inverted, out_id, type_id, name, description, enable, timer, chrono)'\
             'VALUES("{}", "{}", "{}", "{}", "{}", "{}", "{}", "{}", "{}")'.format(f['in_id'], inverted, f['out_id'], f['type_id'], f['name'], f['description'], enable, timer, chrono)
-        #~ print q
+        print q
         db.query(q)
         d.setup()
-        d.loop()
+        #~ d.loop()
 
     elif request.method == "POST" and 'btn' in request.form.to_dict() and request.form.to_dict()['btn'] == 'Delete':
         print('Delete Program Form')
@@ -643,22 +662,31 @@ def internal_server_error(e):
     print("Error {}" .format(e))
     return render_template('error_page.html', error=e ), 500
 
+def counter(start='y'):
+    try:
+        d.counter()
+        pass
+    except:
+        print('Error Domocontrol.py counter')
+        traceback.print_exc()
+    if start=='y':
+        threading.Timer(1, counter).start()
+    else:
+        threading.Timer(1, counter).cancel()
 
-def getInStatus(start='y'): #To update board IO values
+def loop(start='y'): #To update board IO values
     timebegin = now()
     print '='*80
     try:
-        d.getInStatus()
-        pass
+        d.loop()
     except:
         print('Error Domocontrol.py getInStatus')
         traceback.print_exc()
     if start=='y':
-        threading.Timer(1, getInStatus).start()
+        threading.Timer(1, loop).start()
     else:
-        threading.Timer(1, getInStatus).cancel()
-    print "IOStatus ==>> ", now() - timebegin
-    print 
+        threading.Timer(1, loop).cancel()
+    print "IOStatus ==>> ", now() - timebegin, "\n\n"
     
 def getSensorStatus(start='y'): #To update sensor values
     timebegin = now()
@@ -673,10 +701,12 @@ def getSensorStatus(start='y'): #To update sensor values
     #~ print "SensorStatus ==>> ", now() - timebegin
 
 if __name__ == '__main__':
-    getInStatus() #loop to update IO and sensors
+    loop() #loop to update IO and sensors
     getSensorStatus() #loop to update IO and sensors
+    counter() #decrement timer (IO['timer'])
     
-    WSGIServer(('', 5000), app).serve_forever()
+    socketio.run(app, host='0.0.0.0')
+    #~ WSGIServer(('', 5000), app).serve_forever()
     #~ 
     #~ try:
     #    app.run(host="0.0.0.0", port=5000, debug=False)
