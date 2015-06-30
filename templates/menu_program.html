@@ -63,7 +63,13 @@
                     }
                     
                     f = '';
-
+                    f += '<div id="parent" >';
+                    f += '<div id="child" style="width:130px;">IN</div>';
+                    f += '<div id="child" style="width:60px;">INVERTED</div>';
+                    f += '<div id="child" style="width:60px;">OUT</div>';
+                    f += '<div style="text-align:center" id="child" >Type</div>';
+                    f += '<div style="text-align:center" id="child" >Description</div>';
+                    f += '</div>';
                     for( var p in P ){
                         //~ debug = JSON.stringify(data[d]);
                         //~ debug += JSON.stringify(IO);
