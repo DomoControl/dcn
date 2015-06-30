@@ -1,162 +1,134 @@
 {% extends "template.html"  %}
 {% block content %}
-<h2>{{_('Program page')}}</h2>
-
-<script type=text/javascript>
-    A = {}; //Dict with all other data
-    ACopy = {};
-    P = {};
-    PCopy = {};
-    IO = {};
-    IOCopy = {};
-    var reloadDictA = '';
-    var reloadDictP = '';
-    var reloadDictIO = '';
+    <h2>Program status</h2>
+    {% if error %}
+        <p class=error><strong>Error:</strong> {{ error }}
+    {% endif %}
     
-    window.setInterval(function(){
-            $.getJSON('/getProgramStatus', {'reloadDictA':reloadDictA, 'reloadDictP':reloadDictP, 'reloadDictIO':reloadDictIO},
-
-        function(data) {
-            //~ alert(JSON.stringify(data))
-            PCopy = data.resultP; //Dict with IO status
-            ACopy = data.resultA; //Dict with all data
-            IOCopy = data.resultIO; //Dict with all data
+    <style type="text/css">
+        #parent {
+            display: table;
+            border: 1px dashed gray;
+            width: 98%;
+            margin: 10px;
+            padding-left: 15px;
+            padding-right: auto;
             
-            //Get A dict if empty
-            if(jQuery.isEmptyObject(ACopy) != true){
-                A = $.extend(A, ACopy);
-            }
-            if(Object.keys(A).length == '0'){
-                reloadDictA='true';
-            } else {
-                reloadDictA='false';
-            }
             
-            //Get P dict if empty
-            if(jQuery.isEmptyObject(PCopy) != true){
-                P = $.extend(P, PCopy);
-            }
-            if(Object.keys(P).length == '0'){
-                reloadDictP='true';
-            } else {
-                reloadDictP='false';
-            }
-            
-            //Get IO dict if empty
-            if(jQuery.isEmptyObject(IOCopy) != true){
-                IO = $.extend(IO, IOCopy);
-            }
-            if(Object.keys(IO).length == '0'){
-                reloadDictIO='true';
-            } else {
-                reloadDictIO='false';
-            }
-            
-            t = '';
-
-            //Header
-            var f = '<table class="table table-condensed">';
-
-            for( var p in P ){
-                //First program row
-                f += '<tr  class="active"><td colspan=8 class="text-center">';
-                f += '<span style="margin: 0 10px 0 10px;"><small>ID: </small><b>'+P[p]['id']+'</b></span>';
-                f += '<span style="margin: 0 10px 0 10px;"><small>Name: </small><b>'+P[p]['name']+'</b></span>';
-                f += '<span style="margin: 0 10px 0 10px;"><small>Description: </small><b>'+P[p]['description']+'</b></span>'
-                
-                f += '<span style="margin: 0 10px 0 10px;"><small>Type: </small><b>'+A['program_type'][P[p]['type_id']]['name']+'</b></span>';
-                f += '</td></tr>'
-                                
-                var board_id = A['board_io'][P[p]['in_id']]['board_id']['id']
-                var board_type_id = A['board'][board_id]['board_type_id']
-                
-                //~ t = JSON.stringify(IO['board_io'][P[p]['in_id']] == 1);                
-                if( board_type_id == 1 ){ //Board i2c
-                    if( IO['board_io'][P[p]['in_id']] == 1 ){var in_img = '<img src="static/img/in_on.png" height=40px>';}else{var in_img = '<img src="static/img/in_off.png" height=40px>';}
-                }
-                else if ( board_type_id == 3 ){ //Board Web
-                    if( IO['board_io'][P[p]['in_id']] == 1 ){var in_img = '<img src="static/img/in_push_on.png" height=40px onclick="setIN('+P[p]['id']+',0)">'} else {var in_img = '<img src="static/img/in_push_off.png" height=40px onclick="setIN('+P[p]['id']+',1)" >'}
-                }
-                
-                f += '<tr>'
-                var fin_desc = '<td style="vertical-align:middle;" class="text-center"><abbr title="'+A['board_io'][P[p]['in_id']]['description']+'">'+A['board_io'][P[p]['in_id']]['name']+'</abbr>&nbsp;'
-                
-                if (P[p]['type_id'] == 3) {var in_img = ''; fin_desc = '<td style="vertical-align:middle;" class="text-center">';}
-
-                f += fin_desc + in_img + '</td>';
-
-                if( P[p]['type_id'] == 1 ){ //Timer
-                    if (P[p]['TIMER'] == undefined ){timer = 'Timer: ' + P[p]['timer']} else{ timer = 'Timer: ' + P[p]['TIMER']; }
-                }
-                else if ( P[p]['type_id'] == 2 ){ //Timeout
-                    if (P[p]['TIMER'] == undefined ){timer = 'Timer: ' + P[p]['timer']} else{ timer = 'Timer: ' + P[p]['TIMER']; }
-                }
-                else if ( P[p]['type_id'] == 3 ){ //Automatic
-                    var timer = P[p]['chrono'];
-                    timer1 = timer.split(';');
-                    var d = '';
-                    var week = {0:'Mon',1:'Tue', 2:'Wed', 3:'Thu', 4:'Fri', 5:'Sat', 6:'Sun', 7:'All'};
-                    for( r in timer1 ) {
-                        data = timer1[r].split('-');
-                        d += 'From: ' + week[data[0]];
-                        d += ' ' + data[1];
-                        d += '.' + data[2];
-                        d += '.' + data[3];
-                        d += '&nbsp;&nbsp;  To: ' + week[data[4]];
-                        d += ' ' + data[5];
-                        d += '.' + data[6];
-                        d += '.' + data[7];
-                        d += '<br />'
-                    }
-                    timer = d;
-                }
-                else if ( P[p]['type_id'] == 4 ){ //Manual
-                    timer = '';
-                }
-
-                f += '<td style="vertical-align:middle;" class="text-center">'+timer+'</td>';
-
-                if( IO['board_io'][P[p]['out_id']] == 1 ){var out_img = '<img src="static/img/out_on.png" height=50px>';}else{var out_img = '<img src="static/img/out_off.png" height=50px>';}
-
-                f += '<td style="vertical-align:middle;" class="text-center"><abbr title="'+A['board_io'][P[p]['out_id']]['description']+'">'+A['board_io'][P[p]['out_id']]['name']+'</abbr>&nbsp;'+out_img+'</td>';
-                if( P[p]['inverted'] == 1 ){var inverted = '<span class="glyphicon glyphicon glyphicon-ok" aria-hidden="true"></span>';}else{var inverted = '<span class="glyphicon glyphicon glyphicon glyphicon-remove" aria-hidden="true"></span>';}
-                f += '<td style="vertical-align:middle;" class="text-center">Inverted &nbsp;&nbsp;'+inverted+'</td>'
-
-
-                f += '</tr>';
-
-
-            }
-            f += '</table>';
-            
-            f += '<hr><p><input  class="btn btn-default" type="submit" value="Program Edit" onclick="ProgramEdit('+p+')" ></p>'
-
-
-            document.getElementById('program').innerHTML = f;
-            document.getElementById('test').innerHTML = t;
-
         }
-        )
+        #child{
+            display: table-cell;
+            vertical-align: middle;
+            padding:5px;
+        }
+    </style> 
+   
+    
+            
+        <script type="text/javascript">
+            $(document).ready(function(){
+                namespace = '/menu_program';
+                var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+                f = '';
+                debug = '';
+                A = {}; //Dict with all other data
+                ACopy = {};
+                IO = {};
+                IOCopy = {};
+                P = {}
+                PCopy = {}
+                var reloadDictA = '';
+                var reloadDictIO='';
+                
+                socket.on('connect', function() {
+                    socket.emit('menu_program_back', {data1: 'Connect'});
+                });
+                                
+                socket.on('my response', function(dict) {
+                    
+                    IOCopy = dict.IO; //Dict with IO status
+                    PCopy = dict.P; //P with all data
+                    ACopy = dict.A; //Dict with all data
+                    
+                    //~ debug = JSON.stringify(IOCopy);
+                    
+                    if(jQuery.isEmptyObject(PCopy) != true){
+                        P = $.extend(P, PCopy);
+                    }
+                    if(Object.keys(ACopy).length>0){
+                        A = $.extend(A, ACopy);           
+                    }
+                    if(Object.keys(IOCopy).length>0){
+                        IO = $.extend(IO, IOCopy);           
+                    }
+                    
+                    f = '';
 
-    }, 1000);
+                    for( var p in P ){
+                        //~ debug = JSON.stringify(data[d]);
+                        //~ debug += JSON.stringify(IO);
+                        id = '';
+                        f += '<div id="parent" onClick="sendEvent('+P[p]['in_id']+')">';
+                        
+                        
+                        IN_val = IO['board_io'][P[p]['in_id']]['SA'] //status value
+                        if(IN_val == 0){
+                            f += '<div id="child" style="width:130px;"><input id="target" name="'+id+'" value="'+0+'" type="image" src="static/icon/' + A['board_io'][P[p]['in_id']]['icon_off'] + '" style="height:50px;" ></div>';
+                        } else {
+                            f += '<div id="child" style="width:130px;"><input  id="target" name="'+id+'" value="'+1+'" type="image" src="static/icon/' + A['board_io'][P[p]['in_id']]['icon_on'] + '"  style="height:50px;" ></div>';
+                        }
+                        if(P[p]['inverted']==1){
+                            f += '<div id="child" style="width:60px;"><img src="static/icon/inverted.png"  style="height:50px;" ></div>';
+                        }
+                        else{
+                            f += '<div id="child" style="width:60px;"></div>';
+                        }
+                        OUT_val = IO['board_io'][P[p]['out_id']]['SA'] //status value
+                        if(OUT_val == 0){
+                            f += '<div style="width:60px;" id="child"><input id="target" name="'+id+'" value="'+0+'" type="image" src="static/icon/' + A['board_io'][P[p]['out_id']]['icon_off'] + '" style="height:50px;" ></div>';
+                        } else {
+                            f += '<div style="width:60px;" id="child"><input  id="target" name="'+id+'" value="'+1+'" type="image" src="static/icon/' + A['board_io'][P[p]['out_id']]['icon_on'] + '"  style="height:50px;" ></div>';
+                        }
+                        switch(P[p]['type_id']){
+                            case 1: //Timer
+                                f += '<div style="text-align:center" id="child">Timer:<br>'+P[p]['TA']+'</div>';
+                                break;
+                            case 2: //Timeout
+                                f += '<div style="text-align:center" id="child">Timer:<br>'+P[p]['TA']+'</div>';
+                                break;
+                            case 3: //Automatic
+                                f += '<div style="text-align:center" id="child">Automatic</div>';
+                                break;
+                            case 4: //Manual
+                                f += '<div style="text-align:center" id="child">Manual</div>';
+                                break;
+                        }
+                        f += '<div style="text-align:center;" id="child">'+P[p]['name']+'<br>'+P[p]['description']+'</div>';
+                        
+                        f += '</div>';
+                        f += '</div>';
+                        f += '<div class="clear:both;"></div>';
+                        
+                            
+                        
+                    }
 
-    function setIN(id,mode){
-        //~ alert(id+' '+mode);
-        reloadDictA = 'true';
-        reloadDictP = 'true';
-        $.getJSON('/setIN', {id:id, mode:mode}, function(test){var a = 123;}  )
-    }
+                    document.getElementById('status').innerHTML = f;
+                    document.getElementById('debug').innerHTML = debug;  
+                });
+                
+                sendEvent = function(event) {
+                    socket.emit('change_menu_program', {id: event});
+                    return false;
+                };   
+                
+            });
+        
+            
+    </script>
 
-    function ProgramEdit(id){
-        window.location.href = "/setup_program";
-    }
-
-
-</script>
-
-
-<div id='program'></div>
-<div id='test'></div>
+<div id="debug"></div>
+<div id="status"></div>
+<div id="log"></div>
 
 {% endblock %}
-

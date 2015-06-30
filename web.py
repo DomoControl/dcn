@@ -26,7 +26,8 @@ import time
 print("Begin")
 
 app = Flask(__name__)
-app.debug = True
+#~ app.debug = True
+app.debug = False
 app.config['SECRET_KEY'] = 'secret!123654887'
 app.config.from_pyfile('config.py')
 app.config.from_object('config')
@@ -88,10 +89,12 @@ def getTime():
 
 reloadD=False
 def event_menu_status():
-    """For something more intelligent, take a look at Redis pub/sub
-        stuff. A great example can be found here__.
-        __ https://github.com/jakubroztocil/chat
+    """ 
+        Send data to menu_status by server sent event (SSE)
+        For something more intelligent, take a look at Redis pub/sub
+        stuff. A great example can be found here https://github.com/jakubroztocil/chat
     """
+    print d.IO
     while True:
         global reloadD
         if reloadD == True:
@@ -120,7 +123,6 @@ def event_menu_status():
                 }})
         else:
             AA = {}
-        #~ print "DATA:", len(IO), len(AA)
         socketio.emit('my response',  {'AA':AA, 'IO':IO}, namespace='/menu_status')
         time.sleep(0.5)
         
@@ -144,9 +146,64 @@ def test_message(message):
 
 @socketio.on('change_menu_status', namespace='/menu_status')
 def test_broadcast_message(message):
-    print "ID:", message['id']
+    board_io_id = message['id'] #pulsante premuto
+    if d.IO['board_io'][board_io_id]['io_type_id'] == 0: #che se e' stato premuto un pulsante virtuale
+        SA = d.IO['board_io'][board_io_id]['SA'] #Attuale stato del pulsante virtuale
+        d.IO['board_io'][board_io_id]['SA'] = 1 if d.IO['board_io'][board_io_id]['SA']== 0 else 0 #cambia stato del pulsante virtuale
+        print "SA:", d.IO['board_io'][board_io_id]['SA']
+        d.updateOut()
 
+
+
+reloadD=False
+def event_menu_program():
+    """ 
+        Send data to menu_program by server sent event (SSE)
+        For something more intelligent, take a look at Redis pub/sub
+        stuff. A great example can be found here https://github.com/jakubroztocil/chat
+    """
+    #~ print d.IO
+    while True:
+        global reloadD
+        if reloadD == True:
+            request=True
+        else:
+            request=False
+        IO = d.getDict('IO',reloadDict=request)
+        A = d.getDict('A',reloadDict=request)
+        P = d.getDict('P',reloadDict=request)
+        reloadD=False
+        print P
+        
+        socketio.emit('my response',  {'A':A, 'P':P, 'IO':IO}, namespace='/menu_program')
+        time.sleep(0.5)
+        
+@app.route('/menu_program')
+def menu_program():
+    if not checkLogin(): return redirect(url_for('logout'))
+    if int(session['privilege'][0:1]) == 0 and int(session['privilege'][1:2]) == 0:
+        error='Insufficient privilege for Setup Status Menu!'
+        return render_template( "no_permission.html", error=error)
+    global thread
+    if thread is None:
+        thread = Thread(target=event_menu_program)
+        thread.start()
+    return render_template("menu_program.html")
     
+@socketio.on('menu_program_back', namespace='/menu_program')
+def test_message(message):
+    global reloadD
+    reloadD = True
+    print "menu_program_back:", message
+
+@socketio.on('change_menu_program', namespace='/menu_program')
+def test_broadcast_message(message):
+    board_io_id = message['id'] #pulsante premuto
+    if d.IO['board_io'][board_io_id]['io_type_id'] == 0: #che se e' stato premuto un pulsante virtuale
+        SA = d.IO['board_io'][board_io_id]['SA'] #Attuale stato del pulsante virtuale
+        d.IO['board_io'][board_io_id]['SA'] = 1 if d.IO['board_io'][board_io_id]['SA']== 0 else 0 #cambia stato del pulsante virtuale
+        print "SA:", d.IO['board_io'][board_io_id]['SA']
+        d.updateOut()    
     
 @app.route('/setup_program_type', methods=["GET", "POST"])
 def setup_program_type():
@@ -160,7 +217,8 @@ def setup_program_type():
     print "Setup_Program ",res
     return render_template("setup_program_type.html", data=res)    
 
-@app.route('/menu_program')
+"""
+@app.route('/menu_program_old')
 def menu_program():
     #Test if user is logged
     if not checkLogin(): return redirect(url_for('logout'))
@@ -206,7 +264,7 @@ def setIN():
     d.loop()
     #~ getProgram(reloadDict=True)
     return jsonify(result=123)
-
+"""
 
 @app.route("/setup_user", methods=["GET", "POST"])
 def setup_user():
@@ -288,7 +346,7 @@ def setup_area():
     if request.method == "POST":
         f = request.form  # get input value
         db.setForm('UPDATE', f.to_dict(), 'area')  # recall db.setForm to update query. UPDATE=Update method, f.to_dict=dictionary with input value, area:database table
-    q = 'SELECT * FROM area'
+    q = 'SELECT * FROM area ORDER by sort'
     res = db.query(q)
     return render_template("setup_area.html", data=res)
     
@@ -325,7 +383,7 @@ def menu_sensor(chartID = 'chart_ID', chart_type = 'line', chart_height = 350):
     
     yAxis = [{"title": {"text": 'Temperature'}},{"title": {"text": 'Humidity'}, "opposite":'true'}]
     tooltip = { "headerFormat": '<b>{series.name}</b><br>', "pointFormat": '{point.x:%e. %b}: {point.y:.2f} m' }
-    
+    print chartID, chart, series, title, xAxis, yAxis, tooltip
     return render_template('menu_sensor.html', chartID=chartID, chart=chart, series=series, title=title, xAxis=xAxis, yAxis=yAxis, tooltip=tooltip) 
 
 
@@ -408,21 +466,28 @@ def setup_board():
     return render_template("setup_board.html", data=res, board_type=board_type)
 
 def checkEnable(id, enable=0):
+    """
+    Controlla se board_io_id e' usato nel programma. 
+    Deve essere passato board_io.id e board_io.enable
+    """
     if enable == 1:
-        return 1
+        return 'ok'
     P = d.P
     A = d.A
-    io_type_id = A['board_io'][int(id)]['io_type']
+    
+    io_type_id = A['board_io'][int(id)]['io_type']['id']
+    #~ print "io_type_id: ", io_type_id
     if A['io_type'][io_type_id]['type'] == 0:
         type = 'out_id'
     else:
         type = 'in_id'
     
     for r in P:
-        print P[r][type], id
+        print "Type ==>>: ", P[r][type], id
         if int(P[r][type]) == int(id):
-            print "ERROR**************************"
-    return 0
+            print "Program ID corrispondente: ", P[r]['id']
+            return P[r]['id']
+    return 'ok'
         
 
 @app.route('/setup_board_io', methods=["GET", "POST"])
@@ -438,13 +503,14 @@ def setup_board_io():
                 enable = 1
             else:
                 enable = 0
-            
-            if checkEnable(f["id"], enable) == 0:
-                error='Cannot disable I/O used in Program, first change Program '
+            print 'f["id"]: ', f["id"], '  ', "enable:", enable
+            if checkEnable(f["id"], enable) != 'ok':
+                error="Cannot disable I/O used in setup_board_io because it is used into Program n. %s. First delete program or change IN/OUT into it." %(checkEnable(f["id"], enable))
             else:
                 q = 'UPDATE board_io SET id="{}", io_type_id="{}", name="{}", description="{}", area_id="{}", enable="{}", board_id="{}", address="{}", icon_on="{}", icon_off="{}" WHERE id="{}"'\
                 .format(f['id'], f['io_type_id'], f['name'], f['description'], f['area_id'], enable, f['board_id'], f['address'], f['icon_on'], f['icon_off'], f['id'])
                 db.query(q)
+                print q
         elif f['submit'] == 'Add IO':
             if 'enable' in f:
                 enable = 1
@@ -472,7 +538,7 @@ def setup_board_io():
     all_board = db.query(q)
     q = 'SELECT * FROM area ORDER BY id'
     area = db.query(q)
-    d.setup() #reload database
+    d.setupDict() #reload database
     
     icon = d.A['icon']
     print icon
@@ -534,7 +600,7 @@ def setup_program():
             'VALUES("{}", "{}", "{}", "{}", "{}", "{}", "{}", "{}", "{}")'.format(f['in_id'], inverted, f['out_id'], f['type_id'], f['name'], f['description'], enable, timer, chrono)
         print q
         db.query(q)
-        d.setup()
+        d.setupDict()
         #~ d.loop()
 
     elif request.method == "POST" and 'btn' in request.form.to_dict() and request.form.to_dict()['btn'] == 'Delete':
@@ -543,7 +609,7 @@ def setup_program():
         q = 'DELETE FROM program WHERE id="{}" '.format(f['id'])
         #~ print(q)
         db.query(q)
-        d.setup()
+        d.setupDict()
 
     elif request.method == "POST" and [s for s in request.form.to_dict() if "delete_chrono" in s]:
         print('Delete Chrono in Program Form')
@@ -557,7 +623,7 @@ def setup_program():
         chrono = ';'.join(chrono)  # convert list to string
         q = 'UPDATE program SET chrono="{}" WHERE id="{}"'.format(chrono, f['id'])
         db.query(q)
-        d.setup()
+        d.setupDict()
     q = 'SELECT * FROM program'
     res = db.query(q)
     timer = res[0]['timer'].split('-')
@@ -695,7 +761,7 @@ def getSensorStatus(start='y'): #To update sensor values
     except:
         print('Error Domocontrol.py getSensorStatus')
     if start=='y':
-        threading.Timer(30, getSensorStatus).start()
+        threading.Timer(180, getSensorStatus).start()
     else:
         threading.Timer(1, getSensorStatus).cancel()
     #~ print "SensorStatus ==>> ", now() - timebegin
