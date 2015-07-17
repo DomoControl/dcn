@@ -71,13 +71,11 @@
         
         <footer style="margin-top:50px;">
             <nav class="navbar navbar-default navbar-fixed-bottom" role="navigation">
-                <div class="col-md-3">
+                <div class="col-md-6">
                     {% if session.logged_in %}
                         <span>{{_('Welcome')}} {{ session.user_name }}</span>
                     {% endif %}
-                </div>
-                <div id="time" class="col-md-2"></div>
-                
+                <div id="time" class="col-md-6"></div>              
             </nav>
         </footer>
 
