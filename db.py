@@ -27,7 +27,7 @@ class Database:
         elif query.find('INSERT') or query.find('UPDATE') or query.find('DELETE'):
             cur.commit()
             cur.close()
-            return res.lastrowid #Last row
+            return res.lastrowid  # Last row
 
     def setForm(self, mode, data, table):
         if mode == 'UPDATE':

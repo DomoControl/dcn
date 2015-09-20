@@ -1,11 +1,10 @@
 #!/usr/bin/python
 from flask import Flask, request, render_template, g, session, jsonify, redirect, url_for, Response, json
 from flask.ext.bootstrap import Bootstrap
-#~ from flask_sse import sse, send_event
-
+# from flask_sse import sse, send_event
 from db import Database
 import sys
-from date import now #get time function
+from date import now  # get time function
 import threading
 from threading import Thread
 import domocontrol
@@ -14,19 +13,16 @@ from config import LANGUAGES
 import time
 import copy
 import traceback
-
 from gevent import monkey
-monkey.patch_all()
-
 from flask.ext.socketio import SocketIO, emit, join_room, leave_room, close_room, disconnect
-#~ import gevent
-#~ from gevent.pywsgi import WSGIServer
 import time
-
+# import gevent
+# from gevent.pywsgi import WSGIServer
+monkey.patch_all()
 print("Begin")
 
 app = Flask(__name__)
-#~ app.debug = True
+# app.debug = True
 app.debug = False
 
 app.config['SECRET_KEY'] = 'secret!123654887'
@@ -42,11 +38,12 @@ DATABASE = './db/db.sqlite'
 db = Database(dbname=DATABASE)  # metodi per database
 d = domocontrol.Domocontrol()
 P = {}  # Dict with Program
-PCopy = {}  #Copy P dictionary
-A = {}  # All other db information        
-ACopy = {} #Copy A dictionary
-IO = {} #Content IO status (menu status)
-IOCopy = {} #Copy IO dictionary
+PCopy = {}  # Copy P dictionary
+A = {}  # All other db information
+ACopy = {}  # Copy A dictionary
+IO = {}  # Content IO status (menu status)
+IOCopy = {}  # Copy IO dictionary
+
 
 @app.route('/lang/it')
 def lang(language=None):
@@ -65,49 +62,52 @@ def get_locale():
 
 
 def setLog():  # Da finire. Serve per tracciare l'IP
-    #~ if session['privilege']
+    # if session['privilege']
     userAgentString = request.headers.get('User-Agent')
     if not request.remote_addr[0:9] == '192.168.1':
         res = db.query("INSERT INTO log (command,ip) VALUES('{}', '{}')".format(request.url, request.remote_addr))
 
-# Test is user is logged
-def checkLogin():
-    #~ print session['sessionTimeout'], (now() - session['timestamp']).total_seconds()
-    if 'logged_in' in session and session['logged_in']==True and (now() - session['timestamp']).total_seconds() < session['sessionTimeout']:
+
+def checkLogin():  # Test is user is logged
+    # print session['sessionTimeout'], (now() - session['timestamp']).total_seconds()
+    if 'logged_in' in session and session['logged_in'] == True and (now() - session['timestamp']).total_seconds() < session['sessionTimeout']:
         session['timestamp'] = now()
         return 1
     else:
         return 0
 
-#Privilege session: 
-#   xxxx
-#   8421             
-#   1: Log - 2: View - 4: Setup  -  128: Admin
 
-def checkPermission(permission=255, error=''):  #Check if user is logged and the privileve
-    if not checkLogin(): 
-        return redirect(url_for('logout'))  #Check is user is logged
+def checkPermission(permission=255, error=''):  # Check if user is logged and the privileve
+    """
+    Privilege session:
+    xxxx
+    8421
+    1: Log - 2: View - 4: Setup  -  128: Admin
+    """
+    if not checkLogin():
+        return redirect(url_for('logout'))  # Check is user is logged
     priv = int(session['privilege'])
-    
+
     print priv, permission, permission >= priv
-    if priv >= permission: #check permission for LOG
+    if priv >= permission:  # check permission for LOG
         return 1
-    else:       
+    else:
         return 0
-    
-    
-#~ @app.route('/no_permission')
-#~ def no_permission(error=''):
-    #~ return render_template("no_permission.html", error=error)
+
+
+# @app.route('/no_permission')
+# def no_permission(error=''):
+    # return render_template("no_permission.html", error=error)
 
 @app.route('/getTime')  # return datetime now() to show in footer
 def getTime():
     return jsonify(result=now().strftime("%a %d/%m/%y  %H:%M"))
 
+reloadD = False
 
-reloadD=False
+
 def event_menu_status():
-    """ 
+    """
         Send data to menu_status by server sent event (SSE)
         For something more intelligent, take a look at Redis pub/sub
         stuff. A great example can be found here https://github.com/jakubroztocil/chat
@@ -115,13 +115,13 @@ def event_menu_status():
     print d.IO
     while True:
         global reloadD
-        if reloadD == True:
-            request=True
+        if reloadD:
+            request = True
         else:
-            request=False
-        IO = d.getDict('IO',reloadDict=request)
-        A = d.getDict('A',reloadDict=request)
-        reloadD=False
+            request = False
+        IO = d.getDict('IO', reloadDict=request)
+        A = d.getDict('A', reloadDict=request)
+        reloadD = False
 
         if len(A) > 0:
             AA = {}
@@ -129,7 +129,7 @@ def event_menu_status():
             for a in A:
                 if not A[a]['area']['id'] in AA:
                     AA[A[a]['area']['id']] = {}
-                    
+
                 AA[A[a]['area']['id']].update({a: {
                     'area_name': A[a]['area']['name'],
                     'area_description': A[a]['area']['description'],
@@ -141,96 +141,104 @@ def event_menu_status():
                 }})
         else:
             AA = {}
-        socketio.emit('my response',  {'AA':AA, 'IO':IO}, namespace='/menu_status')
+        socketio.emit('my response', {'AA': AA, 'IO': IO}, namespace='/menu_status')
         time.sleep(0.5)
-        
+
+
 @app.route('/menu_status')
 def menu_status():
-    if not checkPermission(2): #check login and privilege
+    if not checkPermission(2):  # check login and privilege
         return render_template("no_permission.html")
     global thread
     if thread is None:
         thread = Thread(target=event_menu_status)
         thread.start()
     return render_template("menu_status.html")
-    
+
+
 @socketio.on('menu_status_back', namespace='/menu_status')
 def test_message(message):
     global reloadD
     reloadD = True
     print "menu_status_back:", message
 
+
 @socketio.on('change_menu_status', namespace='/menu_status')
 def test_broadcast_message(message):
-    board_io_id = message['id'] #pulsante premuto
-    if d.IO['board_io'][board_io_id]['io_type_id'] == 0: #che se e' stato premuto un pulsante virtuale
-        SA = d.IO['board_io'][board_io_id]['SA'] #Attuale stato del pulsante virtuale
-        d.IO['board_io'][board_io_id]['SA'] = 1 if d.IO['board_io'][board_io_id]['SA']== 0 else 0 #cambia stato del pulsante virtuale
+    board_io_id = message['id']  # pulsante premuto
+    if d.IO['board_io'][board_io_id]['io_type_id'] == 0:  # che se e' stato premuto un pulsante virtuale
+        SA = d.IO['board_io'][board_io_id]['SA']  # Attuale stato del pulsante virtuale
+        d.IO['board_io'][board_io_id]['SA'] = 1 if d.IO['board_io'][board_io_id]['SA'] == 0 else 0  # cambia stato del pulsante virtuale
         print "SA:", d.IO['board_io'][board_io_id]['SA']
         d.updateOut()
-reloadD=False
+reloadD = False
+
 
 def event_menu_program():
-    """ 
+    """
         Send data to menu_program by server sent event (SSE)
         For something more intelligent, take a look at Redis pub/sub
         stuff. A great example can be found here https://github.com/jakubroztocil/chat
     """
-    #~ print d.IO
+    # print d.IO
     while True:
         global reloadD
-        if reloadD == True:
-            request=True
+        if reloadD:
+            request = True
         else:
-            request=False
-        IO = d.getDict('IO',reloadDict=request)
-        A = d.getDict('A',reloadDict=request)
-        P = d.getDict('P',reloadDict=request)
-        reloadD=False
+            request = False
+        IO = d.getDict('IO', reloadDict=request)
+        A = d.getDict('A', reloadDict=request)
+        P = d.getDict('P', reloadDict=request)
+        reloadD = False
         print P
-        
-        socketio.emit('my response',  {'A':A, 'P':P, 'IO':IO}, namespace='/menu_program')
+
+        socketio.emit('my response', {'A': A, 'P': P, 'IO': IO}, namespace='/menu_program')
         time.sleep(0.5)
-        
+
+
 @app.route('/menu_program')
 def menu_program():
-    if not checkPermission(2): #check login and privilege
+    if not checkPermission(2):  # check login and privilege
         return render_template("no_permission.html")
-    if int(session['privilege'][0:1]) == 0 and int(session['privilege'][1:2]) == 0:
-        error='Insufficient privilege for Setup Status Menu!'
-        return render_template( "no_permission.html", error=error)
+    if int(session['privilege'][0: 1]) == 0 and int(session['privilege'][1: 2]) == 0:
+        error = 'Insufficient privilege for Setup Status Menu!'
+        return render_template("no_permission.html", error=error)
     global thread
     if thread is None:
         thread = Thread(target=event_menu_program)
         thread.start()
     return render_template("menu_program.html")
-    
+
+
 @socketio.on('menu_program_back', namespace='/menu_program')
 def test_message(message):
     global reloadD
     reloadD = True
     print "menu_program_back:", message
 
+
 @socketio.on('change_menu_program', namespace='/menu_program')
 def test_broadcast_message(message):
-    board_io_id = message['id'] #pulsante premuto
-    if d.IO['board_io'][board_io_id]['io_type_id'] == 0: #che se e' stato premuto un pulsante virtuale
-        SA = d.IO['board_io'][board_io_id]['SA'] #Attuale stato del pulsante virtuale
-        d.IO['board_io'][board_io_id]['SA'] = 1 if d.IO['board_io'][board_io_id]['SA']== 0 else 0 #cambia stato del pulsante virtuale
+    board_io_id = message['id']  # pulsante premuto
+    if d.IO['board_io'][board_io_id]['io_type_id'] == 0:  # che se e' stato premuto un pulsante virtuale
+        SA = d.IO['board_io'][board_io_id]['SA']  # Attuale stato del pulsante virtuale
+        d.IO['board_io'][board_io_id]['SA'] = 1 if d.IO['board_io'][board_io_id]['SA'] == 0 else 0  # cambia stato del pulsante virtuale
         print "SA:", d.IO['board_io'][board_io_id]['SA']
-        d.updateOut()    
-    
+        d.updateOut()
+
+
 @app.route('/setup_program_type', methods=["GET", "POST"])
 def setup_program_type():
-    if not checkPermission(4): #check login and privilege
+    if not checkPermission(4):  # check login and privilege
         return render_template("no_permission.html")
     if request.method == "POST":
         f = request.form
         db.setForm('UPDATE', f.to_dict(), 'program_type')
     q = 'SELECT * FROM program_type'
     res = db.query(q)
-    print "Setup_Program ",res
-    return render_template("setup_program_type.html", data=res)    
+    print "Setup_Program ", res
+    return render_template("setup_program_type.html", data=res)
 
 """
 @app.route('/menu_program_old')
@@ -249,24 +257,24 @@ def getProgram(reloadDict=False):  # return array with all program informations
     if reloadDict == True:
         request.args['reloadDictA'] == 'true'
         request.args['reloadDictP'] == 'true'
-        
+
     if request.args['reloadDictA'] == 'true':
         A = d.getDict('A',reloadDict=True)
     else:
         A = d.getDict('A')
-    
+
     if request.args['reloadDictP'] == 'true':
         P = d.getDict('P',reloadDict=True)
     else:
         P = d.getDict('P')
-    
+
     if request.args['reloadDictP'] == 'true':
         IO = d.getDict('IO',reloadDict=True)
     else:
         IO = d.getDict('IO')
-    
-    #~ print IO
-    #~ print P,A
+
+    # print IO
+    # print P,A
     return jsonify(resultP=P, resultA=A, resultIO=IO)
 
 @app.route('/setIN', methods=['GET', 'POST'])
@@ -277,13 +285,14 @@ def setIN():
     print("Set Button", pid, mode)
     d.setIN(pid, mode)
     d.loop()
-    #~ getProgram(reloadDict=True)
+    # getProgram(reloadDict=True)
     return jsonify(result=123)
 """
 
+
 @app.route('/setup_area', methods=["GET", "POST"])
 def setup_area():
-    if not checkPermission(4): #check login and privilege
+    if not checkPermission(4):  # check login and privilege
         return render_template("no_permission.html")
     if request.method == "POST":
         f = request.form  # get input value
@@ -291,23 +300,24 @@ def setup_area():
     q = 'SELECT * FROM area ORDER by sort'
     res = db.query(q)
     return render_template("setup_area.html", data=res)
-    
+
+
 @app.route('/menu_sensor', methods=["GET", "POST"])
-def menu_sensor(chartID = 'chart_ID', chart_type = 'line', chart_height = 350):
-    if not checkPermission(2): #check login and privilege
+def menu_sensor(chartID='chart_ID', chart_type='line', chart_height=350):
+    if not checkPermission(2):  # check login and privilege
         return render_template("no_permission.html")
-    
+
     q = 'SELECT * FROM sensor WHERE type=1 ORDER BY datetime DESC LIMIT 248'
     temperature = db.query(q)
     temp = []
     categories = []
     for t in temperature:
-        micros = float(time.mktime(time.strptime(t['datetime'], '%Y-%m-%d %H:%M:%S'))*1000) 
+        micros = float(time.mktime(time.strptime(t['datetime'], '%Y-%m-%d %H:%M:%S')) * 1000)
         temp.append(t['value'])
         categories.append(micros)
     temp.reverse()
     categories.reverse()
-    
+
     q = 'SELECT * FROM sensor WHERE type=2 ORDER BY datetime DESC LIMIT 248'
     humidity = db.query(q)
     hum = []
@@ -315,23 +325,23 @@ def menu_sensor(chartID = 'chart_ID', chart_type = 'line', chart_height = 350):
         micros = int(time.mktime(time.strptime(h['datetime'], '%Y-%m-%d %H:%M:%S')))
         hum.append(h['value'])
     hum.reverse()
-    
-    chart = {"renderTo": chartID, "type": chart_type, "height": chart_height,}
-    
-    series = [{"yAxis":0, "name": 'Temperature', "data": temp}, {"yAxis":1, "name":'Humidity', "data":hum} ]
+
+    chart = {"renderTo": chartID, "type": chart_type, "height": chart_height, }
+
+    series = [{"yAxis": 0, "name": 'Temperature', "data": temp}, {"yAxis": 1, "name": 'Humidity', "data": hum}]
     tooltip = {"backgroundColor": '#00FFC5', "borderColor": 'black', "borderRadius": 10, "borderWidth": 3}
     title = {"text": 'Temperature / Humidity'}
-    xAxis = {"title": {"text": 'Date'}, "type":'datetime', "categories":categories, "dateTimeLabelFormats": { "month": '%e. %b', "year": '%b' }, "tickPixelInterval": 20}
-    
-    yAxis = [{"title": {"text": 'Temperature'}},{"title": {"text": 'Humidity'}, "opposite":'true'}]
-    tooltip = { "headerFormat": '<b>{series.name}</b><br>', "pointFormat": '{point.x:%e. %b}: {point.y:.2f} m' }
+    xAxis = {"title": {"text": 'Date'}, "type": 'datetime', "categories": categories, "dateTimeLabelFormats": {"month": '%e. %b', "year": '%b'}, "tickPixelInterval": 20}
+
+    yAxis = [{"title": {"text": 'Temperature'}}, {"title": {"text": 'Humidity'}, "opposite": 'true'}]
+    tooltip = {"headerFormat": '<b>{series.name}</b><br>', "pointFormat": '{point.x:%e. %b}: {point.y:.2f} m'}
     print chartID, chart, series, title, xAxis, yAxis, tooltip
-    return render_template('menu_sensor.html', chartID=chartID, chart=chart, series=series, title=title, xAxis=xAxis, yAxis=yAxis, tooltip=tooltip) 
+    return render_template('menu_sensor.html', chartID=chartID, chart=chart, series=series, title=title, xAxis=xAxis, yAxis=yAxis, tooltip=tooltip)
 
 
 @app.route('/setup_privilege', methods=["GET", "POST"])
 def setup_privilege():
-    if not checkPermission(4): #check login and privilege
+    if not checkPermission(4):  # check login and privilege
         return render_template("no_permission.html")
     if request.method == "POST":
         f = request.form
@@ -343,7 +353,7 @@ def setup_privilege():
 
 @app.route('/setup_translation', methods=["GET", "POST"])
 def setup_translation():
-    if not checkPermission(4): #check login and privilege
+    if not checkPermission(4):  # check login and privilege
         return render_template("no_permission.html")
     if request.method == "POST":
         f = request.form
@@ -356,7 +366,7 @@ def setup_translation():
 
 @app.route('/setup_board_type', methods=["GET", "POST"])
 def setup_board_type():
-    if not checkPermission(4): #check login and privilege
+    if not checkPermission(4):  # check login and privilege
         return render_template("no_permission.html")
     if request.method == "POST":
         f = request.form
@@ -368,7 +378,7 @@ def setup_board_type():
 
 @app.route('/setup_board', methods=["GET", "POST"])
 def setup_board():
-    if not checkPermission(4): #check login and privilege
+    if not checkPermission(4):  # check login and privilege
         return render_template("no_permission.html")
     if request.method == "POST":
         f = request.form
@@ -378,12 +388,12 @@ def setup_board():
             else:
                 enable = 0
             q = 'UPDATE board SET id="{}", name="{}", description="{}", enable="{}", address="{}", board_type_id="{}" WHERE id="{}"'\
-            .format(f["id"], f["name"], f["description"], enable, f["address"], f["board_type"], f["id"])
+                .format(f["id"], f["name"], f["description"], enable, f["address"], f["board_type"], f["id"])
             db.query(q)
             q = 'SELECT * FROM board'
             res = db.query(q)
             q = 'SELECT * FROM board_type ORDER BY id'
-            board_type = db.query(q)          
+            board_type = db.query(q)
         elif f['submit'] == 'Edit IO':
             return redirect(url_for('setup_board_io', id=f['id']))
         elif f['submit'] == 'Add':
@@ -392,7 +402,7 @@ def setup_board():
             else:
                 enable = 0
             q = 'INSERT INTO board (name, description, enable, address, board_type_id) VALUES ("{}", "{}", "{}", "{}", "{}")'\
-            .format(f['name'], f['description'], enable, f['address'], f['board_type'])
+                .format(f['name'], f['description'], enable, f['address'], f['board_type'])
             db.query(q)
             q = 'SELECT * FROM board'
             res = db.query(q)
@@ -407,36 +417,37 @@ def setup_board():
     board_type = db.query(q)
     return render_template("setup_board.html", data=res, board_type=board_type)
 
+
 def checkEnable(id, enable=0):
     """
-    Controlla se board_io_id e' usato nel programma. 
+    Controlla se board_io_id e' usato nel programma.
     Deve essere passato board_io.id e board_io.enable
     """
     if enable == 1:
         return 'ok'
     P = d.P
     A = d.A
-    
+
     io_type_id = A['board_io'][int(id)]['io_type']['id']
-    #~ print "io_type_id: ", io_type_id
+    # print "io_type_id: ", io_type_id
     if A['io_type'][io_type_id]['type'] == 0:
         type = 'out_id'
     else:
         type = 'in_id'
-    
+
     for r in P:
         print "Type ==>>: ", P[r][type], id
         if int(P[r][type]) == int(id):
             print "Program ID corrispondente: ", P[r]['id']
             return P[r]['id']
     return 'ok'
-        
+
 
 @app.route('/setup_board_io', methods=["GET", "POST"])
 def setup_board_io():
-    if not checkPermission(4): #check login and privilege
+    if not checkPermission(4):  # check login and privilege
         return render_template("no_permission.html")
-    error=''
+    error = ''
     if request.method == "POST":
         f = request.form
         print(f)
@@ -447,10 +458,10 @@ def setup_board_io():
                 enable = 0
             print 'f["id"]: ', f["id"], '  ', "enable:", enable
             if checkEnable(f["id"], enable) != 'ok':
-                error="Cannot disable I/O used in setup_board_io because it is used into Program n. %s. First delete program or change IN/OUT into it." %(checkEnable(f["id"], enable))
+                error = "Cannot disable I/O used in setup_board_io because it is used into Program n. %s. First delete program or change IN/OUT into it." % (checkEnable(f["id"], enable))
             else:
                 q = 'UPDATE board_io SET id="{}", io_type_id="{}", name="{}", description="{}", area_id="{}", enable="{}", board_id="{}", address="{}", icon_on="{}", icon_off="{}" WHERE id="{}"'\
-                .format(f['id'], f['io_type_id'], f['name'], f['description'], f['area_id'], enable, f['board_id'], f['address'], f['icon_on'], f['icon_off'], f['id'])
+                    .format(f['id'], f['io_type_id'], f['name'], f['description'], f['area_id'], enable, f['board_id'], f['address'], f['icon_on'], f['icon_off'], f['id'])
                 db.query(q)
                 print q
         elif f['submit'] == 'Add IO':
@@ -459,11 +470,11 @@ def setup_board_io():
             else:
                 enable = 0
             q = 'INSERT INTO board_io (io_type_id, name, description, area_id, enable, board_id, address) VALUES ("{}", "{}", "{}", "{}", "{}", "{}", "{}")'\
-            .format(f['io_type_id'], f["name"], f["description"], f["area_id"], enable, f['board_id'], f["address"])
+                .format(f['io_type_id'], f["name"], f["description"], f["area_id"], enable, f['board_id'], f["address"])
             db.query(q)
         elif f['submit'] == 'Delete':
             if checkEnable(f["id"]) == 0:
-                error='Cannot delete I/O used in Program, first change Program '
+                error = 'Cannot delete I/O used in Program, first change Program '
             else:
                 q = "DELETE FROM board_io WHERE id={}".format(f['id'])
                 db.query(q)
@@ -480,17 +491,17 @@ def setup_board_io():
     all_board = db.query(q)
     q = 'SELECT * FROM area ORDER BY id'
     area = db.query(q)
-    d.setupDict() #reload database
-    
+    d.setupDict()  # reload database
+
     icon = d.A['icon']
     print icon
-    
+
     return render_template("setup_board_io.html", error=error, data=res, board=board, board_type=board_type, io_type=io_type, all_board=all_board, area=area, icon=icon)
 
 
 @app.route('/setup_io_type', methods=["GET", "POST"])
 def setup_io_type():
-    if not checkPermission(4): #check login and privilege
+    if not checkPermission(4):  # check login and privilege
         return render_template("no_permission.html")
     if request.method == "POST":
         f = request.form
@@ -502,7 +513,7 @@ def setup_io_type():
 
 @app.route('/setup_program', methods=["GET", "POST"])
 def setup_program():
-    if not checkPermission(4): #check login and privilege
+    if not checkPermission(4):  # check login and privilege
         return render_template("no_permission.html")
     setLog()
     # Test is user is logged
@@ -532,24 +543,24 @@ def setup_program():
         timer = timer[:-1]
         inverted = '1' if 'inverted' in f else '0'
         enable = '1' if 'enable' in f else '0'
-        #~ print timer
+        # print timer
         if request.form.to_dict()['btn'] == 'Save':
             q = 'UPDATE program SET in_id="{}", inverted="{}", out_id="{}", type_id="{}", name="{}",'\
-            'description="{}", enable="{}", timer="{}", chrono="{}" WHERE id="{}" '\
-            .format(f['in_id'], inverted, f['out_id'], f['type_id'], f['name'], f['description'], enable, timer, chrono, f['id'])
+                'description="{}", enable="{}", timer="{}", chrono="{}" WHERE id="{}" '\
+                .format(f['in_id'], inverted, f['out_id'], f['type_id'], f['name'], f['description'], enable, timer, chrono, f['id'])
         elif request.form.to_dict()['btn'] == 'Copy':
             q = 'INSERT INTO program (in_id, inverted, out_id, type_id, name, description, enable, timer, chrono)'\
-            'VALUES("{}", "{}", "{}", "{}", "{}", "{}", "{}", "{}", "{}")'.format(f['in_id'], inverted, f['out_id'], f['type_id'], f['name'], f['description'], enable, timer, chrono)
+                'VALUES("{}", "{}", "{}", "{}", "{}", "{}", "{}", "{}", "{}")'.format(f['in_id'], inverted, f['out_id'], f['type_id'], f['name'], f['description'], enable, timer, chrono)
         print q
         db.query(q)
         d.setupDict()
-        #~ d.loop()
+        # d.loop()
 
     elif request.method == "POST" and 'btn' in request.form.to_dict() and request.form.to_dict()['btn'] == 'Delete':
         print('Delete Program Form')
         f = request.form.to_dict()
         q = 'DELETE FROM program WHERE id="{}" '.format(f['id'])
-        #~ print(q)
+        # print(q)
         db.query(q)
         d.setupDict()
 
@@ -558,10 +569,10 @@ def setup_program():
         f = request.form.to_dict()
         chronoid = [s for s in request.form.to_dict() if "delete_chrono" in s]
         chronoid = int(chronoid[0][13:])  # chrono part to remove
-        q = 'SELECT chrono FROM program WHERE id="{}"'.format(f['id'])
+        q = 'SELECT chrono FROM program WHERE id = "{}"'.format(f['id'])
         chrono = str(db.query(q)[0]['chrono'])
         chrono = chrono.split(';')  # from string to list
-        chrono.pop(chronoid-1)  # remove part of chrono
+        chrono.pop(chronoid - 1)  # remove part of chrono
         chrono = ';'.join(chrono)  # convert list to string
         q = 'UPDATE program SET chrono="{}" WHERE id="{}"'.format(chrono, f['id'])
         db.query(q)
@@ -590,7 +601,7 @@ def message():
 
 @app.route('/log')
 def log():
-    if not checkPermission(1): #check login and privilege
+    if not checkPermission(1):  # check login and privilege
         return render_template("no_permission.html")
     q = 'SELECT * FROM log ORDER BY timestamp desc'
     res = db.query(q)
@@ -611,7 +622,7 @@ def doc():
 def home():
     setLog()
     return render_template("home.html")
-    
+
 
 @app.route('/welcome')
 def welcome():
@@ -625,18 +636,18 @@ def hello():
 
 @app.route("/setup_user", methods=["GET", "POST"])
 def setup_user():
-    if not checkPermission(4): #check login and privilege
+    if not checkPermission(4):  # check login and privilege
         return render_template("no_permission.html")
     setLog()
 
-    #userEdit = variabile dell'utente che deve essere modificato
-    #sesseion['userEdit'] = variabile di sessione
+    # userEdit = variabile dell'utente che deve essere modificato
+    # sesseion['userEdit'] = variabile di sessione
     f = request.form
     print f
     print session
-    message=''
+    message = ''
     if request.method == "POST" and 'submit' in f and f['submit'] == 'Save':
-        if len(f['password']) <=2 or f['password'] != f['passwordRetype']: #Check if psw is too short
+        if len(f['password']) <= 2 or f['password'] != f['passwordRetype']:  # Check if psw is too short
             message = "Password too short or not equal!"
             userEdit = session['userEdit']
         else:
@@ -644,100 +655,97 @@ def setup_user():
             pViewer = 2 if 'pViewer' in f else 0
             pSetup = 4 if 'pSetup' in f else 0
             pAdmin = 128 if 'pAdmin' in f else 0
-            
-            
-            #Check if there are at least ONE ADMINISTRATOR
+
+            # Check if there are at least ONE ADMINISTRATOR
             if int(pAdmin) == 0:
                 q = 'SELECT privilege FROM user'
                 res = db.query(q)
                 priv = 0
                 for r in res:
                     print int(r['privilege'])
-                    if int(r['privilege']) & 128 > 0 :
+                    if int(r['privilege']) & 128 > 0:
                         priv += 1
-                print priv, session['privilege'], int(session['privilege'])>=128
-                if int(session['privilege'])>=128 and priv < 2: #Si sta modificando un Administrator
+                print priv, session['privilege'], int(session['privilege']) >= 128
+                if int(session['privilege']) >= 128 and priv < 2:  # Si sta modificando un Administrator
                     message = 'There is be at least one administrator user!'
                     pAdmin = 128
 
-            privilege = pLog+pViewer+pSetup+pAdmin #calculates privileges to insert into database
-            q='UPDATE user SET id=%i, username="%s", password="%s", name="%s", surname="%s", lang="%s", session="%i", description="%s", privilege="%i", timestamp="%s" WHERE id=%i'\
-            %(int(f['user_id']), f['username'], f['password'], f['name'], f['surname'], f['lang'], int(f['sessiontime']), f['description'], privilege, now(), int(f['user_id']))
+            privilege = pLog + pViewer + pSetup + pAdmin  # calculates privileges to insert into database
+            q = 'UPDATE user SET id=%i, username="%s", password="%s", name="%s", surname="%s", lang="%s", session="%i", description="%s", privilege="%i", timestamp="%s" WHERE id=%i'\
+                % (int(f['user_id']), f['username'], f['password'], f['name'], f['surname'], f['lang'], int(f['sessiontime']), f['description'], privilege, now(), int(f['user_id']))
             db.query(q)
-            
-            #reload session privilege when user is changed
+
+            # reload session privilege when user is changed
             if int(session['user_id']) == int(f['user_id']):
                 session['user_name'] = f['name']
                 session['user_id'] = f['user_id']
                 session['userEdit'] = f['user_id']
                 session['privilege'] = privilege
                 session['timestamp'] = now()
-                session['sessionTimeout'] = f['sessiontime']                
-        
+                session['sessionTimeout'] = f['sessiontime']
 
-            
             userEdit = session['userEdit'] = f['user_id']
             message = 'User save!' if not message else message
-                
-    elif 'submit' in f and f['submit'] == 'Edit': #If other user
+
+    elif 'submit' in f and f['submit'] == 'Edit':  # If other user
         session['userEdit'] = f['users']
         userEdit = session['userEdit']
         message = 'User edit!'
-    elif 'submit' in f and f['submit'] == 'Delete': #Delete other user
+    elif 'submit' in f and f['submit'] == 'Delete':  # Delete other user
         if int(session['user_id']) == int(f['users']):
             message = 'You are logged and cannot autoremove!'
         else:
-            q='DELETE FROM user WHERE id=%s' %(f['users'])
+            q = 'DELETE FROM user WHERE id = %s' % (f['users'])
             db.query(q)
             message = 'User Delete!'
         userEdit = f['user_id']
-    elif 'submit' in f and f['submit'] == 'New': #Create new user
-        q='INSERT INTO user ("username","name","surname","password","privilege","session","lang") VALUES ("-","-","-","-","0000","300","en")'
+    elif 'submit' in f and f['submit'] == 'New':  # Create new user
+        q = 'INSERT INTO user ("username","name","surname","password","privilege","session","lang") VALUES ("-","-","-","-","0000","300","en")'
         userEdit = db.query(q)
         message = 'New User!'
         print "NEW USER userEdit", userEdit
     else:
-        userEdit =session['user_id']
+        userEdit = session['user_id']
         message = 'User edit!'
 
-    q = 'SELECT * FROM user WHERE id={}'.format(userEdit) #get current user information
+    q = 'SELECT * FROM user WHERE id = {}'.format(userEdit)  # get current user information
     db_user = db.query(q)[0]
     userPr = int(db_user['privilege'])
-    
-    q = 'SELECT * FROM privilege' #get privilege
+
+    q = 'SELECT * FROM privilege'  # get privilege
     db_privilege = db.query(q)
-    
+
     if 'privilege' in session and int(session['privilege']) & 128 > 0:
-        q = 'SELECT * FROM user WHERE id !={}'.format(userEdit) #get all users information
+        q = 'SELECT * FROM user WHERE id != {}'.format(userEdit)  # get all users information
         db_users = db.query(q)
     else:
         db_users = [{}]
-        
-    print userEdit, userPr&1, userPr&2, userPr&4, userPr&128, session['privilege']
-    return render_template( "setup_user.html", user=db_user, privilege=db_privilege, pLog=userPr&1>0, pViewer=userPr&2>0, 
-        pSetup=userPr&4>0, pAdmin=userPr&128>0, message=message, users=db_users, sessionPrivilege=int(session['privilege']))
 
-    
+    print userEdit, userPr & 1, userPr & 2, userPr & 4, userPr & 128, session['privilege']
+    return render_template(
+        "setup_user.html", user=db_user, privilege=db_privilege, pLog=userPr & 1 > 0, pViewer=userPr & 2 > 0,
+        pSetup=userPr & 4 > 0, pAdmin=userPr & 128 > 0, message=message, users=db_users, sessionPrivilege=int(session['privilege'])
+    )
 
 
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
     session.clear()
-    #~ flash('You are logged out')
+    # flash('You are logged out')
     return redirect(url_for('login'))
 
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     setLog()
-    
+
     f = request.form
     if request.method == "POST" and f['submit'] == 'Enter':
-        if len(f['password'])<3 or len(f['username'])<3: #Check if password is too short
+        if len(f['password']) < 3 or len(f['username']) < 3:  # Check if password is too short
             error = "Password to much short"
             return render_template("login.html", error=error)
-    
+
         q = 'SELECT * FROM user WHERE username = "{}" AND password = "{}"' \
             .format(f['username'], f['password'])
         res = db.query(q)
@@ -758,18 +766,19 @@ def login():
     else:
         message = 'Please enter Username and Password!'
         return render_template("login.html", message=message)
-    
+
 
 @app.errorhandler(404)
 def page_not_found(e):
     print("Error {}".format(e))
-    return render_template( 'error_page.html', error=e), 404
+    return render_template('error_page.html', error=e), 404
 
 
 @app.errorhandler(500)
 def internal_server_error(e):
     print("Error {}" .format(e))
-    return render_template('error_page.html', error=e ), 500
+    return render_template('error_page.html', error=e), 500
+
 
 def counter(start='y'):
     try:
@@ -778,58 +787,58 @@ def counter(start='y'):
     except:
         print('Error Domocontrol.py counter')
         traceback.print_exc()
-    if start=='y':
+    if start == 'y':
         threading.Timer(1, counter).start()
     else:
         threading.Timer(1, counter).cancel()
 
-def loop(start='y'): #To update board IO values
+
+def loop(start='y'):  # To update board IO values
     timebegin = now()
-    print '='*80
+    print '=' * 80
     try:
         d.loop()
     except:
         print('Error Domocontrol.py getInStatus')
         traceback.print_exc()
-    if start=='y':
+    if start == 'y':
         threading.Timer(1, loop).start()
     else:
         threading.Timer(1, loop).cancel()
     print "IOStatus ==>> ", now() - timebegin, "\n\n"
-    
-def getSensorStatus(start='y'): #To update sensor values
+
+
+def getSensorStatus(start='y'):  # To update sensor values
     timebegin = now()
     try:
         d.getSensorStatus()
     except:
         print('Error Domocontrol.py getSensorStatus')
-    if start=='y':
+    if start == 'y':
         threading.Timer(180, getSensorStatus).start()
     else:
         threading.Timer(1, getSensorStatus).cancel()
-    #~ print "SensorStatus ==>> ", now() - timebegin
+    # print "SensorStatus ==>> ", now() - timebegin
 
 if __name__ == '__main__':
-    loop() #loop to update IO and sensors
-    getSensorStatus() #loop to update IO and sensors
-    counter() #decrement timer (IO['timer'])
-    
-    app.debug = 1
-    socketio.run(app, port=8000, host='0.0.0.0')
-    #~ WSGIServer(('', 5000), app).serve_forever()
-    #~ 
-    #~ try:
-    #    app.run(host="0.0.0.0", port=5000, debug=False)
-    #    socketio = SocketIO(app)
-     #   app.debug = False
-     #   app.host = '0.0.0.0'
-        #~ app.debug = False
-        #~ server = WSGIServer(("0.0.0.0", 5000), app)
-        #~ server.serve_forever()
-        #~ 
-    #~ except:
-        #~ pass
-    #~ getInStatus('n')
-    #~ getSensorStatus('n')
-    print "FINE"
+    loop()  # loop to update IO and sensors
+    getSensorStatus()  # loop to update IO and sensors
+    counter()  # decrement timer (IO['timer'])
 
+    app.debug = 0
+    socketio.run(app, port=8000, host='0.0.0.0')
+    # WSGIServer(('', 5000), app).serve_forever()
+    # try:
+        # app.run(host="0.0.0.0", port=5000, debug=False)
+        # socketio = SocketIO(app)
+        # app.debug = False
+        # app.host = '0.0.0.0'
+        # app.debug = False
+        # server = WSGIServer(("0.0.0.0", 5000), app)
+        # server.serve_forever()
+        #
+    # except:
+        # pass
+    # getInStatus('n')
+    # getSensorStatus('n')
+    print "FINE"
