@@ -222,7 +222,7 @@ def test_broadcast_message(message):
     
 @app.route('/setup_program_type', methods=["GET", "POST"])
 def setup_program_type():
-    if not checkPermission(2): #check login and privilege
+    if not checkPermission(4): #check login and privilege
         return render_template("no_permission.html")
     if request.method == "POST":
         f = request.form
@@ -283,8 +283,8 @@ def setIN():
 
 @app.route('/setup_area', methods=["GET", "POST"])
 def setup_area():
-    #Test if user is logged
-    if not checkLogin(): return redirect(url_for('logout'))
+    if not checkPermission(4): #check login and privilege
+        return render_template("no_permission.html")
     if request.method == "POST":
         f = request.form  # get input value
         db.setForm('UPDATE', f.to_dict(), 'area')  # recall db.setForm to update query. UPDATE=Update method, f.to_dict=dictionary with input value, area:database table
@@ -294,8 +294,8 @@ def setup_area():
     
 @app.route('/menu_sensor', methods=["GET", "POST"])
 def menu_sensor(chartID = 'chart_ID', chart_type = 'line', chart_height = 350):
-	#Test if user is logged
-    if not checkLogin(): return redirect(url_for('login'))
+    if not checkPermission(2): #check login and privilege
+        return render_template("no_permission.html")
     
     q = 'SELECT * FROM sensor WHERE type=1 ORDER BY datetime DESC LIMIT 248'
     temperature = db.query(q)
@@ -331,8 +331,8 @@ def menu_sensor(chartID = 'chart_ID', chart_type = 'line', chart_height = 350):
 
 @app.route('/setup_privilege', methods=["GET", "POST"])
 def setup_privilege():
-    #Test if user is logged
-    if not checkLogin(): return redirect(url_for('logout'))
+    if not checkPermission(4): #check login and privilege
+        return render_template("no_permission.html")
     if request.method == "POST":
         f = request.form
         db.setForm('UPDATE', f.to_dict(), 'privilege')
@@ -343,8 +343,8 @@ def setup_privilege():
 
 @app.route('/setup_translation', methods=["GET", "POST"])
 def setup_translation():
-    #Test if user is logged
-    if not checkLogin(): return redirect(url_for('logout'))
+    if not checkPermission(4): #check login and privilege
+        return render_template("no_permission.html")
     if request.method == "POST":
         f = request.form
         q = 'UPDATE translation SET en="{}", it="{}", de="{}" WHERE id="{}" '.format(f["en"], f["it"], f["de"], f["id"])
@@ -356,8 +356,8 @@ def setup_translation():
 
 @app.route('/setup_board_type', methods=["GET", "POST"])
 def setup_board_type():
-    #Test if user is logged
-    if not checkLogin(): return redirect(url_for('logout'))
+    if not checkPermission(4): #check login and privilege
+        return render_template("no_permission.html")
     if request.method == "POST":
         f = request.form
         db.setForm('UPDATE', f.to_dict(), 'board_type')
@@ -368,8 +368,8 @@ def setup_board_type():
 
 @app.route('/setup_board', methods=["GET", "POST"])
 def setup_board():
-    #Test if user is logged
-    if not checkLogin(): return redirect(url_for('logout'))
+    if not checkPermission(4): #check login and privilege
+        return render_template("no_permission.html")
     if request.method == "POST":
         f = request.form
         if f['submit'] == 'Save':
@@ -434,8 +434,8 @@ def checkEnable(id, enable=0):
 
 @app.route('/setup_board_io', methods=["GET", "POST"])
 def setup_board_io():
-    #Test if user is logged
-    if not checkLogin(): return redirect(url_for('logout'))
+    if not checkPermission(4): #check login and privilege
+        return render_template("no_permission.html")
     error=''
     if request.method == "POST":
         f = request.form
@@ -490,8 +490,8 @@ def setup_board_io():
 
 @app.route('/setup_io_type', methods=["GET", "POST"])
 def setup_io_type():
-    #Test if user is logged
-    if not checkLogin(): return redirect(url_for('logout'))
+    if not checkPermission(4): #check login and privilege
+        return render_template("no_permission.html")
     if request.method == "POST":
         f = request.form
         db.setForm('UPDATE', f.to_dict(), 'io_type')
@@ -502,8 +502,8 @@ def setup_io_type():
 
 @app.route('/setup_program', methods=["GET", "POST"])
 def setup_program():
-    #Test if user is logged
-    if not checkLogin(): return redirect(url_for('logout'))
+    if not checkPermission(4): #check login and privilege
+        return render_template("no_permission.html")
     setLog()
     # Test is user is logged
     if not 'logged_in' in session and session['logged_in'] == True:
@@ -590,7 +590,8 @@ def message():
 
 @app.route('/log')
 def log():
-    privilege('Have not privilege to view LOG')
+    if not checkPermission(1): #check login and privilege
+        return render_template("no_permission.html")
     q = 'SELECT * FROM log ORDER BY timestamp desc'
     res = db.query(q)
     q = 'SELECT count(ip) as count, ip FROM log GROUP BY ip ORDER BY count(ip) DESC'
@@ -624,7 +625,8 @@ def hello():
 
 @app.route("/setup_user", methods=["GET", "POST"])
 def setup_user():
-    checkPermission()
+    if not checkPermission(4): #check login and privilege
+        return render_template("no_permission.html")
     setLog()
 
     #userEdit = variabile dell'utente che deve essere modificato
