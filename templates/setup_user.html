@@ -2,8 +2,8 @@
 
 {% block content %}
    <h1>{{_('User Setup')}}</h1>
-  {% if error %}
-    <p class=error><strong>Error:</strong> {{ error }}
+  {% if message %}
+    <p class=error><strong>Message:</strong> {{ message }}
   {% endif %}
 
   <form action="{{ url_for('setup_user') }}" method=post name=FormSetupUser role=form >
@@ -56,39 +56,37 @@
       <input type="text" name="description" value="{{ user.description }}" >
     </div>
 
-
-
-
     <div style="border:1px dashed gray; width:400px; margin-top:10px; padding:3px;">
-    {% if session['privilege']!='0000' %}
+    
+    {% if user['privilege']!='0000' %}
       <p>{{_('Privilege')}}</p>
     {% endif %}
-
-    {% if session['privilege'][0]=='1' or session['privilege'][1]=='1' or session['privilege'][2]=='1' or session['privilege'][3]=='1' %}
+    
+    {% if sessionPrivilege>=128 or pAdmin or pSetup or pViewer or pLog %}
       <div class="input-group">
         <span class="input-group-addon" style="width:200px;">Log</span>
-        <input  type="checkbox"  name='privilegeLog' {% if user.privilege[3] == '1' %} checked {% endif %}>
+        <input  type="checkbox"  name='pLog' {% if pLog %} checked {% endif %}>
       </div>
     {% endif %}
 
-    {% if session['privilege'][0]=='1' or session['privilege'][1]=='1' or session['privilege'][2]=='1' %}
+    {% if sessionPrivilege>=128 or  pAdmin or pSetup or pViewer %}
       <div class="input-group">
         <span class="input-group-addon" style="width:200px;">Viewer</span>
-        <input type="checkbox"  name='privilegeViewer' {% if user.privilege[2] == '1' %} checked {% endif %}>
+        <input type="checkbox"  name='pViewer' {% if pViewer %} checked {% endif %}>
       </div>
     {% endif %}
 
-    {% if session['privilege'][0]=='1' or session['privilege'][1]=='1' %}
+    {% if sessionPrivilege>=128 or  pAdmin or pSetup %}
       <div class="input-group">
         <span class="input-group-addon" style="width:200px;">Setup</span>
-        <input type="checkbox"  name='privilegeSetup' {% if user.privilege[1] == '1' %} checked {% endif %}>
+        <input type="checkbox"  name='pSetup' {% if pSetup %} checked {% endif %}>
       </div>
     {% endif %}
-
-    {% if session['privilege'][0]=='1'%}
+    
+    {% if sessionPrivilege>=128 or  pAdmin %}
       <div class="input-group ">
         <span class="input-group-addon" style="width:200px;">Admin</span>
-        <input type="checkbox"  name='privilegeAdmin' {% if user.privilege[0] == '1' %} checked {% endif %}>
+        <input type="checkbox"  name='pAdmin' {% if pAdmin %} checked {% endif %}>
       </div>
     {% endif %}
 
@@ -99,8 +97,8 @@
 
 
   <p><small>{{_('Last modified:')}} {{ user.timestamp }}</small></p>
-
-  {% if session['privilege'][0]=='1'%}
+  
+  {% if sessionPrivilege>=127 %}
     <table class="table table-condensed"><tr><th>ID</th><th>Username</th><td>Name</th><th>Privilege</th><th>Edit / Remove</th></tr>
 
 

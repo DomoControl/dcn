@@ -22,15 +22,15 @@
             padding:5px;
         }
     </style> 
-   
-    
-            
+               
         <script type="text/javascript">
             $(document).ready(function(){
+                
+                debug = '';             
                 namespace = '/menu_program';
                 var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
                 f = '';
-                debug = '';
+   
                 A = {}; //Dict with all other data
                 ACopy = {};
                 IO = {};
@@ -43,7 +43,7 @@
                 socket.on('connect', function() {
                     socket.emit('menu_program_back', {data1: 'Connect'});
                 });
-                                
+                
                 socket.on('my response', function(dict) {
                     
                     IOCopy = dict.IO; //Dict with IO status
@@ -70,6 +70,7 @@
                     f += '<div style="text-align:center" id="child" >Type</div>';
                     f += '<div style="text-align:center" id="child" >Description</div>';
                     f += '</div>';
+                    
                     for( var p in P ){
                         //~ debug = JSON.stringify(data[d]);
                         //~ debug += JSON.stringify(IO);

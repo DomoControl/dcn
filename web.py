@@ -28,6 +28,7 @@ print("Begin")
 app = Flask(__name__)
 #~ app.debug = True
 app.debug = False
+
 app.config['SECRET_KEY'] = 'secret!123654887'
 app.config.from_pyfile('config.py')
 app.config.from_object('config')
@@ -78,9 +79,26 @@ def checkLogin():
     else:
         return 0
 
-@app.route('/no_permission')
-def no_permission(error=''):
-    return render_template("no_permission.html", error=error)
+#Privilege session: 
+#   xxxx
+#   8421             
+#   1: Log - 2: View - 4: Setup  -  128: Admin
+
+def checkPermission(permission=255, error=''):  #Check if user is logged and the privileve
+    if not checkLogin(): 
+        return redirect(url_for('logout'))  #Check is user is logged
+    priv = int(session['privilege'])
+    
+    print priv, permission, permission >= priv
+    if priv >= permission: #check permission for LOG
+        return 1
+    else:       
+        return 0
+    
+    
+#~ @app.route('/no_permission')
+#~ def no_permission(error=''):
+    #~ return render_template("no_permission.html", error=error)
 
 @app.route('/getTime')  # return datetime now() to show in footer
 def getTime():
@@ -128,10 +146,8 @@ def event_menu_status():
         
 @app.route('/menu_status')
 def menu_status():
-    if not checkLogin(): return redirect(url_for('logout'))
-    if int(session['privilege'][0:1]) == 0 and int(session['privilege'][1:2]) == 0:
-        error='Insufficient privilege for Setup Status Menu!'
-        return render_template( "no_permission.html", error=error)
+    if not checkPermission(2): #check login and privilege
+        return render_template("no_permission.html")
     global thread
     if thread is None:
         thread = Thread(target=event_menu_status)
@@ -152,10 +168,8 @@ def test_broadcast_message(message):
         d.IO['board_io'][board_io_id]['SA'] = 1 if d.IO['board_io'][board_io_id]['SA']== 0 else 0 #cambia stato del pulsante virtuale
         print "SA:", d.IO['board_io'][board_io_id]['SA']
         d.updateOut()
-
-
-
 reloadD=False
+
 def event_menu_program():
     """ 
         Send data to menu_program by server sent event (SSE)
@@ -180,7 +194,8 @@ def event_menu_program():
         
 @app.route('/menu_program')
 def menu_program():
-    if not checkLogin(): return redirect(url_for('logout'))
+    if not checkPermission(2): #check login and privilege
+        return render_template("no_permission.html")
     if int(session['privilege'][0:1]) == 0 and int(session['privilege'][1:2]) == 0:
         error='Insufficient privilege for Setup Status Menu!'
         return render_template( "no_permission.html", error=error)
@@ -207,8 +222,8 @@ def test_broadcast_message(message):
     
 @app.route('/setup_program_type', methods=["GET", "POST"])
 def setup_program_type():
-    #Test if user is logged
-    if not checkLogin(): return redirect(url_for('logout'))
+    if not checkPermission(2): #check login and privilege
+        return render_template("no_permission.html")
     if request.method == "POST":
         f = request.form
         db.setForm('UPDATE', f.to_dict(), 'program_type')
@@ -265,79 +280,6 @@ def setIN():
     #~ getProgram(reloadDict=True)
     return jsonify(result=123)
 """
-
-@app.route("/setup_user", methods=["GET", "POST"])
-def setup_user():
-    if not checkLogin(): return redirect(url_for('logout')) #Test if user is logged
-    error=''
-    if int(session['privilege'][0:1]) == 0:
-        error='Insufficient privilege for Setup User Menu!'
-        return render_template( "no_permission.html", error=error)
-        
-    setLog()
-
-    f = request.form
-    if request.method == "POST" and 'submit' in f and f['submit'] == 'Save':
-        if len(f['password']) <=2 or f['password'] != f['passwordRetype']:
-            error = "Password non impostata o non coincidenti"
-        else:
-            privilegeLog = 1 if 'privilegeLog' in f else '0'
-            privilegeViewer = 1 if 'privilegeViewer' in f else '0'
-            privilegeSetup = 1 if 'privilegeSetup' in f else '0'
-            privilegeAdmin = 1 if 'privilegeAdmin' in f else '0'
-            
-            #Check if there are at least ONE ADMINISTRATOR
-            if int(privilegeAdmin) == 0:
-                q = 'SELECT privilege FROM user'
-                res = db.query(q)
-                priv = 0
-                for r in res:
-                    if r['privilege'][0:1] == '1':
-                        priv += 1
-                if priv == 1:
-                    error = 'There must be at least one administrator user!'
-                    privilegeAdmin = 1
-            
-            privilege = "{}{}{}{}".format(privilegeAdmin,privilegeSetup,privilegeViewer,privilegeLog) 
-            q='UPDATE user SET id=%s, username="%s", password="%s", name="%s", surname="%s", lang="%s", session="%s", description="%s", privilege="%s", timestamp="%s" WHERE id=%s'\
-            %(f['user_id'],f['username'],f['password'],f['name'],f['surname'],f['lang'],f['sessiontime'],f['description'],privilege,now(),f['user_id'])
-            db.query(q)
-            
-            #reload session privilege when user is changed
-            if int(session['user_id']) == int(f['user_id']):
-                session['user_name'] = f['name']
-                session['user_id'] = f['user_id']
-                session['privilege'] = privilege
-                session['timestamp'] = now()
-                session['sessionTimeout'] = f['sessiontime']                
-                return redirect(url_for('setup_user'))
-    try:
-        if f['submit'] == 'Edit':
-            user_id = f['users']
-        elif f['user_id']:
-            user_id=f['user_id']
-        else:
-            user_id = session['user_id']
-        if f['submit'] == 'Delete':
-            q='DELETE FROM user WHERE id=%s' %(f['users'])
-            db.query(q)
-        if f['submit'] == 'New':
-            q='INSERT INTO user ("username","name","surname","password","privilege","session","lang") VALUES ("prova","prova","prova","prova","0000","300","en")'
-            user_id = db.query(q)
-    except:
-        pass
-    try:
-        print user_id
-    except:
-        user_id = session['user_id']
-    q = 'SELECT * FROM user WHERE id={}'.format(user_id)
-    user = db.query(q)[0]
-    q = 'SELECT * FROM privilege'
-    privilege = db.query(q)
-    q = 'SELECT * FROM user WHERE id !={}'.format(user_id)
-    users = db.query(q)
-    return render_template( "setup_user.html", user=user, privilege=privilege, error=error, users=users)
-
 
 @app.route('/setup_area', methods=["GET", "POST"])
 def setup_area():
@@ -648,8 +590,7 @@ def message():
 
 @app.route('/log')
 def log():
-    #Test if user is logged
-    if not checkLogin(): return redirect(url_for('logout'))
+    privilege('Have not privilege to view LOG')
     q = 'SELECT * FROM log ORDER BY timestamp desc'
     res = db.query(q)
     q = 'SELECT count(ip) as count, ip FROM log GROUP BY ip ORDER BY count(ip) DESC'
@@ -681,6 +622,102 @@ def hello():
     return render_template("hello.html")
 
 
+@app.route("/setup_user", methods=["GET", "POST"])
+def setup_user():
+    checkPermission()
+    setLog()
+
+    #userEdit = variabile dell'utente che deve essere modificato
+    #sesseion['userEdit'] = variabile di sessione
+    f = request.form
+    print f
+    print session
+    message=''
+    if request.method == "POST" and 'submit' in f and f['submit'] == 'Save':
+        if len(f['password']) <=2 or f['password'] != f['passwordRetype']: #Check if psw is too short
+            message = "Password too short or not equal!"
+            userEdit = session['userEdit']
+        else:
+            pLog = 1 if 'pLog' in f else 0
+            pViewer = 2 if 'pViewer' in f else 0
+            pSetup = 4 if 'pSetup' in f else 0
+            pAdmin = 128 if 'pAdmin' in f else 0
+            
+            
+            #Check if there are at least ONE ADMINISTRATOR
+            if int(pAdmin) == 0:
+                q = 'SELECT privilege FROM user'
+                res = db.query(q)
+                priv = 0
+                for r in res:
+                    print int(r['privilege'])
+                    if int(r['privilege']) & 128 > 0 :
+                        priv += 1
+                print priv, session['privilege'], int(session['privilege'])>=128
+                if int(session['privilege'])>=128 and priv < 2: #Si sta modificando un Administrator
+                    message = 'There is be at least one administrator user!'
+                    pAdmin = 128
+
+            privilege = pLog+pViewer+pSetup+pAdmin #calculates privileges to insert into database
+            q='UPDATE user SET id=%i, username="%s", password="%s", name="%s", surname="%s", lang="%s", session="%i", description="%s", privilege="%i", timestamp="%s" WHERE id=%i'\
+            %(int(f['user_id']), f['username'], f['password'], f['name'], f['surname'], f['lang'], int(f['sessiontime']), f['description'], privilege, now(), int(f['user_id']))
+            db.query(q)
+            
+            #reload session privilege when user is changed
+            if int(session['user_id']) == int(f['user_id']):
+                session['user_name'] = f['name']
+                session['user_id'] = f['user_id']
+                session['userEdit'] = f['user_id']
+                session['privilege'] = privilege
+                session['timestamp'] = now()
+                session['sessionTimeout'] = f['sessiontime']                
+        
+
+            
+            userEdit = session['userEdit'] = f['user_id']
+            message = 'User save!' if not message else message
+                
+    elif 'submit' in f and f['submit'] == 'Edit': #If other user
+        session['userEdit'] = f['users']
+        userEdit = session['userEdit']
+        message = 'User edit!'
+    elif 'submit' in f and f['submit'] == 'Delete': #Delete other user
+        if int(session['user_id']) == int(f['users']):
+            message = 'You are logged and cannot autoremove!'
+        else:
+            q='DELETE FROM user WHERE id=%s' %(f['users'])
+            db.query(q)
+            message = 'User Delete!'
+        userEdit = f['user_id']
+    elif 'submit' in f and f['submit'] == 'New': #Create new user
+        q='INSERT INTO user ("username","name","surname","password","privilege","session","lang") VALUES ("-","-","-","-","0000","300","en")'
+        userEdit = db.query(q)
+        message = 'New User!'
+        print "NEW USER userEdit", userEdit
+    else:
+        userEdit =session['user_id']
+        message = 'User edit!'
+
+    q = 'SELECT * FROM user WHERE id={}'.format(userEdit) #get current user information
+    db_user = db.query(q)[0]
+    userPr = int(db_user['privilege'])
+    
+    q = 'SELECT * FROM privilege' #get privilege
+    db_privilege = db.query(q)
+    
+    if 'privilege' in session and int(session['privilege']) & 128 > 0:
+        q = 'SELECT * FROM user WHERE id !={}'.format(userEdit) #get all users information
+        db_users = db.query(q)
+    else:
+        db_users = [{}]
+        
+    print userEdit, userPr&1, userPr&2, userPr&4, userPr&128, session['privilege']
+    return render_template( "setup_user.html", user=db_user, privilege=db_privilege, pLog=userPr&1>0, pViewer=userPr&2>0, 
+        pSetup=userPr&4>0, pAdmin=userPr&128>0, message=message, users=db_users, sessionPrivilege=int(session['privilege']))
+
+    
+
+
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
@@ -692,30 +729,34 @@ def logout():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     setLog()
-    error=''
+    
     f = request.form
     if request.method == "POST" and f['submit'] == 'Enter':
-        if len(f['password']) <=2 or f['username'] <=2:
-            error = "Password o Username not valid"
-        else:
-            q = 'SELECT * FROM user WHERE username = "{}" AND password = "{}"' \
+        if len(f['password'])<3 or len(f['username'])<3: #Check if password is too short
+            error = "Password to much short"
+            return render_template("login.html", error=error)
+    
+        q = 'SELECT * FROM user WHERE username = "{}" AND password = "{}"' \
             .format(f['username'], f['password'])
-            res = db.query(q)
-            if res and len(res[0]) > 0:
-                session['logged_in'] = True
-                session['user_name'] = res[0]['name']
-                session['user_id'] = res[0]['id']
-                session['privilege'] = res[0]['privilege']
-                session['timestamp'] = now()
-                session['sessionTimeout'] = res[0]['session']
-                return render_template("hello.html", error=error)
-            else:
-                session['logged_in'] = None
-                #~ print session
-                session.clear()
-                #~ print session
-                error = "invalid password or username. Please retry"
-    return render_template("login.html", error=error)
+        res = db.query(q)
+        if res and len(res[0]) > 0:
+            session['logged_in'] = True
+            session['user_name'] = res[0]['name']
+            session['user_id'] = res[0]['id']
+            session['userEdit'] = res[0]['id']
+            session['privilege'] = res[0]['privilege']
+            session['timestamp'] = now()
+            session['sessionTimeout'] = res[0]['session']
+            return render_template("hello.html", error='')
+        else:
+            message = 'invalid password or username. Please retry!'
+            return render_template("login.html", message=message)
+            session['logged_in'] = None
+            session.clear()
+    else:
+        message = 'Please enter Username and Password!'
+        return render_template("login.html", message=message)
+    
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -771,7 +812,8 @@ if __name__ == '__main__':
     getSensorStatus() #loop to update IO and sensors
     counter() #decrement timer (IO['timer'])
     
-    socketio.run(app, host='0.0.0.0')
+    app.debug = 1
+    socketio.run(app, port=8000, host='0.0.0.0')
     #~ WSGIServer(('', 5000), app).serve_forever()
     #~ 
     #~ try:
