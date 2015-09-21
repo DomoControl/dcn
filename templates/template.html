@@ -15,15 +15,19 @@
 
     <body style="font-size:16px; height:100%;">
         <header>
-            <nav id="navbar-example" class="nav bar navbar-default navbar-static">
-                <div class="collapse navbar-collapse bs-example-js-navbar-collapse">
-                    <ul class="nav nav-pills" role="tablist">
+            <nav class="navbar-default navbar-static">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a href="#" title="Domocontrol"><img style="width:40px; margin:2px 10px 0 10px;" src="{{ url_for('static', filename='img/logo.png' ) }}"></a>
+                </div>
+                <div class="navbar-collapse">
+                    <ul class="nav nav-pills">
                         <li id="home"><a href="{{ url_for('home')}}">Home</a></li>
                         <li id="menu_status"><a href="{{ url_for('menu_status')}}">{{_('Status')}}</a></li>
                         <li id="menu_program"><a href="{{ url_for('menu_program')}}">{{_('Program')}}</a></li>
                         <li id="menu_sensor"><a href="{{ url_for('menu_sensor')}}">{{_('Sensor')}}</a></li>
                         <li id="#" class="dropdown">
-                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">Setup<span class="caret"></span></a>
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Setup<span class="caret"></span></a>
                             <ul class="dropdown-menu">
 
                                 {% if session['logged_in']==True %}
@@ -45,19 +49,22 @@
                                 {% endif %}
                             </ul>
                         </li>
+
                         <li id="log"><a href="{{ url_for('log')}}">Log</a></li>
                         <li id="doc"><a href="{{ url_for('doc')}}">Doc</a></li>
     <!--
                         <li><a href="/message">Messages</a></li>
     -->
 
+
                         {% if not session.logged_in %}
                             <li id="login"><a href="{{ url_for('login')}}">{{_('Login')}}</a></li>
                         {% else %}
                             <li id="logout"><a href="{{ url_for('logout') }}">{{_('Logout')}} {{ session.user_name }}</a></li>
                         {% endif %}
-                    </ul>
+
                 </div>
+            </div>
             </nav>
 
         </header>
@@ -68,25 +75,25 @@
             {% endblock %}
         </div>
 
-        
+
         <footer style="margin-top:50px;">
             <nav class="navbar navbar-default navbar-fixed-bottom" role="navigation">
                 <div class="col-md-6">
                     {% if session.logged_in %}
                         <span>{{_('Welcome')}} {{ session.user_name }}</span>
                     {% endif %}
-                <div id="time" class="col-md-6"></div>              
+                <div id="time" class="col-md-6"></div>
             </nav>
         </footer>
 
-        
-		<script>if (!window.jQuery) { document.write('{{ url_for("static", filename="jquery.js") }}'); }
-		</script>
-        
-		<script type=text/javascript src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
-        
+
+        <script>if (!window.jQuery) { document.write('{{ url_for("static", filename="jquery.js") }}'); }
+        </script>
+
+        <script type=text/javascript src="{{ url_for('static', filename='js/bootstrap.js') }}"></script>
+
         <script type="text/javascript" src="{{ url_for('static', filename='js/socket.io.min.js') }}"></script>
-        
+
         <script type=text/javascript> <!-- Show time in status bar -->
             window.setInterval(getTime = function(){
                 $.getJSON('/getTime', {
@@ -97,12 +104,12 @@
             getTime();
         </script>
 
-		<script>
-		  $(document).ready(function () {
-		  $("#{{request.endpoint}}").addClass("active"); })
-		</script>
+        <script>
+          $(document).ready(function () {
+          $("#{{request.endpoint}}").addClass("active"); })
+        </script>
 
-		<!-- load graph library -->
+        <!-- load graph library -->
         {% if chartID %}
             <script>
                 var chart_id = {{ chartID|safe }}
@@ -115,9 +122,9 @@
             </script>
 
             <script src="http://code.highcharts.com/highcharts.js"></script>
-            <script src="../static/js/graph.js"></script> 
+            <script src="../static/js/graph.js"></script>
         {% endif %}
-	
+
     </body>
 
 
