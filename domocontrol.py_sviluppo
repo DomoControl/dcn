@@ -7,6 +7,152 @@ import datetime
 import copy
 import sht21
 import os
+import threading
+
+InThread=[]  # lista di Thread in esecuzione
+InVal = {}  # Dizionario con {board_id: {num_ingressi: valore_ingressi}}
+InBin = {}  # List to put bin value input
+InChange = []  # Board with input changed
+i2c = 0  # BUS I2C
+OutThread=[]  # Lista Thread in esecuzione
+OutVal = {}
+A = {}
+P = {}
+
+class GetInput(threading.Thread):
+    def __init__(self,board):
+        threading.Thread.__init__(self)
+        self.board = board
+
+    def getInVal(self):  # ritorna il valore degli ingressi
+        return InVal
+
+    def run(self):
+        # print self.board
+        board_type_id = self.board['board_type_id']  # Il tipo di scheda
+
+        if board_type_id == 1:  # I2C
+            value = self.read_i2c(self.board['address'])  # Ritorna il byte degli ingressi I2C
+            if InBin.get(self.board['id'], 'Not Exist') != value:  # Testa se il valore e' cambiato
+                InBin.update({self.board['id']: value})
+                InVal[self.board['id']] = {}
+                for i in range(0,8):  # Iterazione del byte
+                    if value & 1 == 1:
+                        InVal[self.board['id']].update({i: 1})
+                    else:
+                        InVal[self.board['id']].update({i: 0})
+                    value /= 2
+                if not self.board['id'] in InChange:
+                    InChange.append(self.board['id'])
+                # print InVal
+
+        elif board_type_id == 2:  # RS485
+            pass
+        elif board_type_id == 3:  # WEB
+            pass
+            value = 0  # Default of web button
+            if InBin.get(self.board['id'], 'Not Exist') != value:  # Testa se il valore e' cambiato
+                InBin.update({self.board['id']: value})
+                InVal[self.board['id']] = {}
+                for i in range(0,8):  # Iterazione del byte
+                    if value & 1 == 1:
+                        InVal[self.board['id']].update({i: 1})
+                    else:
+                        InVal[self.board['id']].update({i: 0})
+                    value /= 2
+                if not self.board['id'] in InChange:
+                    InChange.append(self.board['id'])
+
+
+
+        elif board_type_id == 4:  # SHT21
+            board_io = A['board_io']  # Get board_io dict
+            if not InVal.get(self.board['id'], False):  # Se non esiste, crea la il dict
+                InVal.update({self.board['id']: {}})
+            if not InBin.get(self.board['id'], False):  # Se non esiste, crea la il dict
+                InBin.update({self.board['id']: {}})
+            if not InBin[self.board['id']].get('temperature', False):  # Se non esiste, crea la il dict
+                InBin[self.board['id']].update({'temperature': 0})
+            if not InBin[self.board['id']].get('humidity', False):  # Se non esiste, crea la il dict
+                InBin[self.board['id']].update({'humidity': 0})
+
+            for board_io_id in board_io:  # Iterazione del dict board_io
+                if board_io[board_io_id]['board_id'] == self.board['id']:  # Trova tutti i dict che sono dei sensori SHT21
+
+                    if board_io[board_io_id]['io_type_id'] == 4:  # Sensore Temperature
+                        temperature = round(sht21.SHT21(i2c).read_temperature(), 1)  # Get temperature
+                        if InBin[self.board['id']]['temperature'] != temperature:  # Se la temperatura e' cambiata, la scrive nel dict
+                            InBin[self.board['id']].update({'temperature': temperature})  # Dict per testare se e' cambiata
+                            InVal[self.board['id']].update({'temperature': temperature})  # dict dove si trovano tutti i valori degli ingressi
+                            if not self.board['id'] in InChange:
+                                InChange.append(self.board['id'])
+
+                    elif board_io[board_io_id]['io_type_id'] == 5:  # Humidity
+                        humidity = round(sht21.SHT21(i2c).read_humidity(), 1)
+                        if InBin[self.board['id']]['humidity'] != humidity:
+                            InBin[self.board['id']].update({'humidity': humidity})
+                            InVal[self.board['id']].update({'humidity': humidity})
+                            if not self.board['id'] in InChange:
+                                InChange.append(self.board['id'])
+            time.sleep(2)
+
+        elif board_type_id == 5:
+            # print "PD9535"
+            pass
+
+        # print InVal
+        InThread.remove(self.board['id'])  # Rimuove il Thread dalla lista dei Thread in quanto e' terminato
+
+    def read_i2c(self, board_address):
+        bus = smbus.SMBus(i2c)
+        return bus.read_byte(board_address)  # legge lo stato degli ingressi
+
+    def read_web(self):
+        pass
+
+class SetOutput(threading.Thread):
+    def __init__(self,P):
+        threading.Thread.__init__(self)
+        self.P = P
+
+
+
+    def run(self):
+        board_io = A['board_io']
+        type_id = self.P['type_id']
+
+        in_id = self.P['in_id']
+        in_board_id = board_io[in_id]['board_id']
+        in_address = board_io[in_id]['address']
+        out_id = self.P['out_id']
+        out_board_id = board_io[out_id]['board_id']
+        out_address = board_io[out_id]['address']
+        # print "in_id:",in_id, 'in_board_id:',in_board_id, 'out_id:',out_id, 'out_board_id:', out_board_id
+
+        if not out_board_id in OutVal:
+            OutVal.update({out_board_id: {}})
+
+        # print type_id
+        if type_id == 1:  # Timer
+            pass
+        elif type_id == 2:  # Timeout
+            pass
+        elif type_id == 3:  # Automatic
+            pass
+        elif type_id == 4:  # Manual
+            pass
+            # print InVal
+            # print in_board_id
+            # print in_address
+            # print InVal
+            OutVal[out_board_id].update({out_id: InVal[in_board_id][in_address]})
+            # print self.P
+            print OutVal
+
+
+
+        elif type_id == 5:  # Thermostat
+            pass
 
 
 class Domocontrol:
@@ -14,9 +160,10 @@ class Domocontrol:
 
     def __init__(self):  # p = program dictionary
         self.db = Database()
+
         self.mapping = [0, 1, 2, 4, 8, 16, 32, 64, 128]
 
-        self.i2c = 0  # (dev/i2c_x) Default is 0 but getBusValue check for right value
+        # self.i2c = 0  # (dev/i2c_x) Default is 0 but getBusValue check for right value
         self.getBusValue()  # set /dev/i2c_x
 
         self.B = {}  # IN / OUT value
@@ -49,6 +196,38 @@ class Domocontrol:
         self.setupI2C()
         # self.initializeIO()
 
+
+    def setOutputs(self):
+        """
+        Funzione che richiama la classe SetOutput che aggiorna le uscite
+        """
+        for p in self.P:
+            # print self.P[p]
+            if p in OutThread:
+                pass
+            else:
+                OutThread.append(self.P[p])
+                v = SetOutput(self.P[p])
+                v.start()
+            # print OutThread
+
+
+    def getInputs(self):
+        """
+        Funzione che richiama la classe GetInput che aggiorna gli ingressi delle varie schede
+        """
+        for board in self.A['board']:  # Fa il parsing delle board
+            board_id = self.A['board'][board]['id']  # id della board
+            if board_id in InThread:  # Controlla se il Thread e' terminato
+                pass
+            else:  # Thread terminato
+                InThread.append(board_id)  # Importa il Thread attivo
+                v = GetInput(self.A['board'][board_id])  # Lancia il Thread
+                v.start()
+            # print InThread, InVal, InChange
+
+
+
     def now(self):
         """
         Ritorna l'ora corrente
@@ -60,12 +239,13 @@ class Domocontrol:
         Controlla il numero del divice I2C
         """
         print("Start getBusValue")
+        global i2c
         self.device = []
         for a in range(0, 10):
             # print a
             try:
                 i2c = smbus.SMBus(a)
-                self.i2c = a  # address i2c /dev/i2c_x
+                i2c = a  # address i2c /dev/i2c_x
                 print('Device i2c: {}'.format(self.i2c))
             except:
                 pass
@@ -84,7 +264,15 @@ class Domocontrol:
             # print rr_board, r_board
             self.IO['io'].update({rr_board['id']: {'value': 0, 'update': 0}})
 
-        # Dict IO['board_io']
+        # Area informations
+        q = 'SELECT * FROM board_io'
+        res = self.db.query(q)
+        self.A['board_io'] = {}
+        for r in res:
+            self.A['board_io'].update({r['id']: r})
+
+        """
+        # Dict IO['board_io_all']
         q_board_io = 'SELECT * FROM board_io'
         r_board_io = self.db.query(q_board_io)
         for rr_board_io in r_board_io:
@@ -128,24 +316,25 @@ class Domocontrol:
                 'icon_on': rr_board_io['icon_on'],
                 'icon_off': rr_board_io['icon_off']
             }})
+        """
 
         # matrix board_io_m to get board_io.id for board and address
-        """
-        Matrix Dict to get quickly data
-        """
-        self.M.update({'board_io_m': {}})
-        q = 'SELECT * FROM board_io'
-        r = self.db.query(q)
-        for rr in r:
-            self.M['board_io_m'].update({(int(rr['board_id']), int(rr['address'])): int(rr['id'])})
+        #"""
+        #Matrix Dict to get quickly data
+        #"""
+        # self.M.update({'board_io_m': {}})
+        # q = 'SELECT * FROM board_io'
+        # r = self.db.query(q)
+        # for rr in r:
+            # self.M['board_io_m'].update({(int(rr['board_id']), int(rr['address'])): int(rr['id'])})
         # print self.M['board_io_m']
 
         # Select program_id form in_id
-        self.M.update({'program_m': {}})
-        q = 'SELECT * FROM program'
-        r = self.db.query(q)
-        for rr in r:
-            self.M['program_m'].update({int(rr['in_id']): int(rr['id'])})
+        # self.M.update({'program_m': {}})
+        # q = 'SELECT * FROM program'
+        # r = self.db.query(q)
+        # for rr in r:
+            # self.M['program_m'].update({int(rr['in_id']): int(rr['id'])})
 
         # -------------- End Matrix
 
@@ -198,6 +387,9 @@ class Domocontrol:
         self.A['program_type'] = {}
         for r in res:
             self.A['program_type'].update({r['id']: r})
+        global A, P
+        A = self.A
+        P = self.P
 
         print("End Domocontrol Setup")
 
@@ -282,24 +474,33 @@ class Domocontrol:
     # self.IO = in / out / sensor value
     # self.P = program database
     def loop(self):  # Loop principale
-        self.getInStatus()  # Leggo lo stato delle schede e aggiorno dizionario se e' cambiato
-        # print self.IO['io']  # stampo dizionario
-        self.updateIO()  # aggiorna in self.IO['board_io'] lo stato dei singoli ingressi / uscite
-        # print self.IO['board_io']
-        self.updateOut()
+        # self.getInStatus()  # Leggo lo stato delle schede e aggiorno dizionario se e' cambiato
+        ## print self.IO['io']  # stampo dizionario
+        # self.updateIO()  # aggiorna in self.IO['board_io'] lo stato dei singoli ingressi / uscite
+        ## print self.IO['board_io']
+        # self.updateOut()
+        pass
 
     def getInStatus(self):
         """
         Get Byte Status of all board
         Legge il valore degli ingressi/uscite delle varie schede
         """
+        #~ print self.A
+        #~ print
+        #~ print self.IO
+        #~ print
+        #~ print self.P
+
         for board_id in self.A['board']:  # get status of boards
             board = self.A['board'][board_id]
+
 
             if int(board['board_type_id']) == 1:  # i2c board
                 bus = smbus.SMBus(self.i2c)
                 data = bus.read_byte(int(board['address']))  # legge lo stato degli ingressi
                 data_old = self.IO['io'][board['id']]['value']
+
                 if data != data_old:
                     diff = int(data) ^ int(data_old)
                     # print "Diff : ", diff
@@ -332,7 +533,9 @@ class Domocontrol:
         """
         funzione che aggiorna self.IO['board_io']
         """
+
         for board_id, data in self.IO['io'].iteritems():  # iterazione degli IO (byte)
+            #~ print board_id, data
             address = 0
             while data['update'] > 0:  # se update e' >0 significa che e' cambiato lo stato IO
                 if data['update'] & 1 == 1:  # se 1 il bit meno significativo e' cambiato
@@ -342,7 +545,8 @@ class Domocontrol:
                         self.IO['board_io'][board_io_id]['SA'] = bit_value  # imposta lo stato del bit nel dizionario
                 data['update'] = int(data['update']) / 2  # divide per 2 il data['update'] per vedere il secondo bit
                 address += 1
-            self.IO['io'][board_id]['update'] = 0  # 0 significa che le operazioni sono state eseguite
+
+
 
     def updateOut(self):
 
@@ -452,10 +656,9 @@ class Domocontrol:
             if self.P[p]['TA'] > 0:
                 self.P[p]['TA'] -= 1
 
-    def getSensorStatus(self):
-        """
-        Legge i valori dei vari sensori
-        """
+    """
+    def getSensorStatus(self): Rimuovere
+
         # print "----------------- Get Sensor Values ---------------"
         for board_id in self.A['board']:  # get status of boards
             board = self.A['board'][board_id]
@@ -463,7 +666,7 @@ class Domocontrol:
                 try:
                     board_io_id = self.M['board_io_m'].get((board_id, 0), 0)  # return board_io_id temperature
                     if board_io_id > 0:
-                        temperature = round(sht21.SHT21(self.i2c).read_temperature(), 1)
+                        temperature = round(sht21.SHT21(i2c).read_temperature(), 1)
                         self.IO['board_io'][board_io_id]['SA'] = temperature
                         q = 'INSERT INTO sensor (type, value) VALUES("{}", "{}");'.format('1', temperature)
                         self.db.query(q)
@@ -477,6 +680,7 @@ class Domocontrol:
 
                 except:  # initialize self.tnow and set temp + hum immediately
                     print "getSensorStatus Error"
+    """
 
     def getBitValue(self, byteval, idx):
         """

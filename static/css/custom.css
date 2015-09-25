@@ -1,1 +1,6 @@
 .error{color:red;}
+.navbar-inverse .navbar-nav > .active > a, .navbar-inverse .navbar-nav > .active > a:hover, .navbar-inverse .navbar-nav > .active > a:focus {
+    background-color: #080808;
+    color: #fff;
+    font-weight: 900;
+}

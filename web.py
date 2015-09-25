@@ -15,7 +15,6 @@ import copy
 import traceback
 from gevent import monkey
 from flask.ext.socketio import SocketIO, emit, join_room, leave_room, close_room, disconnect
-import time
 # import gevent
 # from gevent.pywsgi import WSGIServer
 monkey.patch_all()
@@ -37,6 +36,7 @@ bootstrap = Bootstrap(app)
 DATABASE = './db/db.sqlite'
 db = Database(dbname=DATABASE)  # metodi per database
 d = domocontrol.Domocontrol()
+
 P = {}  # Dict with Program
 PCopy = {}  # Copy P dictionary
 A = {}  # All other db information
@@ -793,36 +793,40 @@ def counter(start='y'):
         threading.Timer(1, counter).cancel()
 
 
-def loop(start='y'):  # To update board IO values
+
+def getInputs(start='y'):  # To update board IO values
     timebegin = now()
-    print '=' * 80
     try:
-        d.loop()
+        d.getInputs()
+        pass
     except:
-        print('Error Domocontrol.py getInStatus')
+        print('Error Domocontrol.py getInputs')
         traceback.print_exc()
     if start == 'y':
-        threading.Timer(1, loop).start()
+        threading.Timer(1, getInputs).start()
     else:
-        threading.Timer(1, loop).cancel()
-    print "IOStatus ==>> ", now() - timebegin, "\n\n"
+        threading.Timer(1, getInputs).cancel()
+    # print "IOStatus ==>> ", now() - timebegin, "\n\n"
 
-
-def getSensorStatus(start='y'):  # To update sensor values
+def setOutputs(start='y'):  # To update board IO values
     timebegin = now()
     try:
-        d.getSensorStatus()
+        d.setOutputs()
+        pass
     except:
-        print('Error Domocontrol.py getSensorStatus')
+        print('Error Domocontrol.py getInputs')
+        traceback.print_exc()
     if start == 'y':
-        threading.Timer(180, getSensorStatus).start()
+        threading.Timer(1, setOutputs).start()
     else:
-        threading.Timer(1, getSensorStatus).cancel()
-    # print "SensorStatus ==>> ", now() - timebegin
+        threading.Timer(1, setOutputs).cancel()
+    # print "IOStatus ==>> ", now() - timebegin, "\n\n"
+
+
 
 if __name__ == '__main__':
-    loop()  # loop to update IO and sensors
-    getSensorStatus()  # loop to update IO and sensors
+    getInputs()
+    setOutputs()
     counter()  # decrement timer (IO['timer'])
 
     app.debug = 0
