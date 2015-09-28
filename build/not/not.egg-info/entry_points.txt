@@ -1,4 +1,0 @@
-[console_scripts]
-not = notpy.cmd:cli
-not-setup = notpy.oauth:setup
-
