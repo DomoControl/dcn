@@ -1,0 +1,11 @@
+Definizioni variabili per il funzionamento
+
+IOThread=[] -> Lista dei Thread attivi che testano il valore in ingresso delle schede
+
+IOBin -> Dizionario per le schede I2C dove viene preso il valore byte d'ingresso. Serve per fare un confronto se i valori sono cambiati e quindi aggiornare IOVal.
+{1: 0, 2: 251, 3: 0}
+
+IOVal -> Dizionario con lo stato di tutte le schede
+{1: {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0}
+
+OutChange -> dict dove sono impostati gli IO che sono stati cambiati dall' interfaccia web

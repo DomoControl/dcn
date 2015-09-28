@@ -4,100 +4,104 @@
     {% if error %}
         <p class=error><strong>Error:</strong> {{ error }}
     {% endif %}
-    
+
     <style type="text/css">
         .sensor {
-            text-align:center; 
-            border:1px dotted gray; 
-            padding:5px; 
-            margin:5px; 
+            text-align:center;
+            border:1px dotted gray;
+            padding:5px;
+            margin:5px;
             float:left;
             width:100px;
         }
-    </style> 
-   
-    
-            
-        <script type="text/javascript">
-            $(document).ready(function(){
-                namespace = '/menu_status';
-                var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+    </style>
+
+    <script type="text/javascript">
+        $(document).ready(function(){
+            namespace = '/menu_status';
+            var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+            f = '';
+            debug = '';
+            A = {}; //Dict with all other data
+            ACopy = {};
+            IO = {};
+            IOCopy = {};
+
+            var reloadDictA = '';
+            var reloadDictIO='';
+
+            socket.on('connect', function() {
+                socket.emit('menu_status_back', {data1: 'Connect'});
+            });
+
+            socket.on('my response', function(dict) {
+                area = dict.area;
+                area_board_io = dict.area_board_io;
+                IOVal = dict.IOVal; //Dict with input value
+
+
+                // //~ debug = JSON.stringify(IOCopy);
+
+                // if(jQuery.isEmptyObject(ACopy) != true){
+                    // A = $.extend(A, ACopy);
+                // }
+
+                // if(Object.keys(IOCopy).length>0){
+                    // IO = $.extend(IO, IOCopy);
+                    //~ debug = JSON.stringify('IO Cambiato');
+                // }
+                //~ debug = JSON.stringify(IO);
+
                 f = '';
                 debug = '';
-                A = {}; //Dict with all other data
-                ACopy = {};
-                IO = {};
-                IOCopy = {};
-                var reloadDictA = '';
-                var reloadDictIO='';
-                
-                socket.on('connect', function() {
-                    socket.emit('menu_status_back', {data1: 'Connect'});
-                });
-                                
-                socket.on('my response', function(dict) {
-                    
-                    IOCopy = dict.IO; //Dict with IO status
-                    ACopy = dict.AA; //Dict with all data
-                    
-                    //~ debug = JSON.stringify(IOCopy);
-                    
-                    if(jQuery.isEmptyObject(ACopy) != true){
-                        A = $.extend(A, ACopy);
-                    }
+                debug += JSON.stringify(area_board_io[13])
+                debug += JSON.stringify(IOVal);
+                debug += Object.keys(area_board_io).length
+                n = 0;
+                for( var a in area){
+                    f += '<div style="clear:both;"  >'+ area[a]["description"] +'</div>';
+                    for( var bio in area_board_io ){
+                        // f += '<br>************'+ area_board_io[bio]['board_io_name'] + '*******<br>'
+                        // debug += '<p>' + JSON.stringify(area_board_io[bio]) + '</p>';
 
-                    if(Object.keys(IOCopy).length>0){
-                        IO = $.extend(IO, IOCopy);
-                        //~ debug = JSON.stringify('IO Cambiato');
-                    }
-                    //~ debug = JSON.stringify(IO);
-                    
-                    f = '';
-                    for( var a in A ){
-                        n = 0;
-                        for(aa in A[a]){
-                            id = A[a][aa]['id'];
-                            if(n == 0){
-                                f += '<div style="clear:both;"  >'+ A[a][aa]["area_description"] +'</div>';
-                            }
-                            f += '<div style="border:1px dotted gray;" class="sensor"  onClick="sendEvent('+id+')" >';
-                            //~ f += '<a href="#" onclick="set_menu_status(10,5);">';
-                            
-                            f += '<span title="'+ A[a][aa]['description'] +'">'+A[a][aa]['name']+'</span><br>';
-                            
-                            
-                            IO_val = IO['board_io'][id]['SA'] //status value
-                            if(IO_val == 0){
-                                f += '<span><input id="target" name="'+id+'" value="'+0+'" type="image" src="static/icon/' + A[a][aa]['icon_off'] + '" style="height:40px; max-width:50px;" ></span><br>';
+                        board_id = area_board_io[bio]['board_io_board_id'];
+                        board_io_address = area_board_io[bio]['board_io_address'];
+                        id = area_board_io[bio]['board_io_id'];
+                        In = IOVal[board_id][board_io_address];//[board_id][board_io_address] //status value
+                        type_id = area_board_io[bio]['board_io_io_type_id']
+
+
+                        if(area_board_io[bio]['area_id'] == area[a]['id']) {
+
+
+                            f += '<div style="border:1px dotted gray;" class="sensor"  onClick="sendEvent('+[board_id, board_io_address, In]+')" >';
+                            f += '<span title="'+ area_board_io[bio]['board_io_description'] +'">'+area_board_io[bio]['board_io_name']+'</span><br>';
+
+                            if(In == 0){
+                                f += '<span><input id="target" name="'+id+'" value="'+0+'" type="image" src="static/icon/' + area_board_io[bio]['board_io_icon_off'] + '" style="height:40px; max-width:50px;" ></span><br>';
                             } else {
-                                f += '<span><input  id="target" name="'+id+'" value="'+1+'" type="image" src="static/icon/' + A[a][aa]['icon_on'] + '"  style="height:40px; max-width:50px;" ></span><br>';
+                                f += '<span><input  id="target" name="'+id+'" value="'+1+'" type="image" src="static/icon/' + area_board_io[bio]['board_io_icon_on'] + '"  style="height:40px; max-width:50px;" ></span><br>';
                             }
-                            //~ debug += JSON.stringify( A[a][aa]['icon']);    
-                            //~ debug += JSON.stringify(IO['board_io'][id])
-                            
-                            f += IO_val;
-                            //~ f += A[c]['VALUE']+'<br>';
-                            n++;
-                        
-                        //~ f += '</a>';
-                        f += '</div>';
-                        
-                            
+                            f += In;
+                            f += '</div>';
                         }
                     }
-                    
+                    f += '</div>';
+                    n++;
+                }
+
                 document.getElementById('status').innerHTML = f;
-                document.getElementById('debug').innerHTML = debug;  
+                document.getElementById('debug').innerHTML = debug;
                 });
-                
-                sendEvent = function(event) {
-                    socket.emit('change_menu_status', {id: event});
+
+                sendEvent = function(board_id, board_id_address, In) {
+                    socket.emit('change_menu_status', [board_id, board_id_address, In]);
                     return false;
-                };   
-                
+                };
+
             });
-        
-            
+
+
     </script>
 
 <div id="debug"></div>

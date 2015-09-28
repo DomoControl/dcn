@@ -112,41 +112,30 @@ def event_menu_status():
         For something more intelligent, take a look at Redis pub/sub
         stuff. A great example can be found here https://github.com/jakubroztocil/chat
     """
-    print d.IO
+    print "event_menu_status"
     while True:
         global reloadD
         if reloadD:
             request = True
         else:
             request = False
-        IO = d.getDict('IO', reloadDict=request)
-        A = d.getDict('A', reloadDict=request)
+
+        IOVal = d.getDict('IOVal')
+        A = d.getDict('A')
+
+        # IO = d.getDict('IO', reloadDict=request)
+        # A = d.getDict('A', reloadDict=request)
         reloadD = False
-
-        if len(A) > 0:
-            AA = {}
-            A = A['board_io']
-            for a in A:
-                if not A[a]['area']['id'] in AA:
-                    AA[A[a]['area']['id']] = {}
-
-                AA[A[a]['area']['id']].update({a: {
-                    'area_name': A[a]['area']['name'],
-                    'area_description': A[a]['area']['description'],
-                    'name': A[a]['name'],
-                    'description': A[a]['description'],
-                    'id': A[a]['id'],
-                    'icon_on': A[a]['icon_on'],
-                    'icon_off': A[a]['icon_off']
-                }})
-        else:
-            AA = {}
-        socketio.emit('my response', {'AA': AA, 'IO': IO}, namespace='/menu_status')
+        area_board_io = A['area_board_io']
+        area = A['area']
+        # print IOVal
+        socketio.emit('my response', {'IOVal': IOVal, 'area_board_io': area_board_io, 'area': area}, namespace='/menu_status')
         time.sleep(0.5)
 
 
 @app.route('/menu_status')
 def menu_status():
+    print "menu_status"
     if not checkPermission(2):  # check login and privilege
         return render_template("no_permission.html")
     global thread
@@ -164,13 +153,8 @@ def test_message(message):
 
 
 @socketio.on('change_menu_status', namespace='/menu_status')
-def test_broadcast_message(message):
-    board_io_id = message['id']  # pulsante premuto
-    if d.IO['board_io'][board_io_id]['io_type_id'] == 0:  # che se e' stato premuto un pulsante virtuale
-        SA = d.IO['board_io'][board_io_id]['SA']  # Attuale stato del pulsante virtuale
-        d.IO['board_io'][board_io_id]['SA'] = 1 if d.IO['board_io'][board_io_id]['SA'] == 0 else 0  # cambia stato del pulsante virtuale
-        print "SA:", d.IO['board_io'][board_io_id]['SA']
-        d.updateOut()
+def change_menu_statuse(message):
+    d.setOutVal(message)  # Chama la funzione che aggiorna il dict con il vaore del tasto premuto
 reloadD = False
 
 
@@ -180,20 +164,24 @@ def event_menu_program():
         For something more intelligent, take a look at Redis pub/sub
         stuff. A great example can be found here https://github.com/jakubroztocil/chat
     """
-    # print d.IO
     while True:
         global reloadD
         if reloadD:
             request = True
         else:
             request = False
-        IO = d.getDict('IO', reloadDict=request)
-        A = d.getDict('A', reloadDict=request)
-        P = d.getDict('P', reloadDict=request)
+        IOVal = d.getDict('IOVal')
+        OutVal = d.getDict('OutVal')
+        A = d.getDict('A')
+        area_board_io = A['area_board_io']
+        # IO = d.getDict('IO', reloadDict=request)
+        # A = d.getDict('A', reloadDict=request)
+        # P = d.getDict('P', reloadDict=request)
         reloadD = False
-        print P
+        print area_board_io
 
-        socketio.emit('my response', {'A': A, 'P': P, 'IO': IO}, namespace='/menu_program')
+        # socketio.emit('my response', {'A': A, 'P': P, 'IO': IO}, namespace='/menu_program')
+        socketio.emit('my response', {'A': A, 'P': P, 'area_board_io': area_board_io}, namespace='/menu_program')
         time.sleep(0.5)
 
 
@@ -759,7 +747,7 @@ def login():
             session['sessionTimeout'] = res[0]['session']
             return render_template("hello.html", error='')
         else:
-            message = 'invalid password or username. Please retry!'
+            message = 'IOValid password or username. Please retry!'
             return render_template("login.html", message=message)
             session['logged_in'] = None
             session.clear()
@@ -822,14 +810,12 @@ def setOutputs(start='y'):  # To update board IO values
         threading.Timer(1, setOutputs).cancel()
     # print "IOStatus ==>> ", now() - timebegin, "\n\n"
 
-
-
 if __name__ == '__main__':
     getInputs()
     setOutputs()
     counter()  # decrement timer (IO['timer'])
 
-    app.debug = 0
+    app.debug = 1
     socketio.run(app, port=8000, host='0.0.0.0')
     # WSGIServer(('', 5000), app).serve_forever()
     # try:
@@ -843,6 +829,4 @@ if __name__ == '__main__':
         #
     # except:
         # pass
-    # getInStatus('n')
-    # getSensorStatus('n')
     print "FINE"
