@@ -31,6 +31,8 @@ class GetInput(threading.Thread):
         # print self.board
         board_type_id = self.board['board_type_id']  # Il tipo di scheda
 
+
+
         if board_type_id == 1:  # I2C
             value = self.read_i2c(self.board['address'])  # Ritorna il byte degli ingressi I2C
             if IOBin.get(self.board['id'], 'Not Exist') != value:  # Testa se il valore e' cambiato
@@ -43,7 +45,14 @@ class GetInput(threading.Thread):
                         IOVal[self.board['id']].update({i: 0})
                     value /= 2
 
-                # print IOVal
+            # print IOVal[self.board['id']], OutChange
+            # Aggiorna gli INPUT cambiati di IOVal
+            if len(OutChange[self.board['id']]) > 0:
+                print IOVal[self.board['id']], IOBin[self.board['id']]
+                for o in OutChange[self.board['id']]:
+                    IOVal[self.board['id']][o] = OutChange[self.board['id']][o]
+                    del OutChange[self.board['id']][o]  # Azzero il dizionario
+
 
         elif board_type_id == 2:  # RS485
             pass
@@ -51,7 +60,14 @@ class GetInput(threading.Thread):
         elif board_type_id == 3:  # WEB
             if IOVal.get(self.board['id'], 'No') == 'No':  # Testa se il valore e' cambiato
                 IOBin[self.board['id']] = 0
-                IOVal[self.board['id']] = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 }
+                IOVal[self.board['id']] = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 }
+
+            # Aggiorna gli INPUT cambiati di IOVal
+            if len(OutChange[self.board['id']]) > 0:
+                for o in OutChange[self.board['id']]:
+                    IOVal[self.board['id']][o] = OutChange[self.board['id']][o]
+                    del OutChange[self.board['id']][o]  # Azzero il dizionario
+
 
         elif board_type_id == 4:  # SHT21 Temperature
             temperature = round(sht21.SHT21(i2c).read_temperature(), 1)  # Get temperature
@@ -75,12 +91,7 @@ class GetInput(threading.Thread):
             pass
 
 
-        # Parte che controlla se OutChange contiene dei bit e in questo caso li processa
-        for k, v in OutChange.iteritems():
-            if len(v) > 0:
-                print k, v
-
-        # print IOVal, IOBin
+        #~ print IOVal
         IOThread.remove(self.board['id'])  # Rimuove il Thread dalla lista dei Thread in quanto e' terminato
 
     def read_i2c(self, board_address):
@@ -99,22 +110,32 @@ class SetOutput(threading.Thread):
         program_type_id = self.program['type_id']
         in_id = self.program['in_id']
         in_board_id = A['board_io'][in_id]['board_id']
+        in_address = A['board_io'][in_id]['address']
         out_id = self.program['out_id']
         out_board_id = A['board_io'][out_id]['board_id']
+        out_address = A['board_io'][out_id]['address']
+        inverted = self.program['inverted']
 
+        # print in_id, in_board_id, in_address, out_id, out_board_id, out_address
+        # print IOVal
 
         if program_type_id == 1:  # Timer
             pass
         elif program_type_id == 2:  # Timeout
             pass
-        elif program_type_id == 3:  # Aautomatic
+        elif program_type_id == 3:  # Automatic
             pass
         elif program_type_id == 4:  # Manual
-            pass
+            InV = IOVal[in_board_id][in_address]
+            # OutV = IOVal[out_board_id][out_address]
+            IOVal[out_board_id][out_address] = InV ^ inverted
+
+            # print InV, OutV
 
         elif program_type_id == 5:  # Thermostat
             pass
 
+        PThread.remove(self.program['id'])  # Rimuove il Thread dalla lista dei Thread in quanto e' terminato
 
 class Domocontrol:
     """Class DomoControl"""
@@ -176,6 +197,7 @@ class Domocontrol:
         """
         Funzione che processa i programmi
         """
+
         for p in self.P:
             if p in PThread:
                 pass
@@ -183,7 +205,6 @@ class Domocontrol:
                 PThread.append(p)
                 v = SetOutput(self.P[p])
                 v.start()
-
 
     def setOutVal(self, *args):  # Viene chiamata dal web.py quando viene premuto un pulsante
         OutChange[args[0][0]][args[0][1]] = 0 if args[0][2] else 1  # OutChange contiene tutti i bit cambiati dall'utente
