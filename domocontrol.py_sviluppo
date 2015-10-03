@@ -9,206 +9,124 @@ import sht21
 import os
 import threading
 
-IOThread=[]  # lista di Thread in esecuzione per la lettura degli IO
-IOVal = {}  # Dizionario con {board_id: {num_ingressi: valore_ingressi}}
-IOBin = {}  # List to put bin value input
-PThread = []  # Lista di Thread che processato i programmi (self.P)
 OutChange = {}
-i2c = 0  # BUS I2C
+
 A = {}
 P = {}
-db = Database()
 
-class GetInput(threading.Thread):
-    def __init__(self,board):
-        threading.Thread.__init__(self)
-        self.board = board
-
-    def getIOVal(self):  # ritorna il valore degli ingressi
-        return IOVal
-
-    def run(self):
-        # print self.board
-        board_type_id = self.board['board_type_id']  # Il tipo di scheda
-
-
-
-        if board_type_id == 1:  # I2C
-            value = self.read_i2c(self.board['address'])  # Ritorna il byte degli ingressi I2C
-            if IOBin.get(self.board['id'], 'Not Exist') != value:  # Testa se il valore e' cambiato
-                IOBin.update({self.board['id']: value})
-                IOVal[self.board['id']] = {}
-                for i in range(0,8):  # Iterazione del byte
-                    if value & 1 == 1:
-                        IOVal[self.board['id']].update({i: 1})
-                    else:
-                        IOVal[self.board['id']].update({i: 0})
-                    value /= 2
-
-            # print IOVal[self.board['id']], OutChange
-            # Aggiorna gli INPUT cambiati di IOVal
-            if len(OutChange[self.board['id']]) > 0:
-                print IOVal[self.board['id']], IOBin[self.board['id']]
-                for o in OutChange[self.board['id']]:
-                    IOVal[self.board['id']][o] = OutChange[self.board['id']][o]
-                    del OutChange[self.board['id']][o]  # Azzero il dizionario
-
-
-        elif board_type_id == 2:  # RS485
-            pass
-
-        elif board_type_id == 3:  # WEB
-            if IOVal.get(self.board['id'], 'No') == 'No':  # Testa se il valore e' cambiato
-                IOBin[self.board['id']] = 0
-                IOVal[self.board['id']] = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 }
-
-            # Aggiorna gli INPUT cambiati di IOVal
-            if len(OutChange[self.board['id']]) > 0:
-                for o in OutChange[self.board['id']]:
-                    IOVal[self.board['id']][o] = OutChange[self.board['id']][o]
-                    del OutChange[self.board['id']][o]  # Azzero il dizionario
-
-
-        elif board_type_id == 4:  # SHT21 Temperature
-            temperature = round(sht21.SHT21(i2c).read_temperature(), 1)  # Get temperature
-            humidity = round(sht21.SHT21(i2c).read_humidity(), 1)  # Get humidity
-
-            if IOVal.get(self.board['id'], 'Not Exist') != board_type_id:
-                IOVal[self.board['id']] = {}
-
-            IOVal[self.board['id']].update({0: temperature})
-            IOVal[self.board['id']].update({1: humidity})
-
-            q = 'INSERT INTO sensor (type, value) VALUES("{}", "{}");'.format('1', temperature)
-            db.query(q)
-            q = 'INSERT INTO sensor (type, value) VALUES("{}", "{}");'.format('2', humidity)
-            db.query(q)
-
-            time.sleep(300)
-
-        elif board_type_id == 5:
-            # print "PD9535"
-            pass
-
-
-        #~ print IOVal
-        IOThread.remove(self.board['id'])  # Rimuove il Thread dalla lista dei Thread in quanto e' terminato
-
-    def read_i2c(self, board_address):
-        bus = smbus.SMBus(i2c)
-        return bus.read_byte(board_address)  # legge lo stato degli ingressi
-
-    def read_web(self):
-        pass
-
-class SetOutput(threading.Thread):
-    def __init__(self,program):
-        threading.Thread.__init__(self)
-        self.program = program
-
-    def run(self):
-        program_type_id = self.program['type_id']
-        in_id = self.program['in_id']
-        in_board_id = A['board_io'][in_id]['board_id']
-        in_address = A['board_io'][in_id]['address']
-        out_id = self.program['out_id']
-        out_board_id = A['board_io'][out_id]['board_id']
-        out_address = A['board_io'][out_id]['address']
-        inverted = self.program['inverted']
-
-        # print in_id, in_board_id, in_address, out_id, out_board_id, out_address
-        # print IOVal
-
-        if program_type_id == 1:  # Timer
-            pass
-        elif program_type_id == 2:  # Timeout
-            pass
-        elif program_type_id == 3:  # Automatic
-            pass
-        elif program_type_id == 4:  # Manual
-            InV = IOVal[in_board_id][in_address]
-            # OutV = IOVal[out_board_id][out_address]
-            IOVal[out_board_id][out_address] = InV ^ inverted
-
-            # print InV, OutV
-
-        elif program_type_id == 5:  # Thermostat
-            pass
-
-        PThread.remove(self.program['id'])  # Rimuove il Thread dalla lista dei Thread in quanto e' terminato
 
 class Domocontrol:
     """Class DomoControl"""
 
     def __init__(self):  # p = program dictionary
         self.db = Database()
-
-        self.mapping = [0, 1, 2, 4, 8, 16, 32, 64, 128]
-
-        # self.i2c = 0  # (dev/i2c_x) Default is 0 but getBusValue check for right value
+        self.i2c = 0  # (dev/i2c_x) Default is 0 but getBusValue check for right value
         self.getBusValue()  # set /dev/i2c_x
-
-        self.B = {}  # IN / OUT value
-        self.BCopy = {}  # Copy B dictionary
-
-        self.C = {}  # Sensor value
-        self.CCopy = {}  # Copy C dictionary
-
-        self.S = {}
-        self.SCopy = {}
-
         self.P = {}  # Dict with Program
-        self.PCopy = {}  # Copy P dictionary
-
         self.A = {}  # All unchanged db information
-        self.ACopy = {}  # Copy A dictionary
+        self.IOThread = []  # List of active Thread
+        self.t_board_id = ()  # Tupla con le board[id]
+        self.t_board_address = ()  # Tupla con le board[address]
+        self.t_board_type = ()  # Tupla con le board[type]
+        self.t_board_io_address = ()  # Tupla address di ciascuna board[id]
+        self.t_board_io_id = ()  # Tupla id di ciascuna board[id]
+        self.l_board_io_val = []
+        self.l_board_bin_val = []
+        self.l_board_bin_onchange = []
+        self.l_board_changerequest = []
+        self.dir_root = os.path.dirname(os.path.abspath(__file__))  # path of program, to get icons
+        self.initialize()  # Inizializza tuple, liste, dict
 
-        self.IO = {'io': {}, 'sensor': {}, 'board_io': {}}  # Content IO status (menu status)
-        self.IOCopy = {'io': {}, 'sensor': {}, 'board_io': {}}  # Copy IO dictionary
-        self.IOCopy8 = {1: 1}
-
-        self.M = {}  # matrix dict
-        self.MCopy = {}
-
-        self.n = 0
-
-        self.dir_root = os.path.dirname(os.path.abspath(__file__))  # path of program
-
-        self.setupDict()
-        self.setupI2C()
-        # self.initializeIO()
-
-
-    def getInputs(self):
+    def getBusValue(self):
         """
-        Funzione che richiama la classe GetInput che aggiorna gli ingressi delle varie schede
+        Controlla il numero del divice I2C
         """
-        for board in self.A['board']:  # Fa il parsing delle board
-            board_id = self.A['board'][board]['id']  # id della board
-            if board_id in IOThread:  # Controlla se il Thread e' terminato
+        print("Start getBusValue")
+        self.device = []
+        for a in range(0, 10):
+            # print a
+            try:
+                self.i2c = smbus.SMBus(a)
+                self.i2c = a  # address i2c /dev/i2c_x
+                print('Device i2c: {}'.format(self.i2c))
+            except:
                 pass
-            else:  # Thread terminato
-                IOThread.append(board_id)  # Importa il Thread attivo
-                v = GetInput(self.A['board'][board_id])  # Lancia il Thread
-                v.start()
-            # print IOThread, IOVal
 
-    def setOutputs(self):
+    def read_i2c(self, board_address):
         """
-        Funzione che processa i programmi
+        Ritorna il valore in byte dei dispositivi I2C.
         """
+        bus = smbus.SMBus(self.i2c)
+        return bus.read_byte(board_address)  # legge lo stato degli ingressi
 
-        for p in self.P:
-            if p in PThread:
+    def write_i2c(self, board_address, val):
+        bus = smbus.SMBus(self.i2c)
+        bus.write_byte(board_address, val)
+
+    def runIO(self, board_id, board_type_id):
+        """
+        Si occupa di leggere e scrivere i valori degli IO
+        """
+        # print self.l_board_bin_val, self.l_board_changerequest, self.l_board_bin_onchange
+        if board_type_id == 0:  # Not used
+            pass
+        elif board_type_id == 1:  # I2C
+            # print "I2C"
+            val = self.read_i2c(self.t_board_address[board_id])
+            self.l_board_bin_val[board_id] = val
+            # print self.l_board_changerequest, self.l_board_changerequest[board_id], board_id
+            if self.l_board_changerequest[board_id] == 1:
+                self.l_board_bin_val[board_id] = self.l_board_bin_onchange[board_id]
+                self.write_i2c(self.t_board_address[board_id], self.l_board_bin_val[board_id])
+
+        elif board_type_id == 2:  # RS485
+            pass
+        elif board_type_id == 3:  # WEB
+            # print "web"
+            # Non fare nessuna operazione in quanto inizialmente di default, devono essere a 0.
+            if self.l_board_changerequest[board_id] == 1:
+                self.l_board_bin_val[board_id] = self.l_board_bin_onchange[board_id]
+                self.l_board_changerequest[board_id] = 0
+
+
+        elif board_type_id == 4 or board_type_id == 6:  # SHT21 Temperature
+            temperature = round(sht21.SHT21(self.i2c).read_temperature(), 1)
+            humidity = round(sht21.SHT21(self.i2c).read_humidity(), 1)
+            self.l_board_bin_val[self.t_board_id[self.t_board_type[4]]] = temperature
+            self.l_board_bin_val[self.t_board_id[self.t_board_type[6]]] = humidity
+            time.sleep(10)
+        elif board_type_id == 5:  # PD9535
+            pass
+
+
+        self.IOThread[board_id] = 0  # Rimuove il Thread dalla lista dei Thread in quanto e' terminato
+
+    def InT(self, board_id, board_type):
+        pass
+        threading.Thread(target=self.runIO, args=(board_id, board_type)).start()
+
+    def getIO(self):
+        """
+        Funzione chiamata da web.py che si occupa di inizializzare il Thread per la lettura dei valori.
+            ** Funziona soo se le board hanno un ID progressivo e che inizia da 0. Da modificare **
+        """
+        for bid in self.t_board_id:
+            if self.IOThread[bid] == 1:
                 pass
             else:
-                PThread.append(p)
-                v = SetOutput(self.P[p])
-                v.start()
+                # print self.t_board_id, self.t_board_type
+                self.IOThread[bid] = 1
+                self.InT(bid, self.t_board_type[bid])
 
-    def setOutVal(self, *args):  # Viene chiamata dal web.py quando viene premuto un pulsante
-        OutChange[args[0][0]][args[0][1]] = 0 if args[0][2] else 1  # OutChange contiene tutti i bit cambiati dall'utente
-        print OutChange
+    def setClickData(self, data):
+        """
+        Called from web.py when clicked into I/O
+        board_id, address, In value
+        """
+        IO = 0 if data[2] else 1
+        self.l_board_bin_onchange[data[0]] = self.setBit(self.l_board_bin_onchange[data[0]], data[1], IO)
+        self.l_board_changerequest[data[0]] = 1
+        # print self.l_board_changerequest, self.l_board_bin_onchange, IO
 
     def now(self):
         """
@@ -216,41 +134,84 @@ class Domocontrol:
         """
         return date.now()
 
-    def getBusValue(self):
-        """
-        Controlla il numero del divice I2C
-        """
-        print("Start getBusValue")
-        global i2c
-        self.device = []
-        for a in range(0, 10):
-            # print a
-            try:
-                i2c = smbus.SMBus(a)
-                i2c = a  # address i2c /dev/i2c_x
-                print('Device i2c: {}'.format(self.i2c))
-            except:
-                pass
 
-    def setupDict(self):  # program setup
+    def initialize(self):  # program setup
         """
         Funzione di setup
         Imposta il valore di tutti i dizionari per il corretto funzionamento
         """
         print("Start Domocontrol Setup")
 
-        # Dict IO['io']
-        q_board = 'SELECT * FROM board WHERE board_type_id=1 OR board_type_id=2 OR board_type_id=3'
-        r_board = self.db.query(q_board)
-        for rr_board in r_board:
-            # print rr_board, r_board
-            self.IO['io'].update({rr_board['id']: {'value': 0, 'update': 0}})
+        # ********** Versione ottimizzata ***************
+        # Tupla contenente le board_id, board_address, board_type
+        q = 'SELECT * FROM board ORDER BY id'
+        res = self.db.query(q)
+        l_board_id = []
+        l_board_address = []
+        l_board_type = []
+        self.l_board_bin_val = []
+        self.l_board_bin_onchange = []
+        self.l_board_changerequest = []
+        for r in res:
+            l_board_id.append(r['id'])
+            l_board_address.append(r['address'])
+            l_board_type.append(r['board_type_id'])
+            self.l_board_bin_val.append(0)
+            self.l_board_bin_onchange.append(0)
+            self.IOThread.append(0)
+            self.l_board_changerequest.append(0)
+            self.t_board_id = tuple(l_board_id)
+        self.t_board_address = tuple(l_board_address)
+        self.t_board_type = tuple(l_board_type)
+        # print self.t_board_id, self.t_board_address, self.t_board_type
+
+        # Tupla contenente le board_io separate dalle board
+        #   board 0    board 1....
+        # ((0,1,2,x), (0,1,2x), ...)
+        q = 'SELECT id, address, board_id FROM board_io ORDER BY board_id, address'
+        res = self.db.query(q)
+        l_board_io_address = []
+        l_board_io_id = []
+        l_board_io_val = []
+        tmp_address = []
+        tmp_id = []
+        tmp_val = []
+        self.t_board_io_address = ()
+        self.l_board_io_id = ()
+        for lb in l_board_id:
+            for r in res:
+                if r['board_id'] == lb:
+                    tmp_address.append(r['address'])
+                    tmp_id.append(r['id'])
+                    tmp_val.append(0)
+            l_board_io_address.append(tuple(tmp_address))
+            l_board_io_id.append(tuple(tmp_id))
+            self.l_board_io_val.append(tmp_val)
+            tmp_address = []
+            tmp_id = []
+            tmp_val = []
+        self.t_board_io_address = tuple(l_board_io_address)
+        self.l_board_io_id = tuple(l_board_io_id)
+        # print self.t_board_io_address
+        # print self.t_board_io_id
+        # print self.l_board_io_val
+
+
+        # ********** Vecchia versione ***************
+        # Board informations
+        q = 'SELECT * FROM board'
+        res = self.db.query(q)
+        self.A['board'] = {}
+        for r in res:
+            self.A['board'].update({r['id']: r})
+            OutChange[r['id']] = {}
 
         # Board_IO informations
         q = 'SELECT * FROM board_io'
         res = self.db.query(q)
         self.A['board_io'] = {}
         for r in res:
+            # print r['id']
             self.A['board_io'].update({r['id']: r})
 
         # icon list
@@ -263,8 +224,6 @@ class Domocontrol:
         res = self.db.query(q)
         self.P = {}
         for r in res:
-            # self.P[r['id']] = r
-            # self.P[r['id']].update({'IN': r['inverted'], 'OUT': 0})
             self.P.update({r['id']: r})
             self.P[r['id']].update({'TA': 0})
 
@@ -294,14 +253,6 @@ class Domocontrol:
         for r in res:
             self.A['io_type'].update({r['id']: r})
 
-        # Board informations
-        q = 'SELECT * FROM board WHERE enable = 1'
-        res = self.db.query(q)
-        self.A['board'] = {}
-        for r in res:
-            self.A['board'].update({r['id']: r})
-            OutChange[r['id']] = {}
-
         # Board_type informations
         q = 'SELECT * FROM board_type'
         res = self.db.query(q)
@@ -322,85 +273,9 @@ class Domocontrol:
         print("End Domocontrol Setup")
 
 
-    def getDict(self, dict):  # Ritorna i Dict chiamati da web.py
-        return eval(dict)
+    def getData(self, data):  # Ritorna il dato richiesto chiamato da web.py
+        return eval(data)
 
-
-
-    def setupI2C(self):  # function to setup initial values of board
-        for board_id in self.A['board']:
-            if self.A['board'][board_id]['board_type_id'] == 1:  # I2C standard 8 bit
-                pass
-            elif self.A['board'][board_id]['board_type_id'] == 2:  # RS485
-                pass
-            elif self.A['board'][board_id]['board_type_id'] == 3:  # WEB
-                pass
-            elif self.A['board'][board_id]['board_type_id'] == 4:  # SHT21
-                pass
-            elif self.A['board'][board_id]['board_type_id'] == 5:  # PCA9535 16 I/O expander
-                read_byte_0 = 0x0
-                read_byte_1 = 0x1
-                output_port_0 = 0x2
-                output_port_1 = 0x3
-                polarity_inversion_port_0 = 0x4
-                polarity_inversion_port_1 = 0x5
-                configure_RW_port_0 = 0x6
-                configure_RW_port_1 = 0x7
-                bus = smbus.SMBus(self.i2c)
-
-                for board_id in self.A['board']:
-                    if self.A['board'][board_id]['board_type_id'] == 5:  # PCA9535 16 I/O
-                        bus.write_byte_data(int(self.A['board'][board_id]['address']), polarity_inversion_port_0, 0)
-                        bus.write_byte_data(int(self.A['board'][board_id]['address']), polarity_inversion_port_1, 0)
-                        bus.write_byte_data(int(self.A['board'][board_id]['address']), configure_RW_port_0, 0)
-                        bus.write_byte_data(int(self.A['board'][board_id]['address']), configure_RW_port_1, 0)
-                        """
-                        for x in range(0,255):
-                            bus.write_byte(int(self.A['board'][board_id]['address']), x)
-
-                            val = bus.read_byte_data(int(self.A['board'][board_id]['address']), 0)
-                            print bin(val)
-                            time.sleep(0.01)
-                        """
-
-    def getDict1(self, dictionary, reloadDict=False):  # Send DICT to web.py when request. If Dict is equal, send empty.
-        # print self.P[4]
-        if dictionary == 'P':
-            if self.PCopy == self.P and reloadDict is False:
-                # print "P Uguale"
-                return {}
-            else:
-                # print "P diverso"
-                self.PCopy = copy.deepcopy(self.P)
-                return self.P
-
-        elif dictionary == 'A':
-            if self.A == self.ACopy and reloadDict is False:
-                return {}
-            else:
-                self.ACopy = copy.deepcopy(self.A)
-                return self.A
-
-        elif dictionary == 'IO':
-            if self.IO == self.IOCopy and reloadDict is False:
-                return {}
-            else:
-                self.IOCopy = copy.deepcopy(self.IO)
-                return self.IO
-
-        elif dictionary == 'B':
-            if self.B == self.BCopy and reloadDict is False:
-                return {}
-            else:
-                self.BCopy = copy.deepcopy(self.B)
-                return self.B
-
-        elif dictionary == 'C':
-            if self.C == self.CCopy and reloadDict is False:
-                return {}
-            else:
-                self.CCopy = copy.deepcopy(self.C)
-                return self.C
 
     # New Version #
     # dictionary definition:
@@ -481,7 +356,7 @@ class Domocontrol:
                 address += 1
 
 
-
+    """
     def updateOut(self):
 
         for pid, data in self.P.iteritems():
@@ -581,6 +456,7 @@ class Domocontrol:
                 byte = self.setBit(self.IO['io'][out_board_id]['value'], out_address, out_status)
                 if byte != self.IO['io'][out_board_id]['value']:
                     self.setIO(out_board_id, byte)
+    """
 
     def counter(self):
         """
@@ -622,27 +498,19 @@ class Domocontrol:
         """
         return 1 if (byteval & (1 << idx)) != 0 else 0
 
-    def setBit(self, byte, index, x):  # forse non serve e si puo' cancellare
+    def setBit(self, byte, index, x):
         """
         Set bit of byte to x
         Setta a 0 o a 1 il bit di un byte
         Example:  (0b0000, 2, 1) = 0b0100
         Example:  (0b0111, 2, 0) = 0b0011
         """
-        byte = int(byte)
-        index = int(index)
         mask = 1 << index
-        byte &= mask
-
+        # print byte, mask, x
         if x:
             byte |= mask
-        return byte
+        else:
+            byte ^= mask
 
-    def setIO(self, board_id, byte):
-        """
-        Set I2C status
-        """
-        board_address = self.A['board'][board_id]['address']
-        # print board_address, board_id
-        bus = smbus.SMBus(self.i2c)
-        bus.write_byte(board_address, byte)
+        # print byte, mask, x
+        return byte

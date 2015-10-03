@@ -94,11 +94,10 @@ def getTime():
 reloadD = False
 def event_menu_status():
     """
-        Send data to menu_status by server sent event (SSE)
-        For something more intelligent, take a look at Redis pub/sub
-        stuff. A great example can be found here https://github.com/jakubroztocil/chat
+    Send data to menu_status by server sent event (SSE)
+    For something more intelligent, take a look at Redis pub/sub
+    stuff. A great example can be found here https://github.com/jakubroztocil/chat
     """
-
     print "event_menu_status"
     while True:
         global reloadD
@@ -107,8 +106,9 @@ def event_menu_status():
         else:
             request = False
 
-        IOVal = d.getDict('IOVal')
-        A = d.getDict('A')
+        IOVal = d.getData('self.l_board_bin_val')
+        # print "IO:", IOVal
+        A = d.getData('A')
 
         # IO = d.getDict('IO', reloadDict=request)
         # A = d.getDict('A', reloadDict=request)
@@ -141,7 +141,7 @@ def test_message(message):
 
 @socketio.on('change_menu_status', namespace='/menu_status')
 def change_menu_statuse(message):
-    d.setOutVal(message)  # Chama la funzione che aggiorna il dict con il vaore del tasto premuto
+    d.setClickData(message)  # Chama la funzione che aggiorna il dict con il vaore del tasto premuto
 reloadD = False
 
 
@@ -425,7 +425,7 @@ def setup_board_io():
     all_board = db.query(q)
     q = 'SELECT * FROM area ORDER BY id'
     area = db.query(q)
-    d.setupDict()  # reload database
+    d.initialize()  # reload database
 
     icon = d.A['icon']
     print icon
@@ -489,7 +489,7 @@ def setup_program():
                 'VALUES("{}", "{}", "{}", "{}", "{}", "{}", "{}", "{}", "{}")'.format(f['in_id'], inverted, f['out_id'], f['type_id'], f['name'], f['description'], enable, timer, chrono)
         print q
         db.query(q)
-        d.setupDict()
+        d.initialize()
         # d.loop()
 
     elif request.method == "POST" and 'btn' in request.form.to_dict() and request.form.to_dict()['btn'] == 'Delete':
@@ -498,7 +498,7 @@ def setup_program():
         q = 'DELETE FROM program WHERE id="{}" '.format(f['id'])
         # print(q)
         db.query(q)
-        d.setupDict()
+        d.initialize()
 
     elif request.method == "POST" and [s for s in request.form.to_dict() if "delete_chrono" in s]:
         print('Delete Chrono in Program Form')
@@ -512,7 +512,7 @@ def setup_program():
         chrono = ';'.join(chrono)  # convert list to string
         q = 'UPDATE program SET chrono="{}" WHERE id="{}"'.format(chrono, f['id'])
         db.query(q)
-        d.setupDict()
+        d.initialize()
     q = 'SELECT * FROM program'
     res = db.query(q)
     timer = res[0]['timer'].split('-')
@@ -728,53 +728,26 @@ def counter(start='y'):
     else:
         threading.Timer(1, counter).cancel()
 
+def getIO(start='y'):  # To update board IO values
 
-
-def getInputs(start='y'):  # To update board IO values
-    timebegin = now()
     try:
-        d.getInputs()
-        pass
+        timebegin = now()
+        d.getIO()
+        print "getIO ==>> ", now() - timebegin
     except:
-        print('Error Domocontrol.py getInputs')
+        print('Error Domocontrol.py getIn')
         traceback.print_exc()
     if start == 'y':
-        threading.Timer(1, getInputs).start()
+        threading.Timer(1, getIO).start()
     else:
-        threading.Timer(1, getInputs).cancel()
-    # print "IOStatus ==>> ", now() - timebegin, "\n\n"
-
-def setOutputs(start='y'):  # To update board IO values
-    timebegin = now()
-    try:
-        d.setOutputs()
-        pass
-    except:
-        print('Error Domocontrol.py getInputs')
-        traceback.print_exc()
-    if start == 'y':
-        threading.Timer(1, setOutputs).start()
-    else:
-        threading.Timer(1, setOutputs).cancel()
-    # print "IOStatus ==>> ", now() - timebegin, "\n\n"
+        threading.Timer(1, getIO).cancel()
 
 if __name__ == '__main__':
-    getInputs()
-    setOutputs()
+    getIO()
+    # setOutputs()
     counter()  # decrement timer (IO['timer'])
 
     app.debug = 1
     socketio.run(app, port=8000, host='0.0.0.0')
-    # WSGIServer(('', 5000), app).serve_forever()
-    # try:
-        # app.run(host="0.0.0.0", port=5000, debug=False)
-        # socketio = SocketIO(app)
-        # app.debug = False
-        # app.host = '0.0.0.0'
-        # app.debug = False
-        # server = WSGIServer(("0.0.0.0", 5000), app)
-        # server.serve_forever()
-        #
-    # except:
-        # pass
+
     print "FINE"

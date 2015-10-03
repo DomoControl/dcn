@@ -24,8 +24,6 @@
             debug = '';
             A = {}; //Dict with all other data
             ACopy = {};
-            IO = {};
-            IOCopy = {};
 
             var reloadDictA = '';
             var reloadDictIO='';
@@ -61,20 +59,26 @@
                 for( var a in area){
                     f += '<div style="clear:both;"  >'+ area[a]["description"] +'</div>';
                     for( var bio in area_board_io ){
+                        // f += bio;
                         // f += '<br>************'+ area_board_io[bio]['board_io_name'] + '*******<br>'
                         // debug += '<p>' + JSON.stringify(area_board_io[bio]) + '</p>';
 
                         board_id = area_board_io[bio]['board_io_board_id'];
+                        board_type = area_board_io[bio]['board_io_io_type_id']
                         board_io_address = area_board_io[bio]['board_io_address'];
                         id = area_board_io[bio]['board_io_id'];
-                        In = IOVal[board_id][board_io_address];//[board_id][board_io_address] //status value
-                        type_id = area_board_io[bio]['board_io_io_type_id']
-
 
                         if(area_board_io[bio]['area_id'] == area[a]['id']) {
 
 
-                            f += '<div style="border:1px dotted gray;" class="sensor"  onClick="sendEvent('+[board_id, board_io_address, In]+')" >';
+                            if (board_type == '4' || board_type == '5') {
+                                In = IOVal[board_id];
+                            } else {
+                                In = ((IOVal[board_id] & (1 << board_io_address)) > 0) ? 1 : 0;
+                            }
+
+
+                            f += '<div style="border:1px dotted gray;" class="sensor" onClick="sendEvent('+[board_id, board_io_address, In]+')" >';
                             f += '<span title="'+ area_board_io[bio]['board_io_description'] +'">'+area_board_io[bio]['board_io_name']+'</span><br>';
 
                             if(In == 0){
