@@ -106,9 +106,11 @@ def event_menu_status():
         else:
             request = False
 
-        IOVal = d.getData('self.l_board_bin_val')
+        l_board_bin_val = d.getData('self.l_board_bin_val')
+        t_board_id = d.getData('self.t_board_id')
         # print "IO:", IOVal
         A = d.getData('A')
+
 
         # IO = d.getDict('IO', reloadDict=request)
         # A = d.getDict('A', reloadDict=request)
@@ -116,7 +118,7 @@ def event_menu_status():
         area_board_io = A['area_board_io']
         area = A['area']
         # print IOVal
-        socketio.emit('my response', {'IOVal': IOVal, 'area_board_io': area_board_io, 'area': area}, namespace='/menu_status')
+        socketio.emit('my response', {'IOVal': l_board_bin_val, 'area_board_io': area_board_io, 'area': area, 't_board_id': t_board_id }, namespace='/menu_status')
         time.sleep(0.5)
 
 
@@ -361,8 +363,9 @@ def checkEnable(id, enable=0):
     P = d.P
     A = d.A
 
-    io_type_id = A['board_io'][int(id)]['io_type']['id']
-    # print "io_type_id: ", io_type_id
+    io_type_id = A['board_io'][id]['io_type']
+
+    print "io_type_id: ", io_type_id
     if A['io_type'][io_type_id]['type'] == 0:
         type = 'out_id'
     else:
@@ -742,9 +745,22 @@ def getIO(start='y'):  # To update board IO values
     else:
         threading.Timer(1, getIO).cancel()
 
+def setProg(start='y'):  # To update Program
+    try:
+        timebegin = now()
+        d.setProg()
+        # print "setProg ==>> ", now() - timebegin
+    except:
+        print('Error Domocontrol.py setProg')
+        traceback.print_exc()
+    if start == 'y':
+        threading.Timer(1, setProg).start()
+    else:
+        threading.Timer(1, setProg).cancel()
+
 if __name__ == '__main__':
     getIO()
-    # setOutputs()
+    setProg()
     counter()  # decrement timer (IO['timer'])
 
     app.debug = 1

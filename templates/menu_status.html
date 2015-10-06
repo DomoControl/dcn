@@ -36,7 +36,7 @@
                 area = dict.area;
                 area_board_io = dict.area_board_io;
                 IOVal = dict.IOVal; //Dict with input value
-
+                t_board_id = dict.t_board_id;
 
                 // //~ debug = JSON.stringify(IOCopy);
 
@@ -52,18 +52,25 @@
 
                 f = '';
                 debug = '';
-                // debug += JSON.stringify(area_board_io[13])
+                // debug += JSON.stringify(area_board_io[39])
                 // debug += JSON.stringify(IOVal);
                 // debug += Object.keys(area_board_io).length
+                // debug += '<br>';
+                // debug += IOVal;
+                // debug += '<br>';
+                // debug += t_board_id;
+                // debug += t_board_id.indexOf(1);
+
                 n = 0;
                 for( var a in area){
                     f += '<div style="clear:both;"  >'+ area[a]["description"] +'</div>';
                     for( var bio in area_board_io ){
                         // f += bio;
+                        // f += ' ';
                         // f += '<br>************'+ area_board_io[bio]['board_io_name'] + '*******<br>'
                         // debug += '<p>' + JSON.stringify(area_board_io[bio]) + '</p>';
 
-                        board_id = area_board_io[bio]['board_io_board_id'];
+                        board_id = t_board_id.indexOf(area_board_io[bio]['board_io_board_id']);
                         board_type = area_board_io[bio]['board_io_io_type_id']
                         board_io_address = area_board_io[bio]['board_io_address'];
                         id = area_board_io[bio]['board_io_id'];

@@ -26,11 +26,20 @@ AND      OR     XOR
 IOThread=[0, 0, 0, 0...] -> Lista dei Thread attivi che testano il valore in ingresso delle schede
 0 se thread non è attivo, 1 se è attivo
 
+Tupla noard number:
+(0, 1, 2, 3, 4, 5)  # self.t_board_n
+ |  |  |Terza board
+ |  |Seconda board
+ |Prima board
+
 Tupla ID board:
-(0, 1, 2, 3, 4, 5)  # self.t_board_id
+(1, 2, 3, 4, 5, 6)  # self.t_board_id
 
 Tupla indirizzi board:
 (0, 32, 33, 0, 40, 39)  # self.t_board_address
+
+Tupla board[type_id] board:
+(1, 2, 3, 4, 5, 6)  # self.t_board_type_id
 
 Tupla self.t_board_type
 (0, 1, 1, 3, 4, 5, 6)  # Tipo di board: 0:null, 1:I2C, 2:RS485, 3:WEB, 4:SHT21 temperature, 5:PD9535, 6:SHT humidity
@@ -54,3 +63,6 @@ Tupla self.t_board_io_id:
 
 Lista self.l_board_io_val:  # contiene i valori dei vari I/O
 [[], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0], []]
+
+
+self.PThread -> Lista dei Thread attivi del programma
