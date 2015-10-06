@@ -12,6 +12,12 @@ See also INSTALL.md to other informations.
 
 if you are interested in the development of this project, you're welcome.
 
-You can view the demo at this address: my-tek.no-ip.org:5000
+You can view the demo at this address: domocontrol.ddns.net:5000
+
+Forum at www.domocontrol.info
+Demo (when active): domocontrol.ddns.net:5000
 
 Thank you
+Luca Subiaco
+subluca at gmail . com
+
