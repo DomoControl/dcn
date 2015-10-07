@@ -36,7 +36,7 @@
                 area = dict.area;
                 area_board_io = dict.area_board_io;
                 IOVal = dict.IOVal; //Dict with input value
-                t_board_id = dict.t_board_id;
+                board_id = dict.board_id;
 
                 // //~ debug = JSON.stringify(IOCopy);
 
@@ -58,8 +58,8 @@
                 // debug += '<br>';
                 // debug += IOVal;
                 // debug += '<br>';
-                // debug += t_board_id;
-                // debug += t_board_id.indexOf(1);
+                // debug += board_id;
+                // debug += board_id.indexOf(1);
 
                 n = 0;
                 for( var a in area){
@@ -70,7 +70,7 @@
                         // f += '<br>************'+ area_board_io[bio]['board_io_name'] + '*******<br>'
                         // debug += '<p>' + JSON.stringify(area_board_io[bio]) + '</p>';
 
-                        board_id = t_board_id.indexOf(area_board_io[bio]['board_io_board_id']);
+                        bid = board_id.indexOf(area_board_io[bio]['board_io_board_id']);
                         board_type = area_board_io[bio]['board_io_io_type_id']
                         board_io_address = area_board_io[bio]['board_io_address'];
                         id = area_board_io[bio]['board_io_id'];
@@ -79,13 +79,13 @@
 
 
                             if (board_type == '4' || board_type == '5') {
-                                In = IOVal[board_id];
+                                In = IOVal[bid];
                             } else {
-                                In = ((IOVal[board_id] & (1 << board_io_address)) > 0) ? 1 : 0;
+                                In = ((IOVal[bid] & (1 << board_io_address)) > 0) ? 1 : 0;
                             }
 
 
-                            f += '<div style="border:1px dotted gray;" class="sensor" onClick="sendEvent('+[board_id, board_io_address, In]+')" >';
+                            f += '<div style="border:1px dotted gray;" class="sensor" onClick="sendEvent('+[bid, board_io_address, In]+')" >';
                             f += '<span title="'+ area_board_io[bio]['board_io_description'] +'">'+area_board_io[bio]['board_io_name']+'</span><br>';
 
                             if(In == 0){
@@ -105,8 +105,8 @@
                 document.getElementById('debug').innerHTML = debug;
                 });
 
-                sendEvent = function(board_id, board_id_address, In) {
-                    socket.emit('change_menu_status', [board_id, board_id_address, In]);
+                sendEvent = function(bid, board_id_address, In) {
+                    socket.emit('change_menu_status', [bid, board_id_address, In]);
                     return false;
                 };
 

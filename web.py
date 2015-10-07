@@ -106,9 +106,9 @@ def event_menu_status():
         else:
             request = False
 
-        l_board_bin_val = d.getData('self.l_board_bin_val')
-        t_board_id = d.getData('self.t_board_id')
-        # print "IO:", IOVal
+        board_bin_val = d.getData('self.board_bin_val')
+        board_id = d.getData('self.board_id')
+        # print "IO:", board_bin_val, board_id
         A = d.getData('A')
 
 
@@ -118,7 +118,7 @@ def event_menu_status():
         area_board_io = A['area_board_io']
         area = A['area']
         # print IOVal
-        socketio.emit('my response', {'IOVal': l_board_bin_val, 'area_board_io': area_board_io, 'area': area, 't_board_id': t_board_id }, namespace='/menu_status')
+        socketio.emit('my response', {'IOVal': board_bin_val, 'area_board_io': area_board_io, 'area': area, 'board_id': board_id }, namespace='/menu_status')
         time.sleep(0.5)
 
 
