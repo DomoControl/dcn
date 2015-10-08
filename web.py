@@ -109,11 +109,7 @@ def event_menu_status():
         board_bin_val = d.getData('self.board_bin_val')
         board_id = d.getData('self.board_id')
         # print "IO:", board_bin_val, board_id
-        A = d.getData('A')
-
-
-        # IO = d.getDict('IO', reloadDict=request)
-        # A = d.getDict('A', reloadDict=request)
+        A = d.getData('self.A')
         reloadD = False
         area_board_io = A['area_board_io']
         area = A['area']
@@ -131,7 +127,7 @@ def menu_status():
     if thread is None:
         thread = Thread(target=event_menu_status)
         thread.start()
-    return render_template("menu_status.html")
+    return render_template("menu_status.html", msg_type = '', msg = '')
 
 
 @socketio.on('menu_status_back', namespace='/menu_status')
@@ -180,8 +176,8 @@ def menu_program():
     if permission: return redirect(url_for(permission))
 
     if int(session['privilege'][0: 1]) == 0 and int(session['privilege'][1: 2]) == 0:
-        error = 'Insufficient privilege for Setup Status Menu!'
-        return render_template("no_permission.html", error=error)
+        msg = 'Insufficient privilege for Setup Status Menu!'
+        return render_template("no_permission.html", msg_type = 'danger', msg = msg)
     global thread
     if thread is None:
         thread = Thread(target=event_menu_program)
@@ -353,30 +349,17 @@ def setup_board():
     return render_template("setup_board.html", data=res, board_type=board_type)
 
 
-def checkEnable(id, enable=0):
+def checkEnable(id):
     """
     Controlla se board_io_id e' usato nel programma.
-    Deve essere passato board_io.id e board_io.enable
+    Solo un ingresso per programma
     """
-    if enable == 1:
-        return 'ok'
-    P = d.P
-    A = d.A
-
-    io_type_id = A['board_io'][id]['io_type']
-
-    print "io_type_id: ", io_type_id
-    if A['io_type'][io_type_id]['type'] == 0:
-        type = 'out_id'
+    P = d.getData('self.prog_in_id')
+    print "****************", P, id in P
+    if id in P:
+        return 1
     else:
-        type = 'in_id'
-
-    for r in P:
-        print "Type ==>>: ", P[r][type], id
-        if int(P[r][type]) == int(id):
-            print "Program ID corrispondente: ", P[r]['id']
-            return P[r]['id']
-    return 'ok'
+        return 0
 
 
 @app.route('/setup_board_io', methods=["GET", "POST"])
@@ -394,7 +377,8 @@ def setup_board_io():
             else:
                 enable = 0
             print 'f["id"]: ', f["id"], '  ', "enable:", enable
-            if checkEnable(f["id"], enable) != 'ok':
+
+            if checkEnable(f["id"] ):  # Controlla se l'ingresso e' gia' stato usato
                 error = "Cannot disable I/O used in setup_board_io because it is used into Program n. %s. First delete program or change IN/OUT into it." % (checkEnable(f["id"], enable))
             else:
                 q = 'UPDATE board_io SET id="{}", io_type_id="{}", name="{}", description="{}", area_id="{}", enable="{}", board_id="{}", address="{}", icon_on="{}", icon_off="{}" WHERE id="{}"'\
@@ -408,9 +392,10 @@ def setup_board_io():
                 enable = 0
             q = 'INSERT INTO board_io (io_type_id, name, description, area_id, enable, board_id, address) VALUES ("{}", "{}", "{}", "{}", "{}", "{}", "{}")'\
                 .format(f['io_type_id'], f["name"], f["description"], f["area_id"], enable, f['board_id'], f["address"])
+            print q
             db.query(q)
         elif f['submit'] == 'Delete':
-            if checkEnable(f["id"]) == 0:
+            if checkEnable(f["id"]):
                 error = 'Cannot delete I/O used in Program, first change Program '
             else:
                 q = "DELETE FROM board_io WHERE id={}".format(f['id'])
@@ -455,9 +440,7 @@ def setup_program():
     if permission: return redirect(url_for(permission))
 
     setLog()
-    # Test is user is logged
-    if not 'logged_in' in session and session['logged_in'] == True:
-        return render_template("login.html")
+
     if request.method == "POST" and 'btn' in request.form.to_dict() and (request.form.to_dict()['btn'] == 'Save' or request.form.to_dict()['btn'] == 'Copy'):
         print('Save or New Program Form')
         f = request.form.to_dict()
@@ -584,10 +567,11 @@ def setup_user():
     # userEdit = variabile dell'utente che deve essere modificato
     # sesseion['userEdit'] = variabile di sessione
     f = request.form
-    message = ''
+    msg = msg_type = ''
     if request.method == "POST" and 'submit' in f and f['submit'] == 'Save':
         if len(f['password']) <= 2 or f['password'] != f['passwordRetype']:  # Check if psw is too short
-            message = "Password too short or not equal!"
+            msg = "Password too short or not equal!"
+            msg_type = 'danger'
             userEdit = session['userEdit']
         else:
             pLog = 1 if 'pLog' in f else 0
@@ -606,7 +590,8 @@ def setup_user():
                         priv += 1
                 print priv, session['privilege'], int(session['privilege']) >= 128
                 if int(session['privilege']) >= 128 and priv < 2:  # Si sta modificando un Administrator
-                    message = 'There is be at least one administrator user!'
+                    msg = 'There is be at least one administrator user!'
+                    msg_type = 'danger'
                     pAdmin = 128
 
             privilege = pLog + pViewer + pSetup + pAdmin  # calculates privileges to insert into database
@@ -624,28 +609,34 @@ def setup_user():
                 session['sessionTimeout'] = f['sessiontime']
 
             userEdit = session['userEdit'] = f['user_id']
-            message = 'User save!' if not message else message
+            msg = 'User save!' if not msg else msg
+            msg_type = 'success' if not msg_type else msg_type
 
     elif 'submit' in f and f['submit'] == 'Edit':  # If other user
         session['userEdit'] = f['users']
         userEdit = session['userEdit']
-        message = 'User edit!'
+        msg = 'User edit!'
+        msg_type = 'info'
     elif 'submit' in f and f['submit'] == 'Delete':  # Delete other user
         if int(session['user_id']) == int(f['users']):
-            message = 'You are logged and cannot autoremove!'
+            msg = 'You are logged and cannot autoremove!'
+            msg_type = 'warning'
         else:
             q = 'DELETE FROM user WHERE id = %s' % (f['users'])
             db.query(q)
-            message = 'User Delete!'
+            msg = 'User Delete!'
+            msg_type = 'success'
         userEdit = f['user_id']
     elif 'submit' in f and f['submit'] == 'New':  # Create new user
         q = 'INSERT INTO user ("username","name","surname","password","privilege","session","lang") VALUES ("-","-","-","-","0000","300","en")'
         userEdit = db.query(q)
-        message = 'New User!'
+        msg = 'New User!'
+        msg_type = 'info'
         print "NEW USER userEdit", userEdit
     else:
         userEdit = session['user_id']
-        message = 'User edit!'
+        msg = 'User edit!'
+        msg_type = 'warning'
 
     q = 'SELECT * FROM user WHERE id = {}'.format(userEdit)  # get current user information
     db_user = db.query(q)[0]
@@ -663,7 +654,7 @@ def setup_user():
     print userEdit, userPr & 1, userPr & 2, userPr & 4, userPr & 128, session['privilege']
     return render_template(
         "setup_user.html", user=db_user, privilege=db_privilege, pLog=userPr & 1 > 0, pViewer=userPr & 2 > 0,
-        pSetup=userPr & 4 > 0, pAdmin=userPr & 128 > 0, message=message, users=db_users, sessionPrivilege=int(session['privilege'])
+        pSetup=userPr & 4 > 0, pAdmin=userPr & 128 > 0, users=db_users, sessionPrivilege=int(session['privilege']), msg_type=msg_type, msg=msg
     )
 
 

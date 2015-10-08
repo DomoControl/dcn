@@ -19,7 +19,6 @@ class Domocontrol:
         self.db = Database()
         self.i2c = 0
         self.getBusValue()
-        self.P = {}
         self.A = {}
         self.IOThread = []
         self.board_n = ()
@@ -34,6 +33,13 @@ class Domocontrol:
         self.prog_n = ()
         self.prog_id = ()
         self.prog_type_id = ()
+        self.prog_in_id = ()
+        self.prog_out_id = ()
+        self.prog_inverted = ()
+        self.prog_timer = ()
+        self.prog_chrono = ()
+        self.prog_enable = ()
+
         self.board_IO_definition = ()
         self.dir_root = os.path.dirname(os.path.abspath(__file__))
         self.initialize()
@@ -83,13 +89,13 @@ class Domocontrol:
         elif board_type_id == 2:  # RS485
             pass
         elif board_type_id == 3:  # Web
-            print board_n, self.board_changerequest, self.board_bin_onchange, self.board_IO_definition
+            # print board_n, self.board_changerequest, self.board_bin_onchange, self.board_IO_definition
 
             if self.board_changerequest[board_n] == 1:
                 self.board_bin_val[board_n] = self.board_bin_onchange[board_n]
                 self.board_changerequest[board_n] = 0
 
-            print board_n, self.board_changerequest, self.board_bin_onchange, self.board_IO_definition
+            # print board_n, self.board_changerequest, self.board_bin_onchange, self.board_IO_definition
 
         elif board_type_id == 4 or board_type_id == 6:  # Temperature + humidity
             temperature = round(sht21.SHT21(self.i2c).read_temperature(), 1)
@@ -126,7 +132,6 @@ class Domocontrol:
 
     def ProgThread(self, prog_id, prog_type_id, prog_n):
         threading.Thread(target=self.runProg, args=(prog_id, prog_type_id, prog_n)).start()
-
 
 
     def setProg(self):
@@ -175,7 +180,6 @@ class Domocontrol:
         Imposta il valore di tutti i dizionari per il corretto funzionamento
         """
         global A
-        global P
         print 'Start Domocontrol Setup'
         q = 'SELECT * FROM board ORDER BY id'
         res = self.db.query(q)
@@ -254,9 +258,6 @@ class Domocontrol:
         print 'self.board_io_val :', self.board_io_val
         """
 
-
-
-
         q = 'SELECT * FROM board'
         res = self.db.query(q)
         self.A['board'] = {}
@@ -276,27 +277,45 @@ class Domocontrol:
         self.A['icon'] = files
         q = """SELECT id, in_id, delay, inverted, out_id, type_id, name, description, timer, chrono, enable
             FROM program
-            WHERE enable = 1
             """
         res = self.db.query(q)
-        self.P = {}
         self.PThread = []
         prog_n = []
         prog_id = []
         prog_type_id = []
+        prog_in_id = []
+        prog_out_id = []
+        prog_inverted = []
+        prog_timer = []
+        prog_chrono = []
+        prog_enable = []
         n = 0
         for r in res:
-            self.P.update({r['id']: r})
             self.PThread.append(0)
             prog_n.append(n)
             prog_id.append(r['id'])
             prog_type_id.append(r['type_id'])
-
-            self.P[r['id']].update({'TA': 0})
+            prog_in_id.append(r['in_id'])
+            prog_out_id.append(r['out_id'])
+            prog_inverted.append(r['inverted'])
+            prog_timer.append(r['timer'])
+            prog_chrono.append(r['chrono'])
+            prog_enable.append(r['enable'])
             n += 1
-        self.prog_type_id = tuple(prog_type_id)
+
         self.prog_n = tuple(prog_n)
         self.prog_id = tuple(prog_id)
+        self.prog_type_id = tuple(prog_type_id)
+        self.prog_in_id = tuple(prog_in_id)
+        self.prog_out_id = tuple(prog_out_id)
+        self.prog_inverted = tuple(prog_inverted)
+        self.prog_timer = tuple(prog_timer)
+        self.prog_chrono = tuple(prog_chrono)
+        self.prog_enable = tuple(prog_enable)
+
+        print self.prog_n, self.prog_id, self.prog_type_id, \
+            self.prog_in_id, self.prog_out_id, self.prog_inverted, \
+            self.prog_timer, self.prog_chrono, self.prog_enable
 
         q = 'SELECT id, name, description, sort FROM area ORDER BY sort'
         res = self.db.query(q)
@@ -328,8 +347,7 @@ class Domocontrol:
         for r in res:
             self.A['program_type'].update({r['id']: r})
 
-        A = self.A
-        P = self.P
+        # A = self.A
 
         self.default()  # Chiama la funzione per settare gli stati degli IO come da default
 
@@ -383,9 +401,8 @@ class Domocontrol:
         """
         Funzione che decrementa i timer interni al programma
         """
-        for p in self.P:
-            if self.P[p]['TA'] > 0:
-                self.P[p]['TA'] -= 1
+        pass
+
 
     def getBitValue(self, byteval, idx):
         """

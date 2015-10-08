@@ -49,3 +49,34 @@ self.board_changerequest -> Chede che devono subire una modifica
 
 =============== PROGRAM ==============
 self.PThread -> Lista dei Thread attivi del programma
+
+self.prog_n
+(0, 1)
+ |  |
+ |  |Secondo programma
+ |Primo programma
+
+self.prog_id -> ID dei programmi abilitati
+(3, 4)
+
+self.prog_type_id -> tipo di programma
+(4, 4)
+
+self.prog_in_id -> in_id
+(1, 2)
+
+self.prog_out_id -> out_id
+
+self.prog_inverted -> inverted output
+
+self.prog_timer -> timer
+
+self.prog_chrono -> Chrono
+
+self.prog_enable ->program enable
+
+
+-------------------------------------------
+Avviso Massaggi:
+msg_type = 'danger'  -> Primary (blue), Success (lightgreen), Info (lightblue), Warning (Yellow), Danger (Red)
+msg = 'bla bla bla'  -> Messaggio da scrivere sulla pagina
