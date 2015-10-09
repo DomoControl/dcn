@@ -81,11 +81,11 @@
 
                 <div class="col-md-12">
                     {% if msg_type == 'primary' %}
-                        <h4 class="bg-primary center">Primary: {{ msg }} </h4>
+                        <h4 style="text-align: center;" class="bg-primary center">Primary: {{ msg }} </h4>
                     {% endif %}
 
                     {% if msg_type == 'success' %}
-                        <h4 class="bg-success">Success: {{ msg }} </h4>
+                        <h4 style="text-align: center;" class="bg-success">Success: {{ msg }} </h4>
                     {% endif %}
 
                     {% if msg_type == 'info' %}
@@ -93,11 +93,11 @@
                     {% endif %}
 
                     {% if msg_type == 'warning' %}
-                        <h3 class="bg-warning">Warning: {{ msg }} </h3>
+                        <h4 style="text-align: center; color: red;" class="bg-warning">Warning: {{ msg }} </h3>
                     {% endif %}
 
                     {% if msg_type == 'danger' %}
-                        <h3 class="bg-danger">Error: {{ msg }} </h3>
+                        <h4 style="text-align: center; color: red;" class="bg-danger">Error: {{ msg }} </h3>
                     {% endif %}
                 </div>
 
@@ -116,7 +116,10 @@
                     {% endif %}
                 </div>
                 <div class="col-md-4">
-                    <div id="time" class="col-md-6"></div>
+
+                </div>
+                <div class="col-md-4">
+                    <div id="time" class="col-md-4"></div>
                 </div>
 
             </div>

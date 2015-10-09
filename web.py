@@ -689,13 +689,15 @@ def login():
             session['sessionTimeout'] = res[0]['session']
             return render_template("hello.html", error='')
         else:
-            message = 'IOValid password or username. Please retry!'
-            return render_template("login.html", message=message)
+            msg = 'IOValid password or username. Please retry!'
+            msg_type = 'warning'
+            return render_template("login.html", msg=msg, msg_type=msg_type)
             session['logged_in'] = None
             session.clear()
     else:
-        message = 'Please enter Username and Password!'
-        return render_template("login.html", message=message)
+        msg = 'Please enter Username and Password!'
+        msg_type = 'info'
+        return render_template("login.html", msg=msg, msg_type=msg_type)
 
 
 @app.errorhandler(404)
@@ -708,19 +710,6 @@ def page_not_found(e):
 def internal_server_error(e):
     print("Error {}" .format(e))
     return render_template('error_page.html', error=e), 500
-
-
-def counter(start='y'):
-    try:
-        d.counter()
-        pass
-    except:
-        print('Error Domocontrol.py counter')
-        traceback.print_exc()
-    if start == 'y':
-        threading.Timer(1, counter).start()
-    else:
-        threading.Timer(1, counter).cancel()
 
 def getIO(start='y'):  # To update board IO values
 
@@ -752,7 +741,6 @@ def setProg(start='y'):  # To update Program
 if __name__ == '__main__':
     getIO()
     setProg()
-    counter()  # decrement timer (IO['timer'])
 
     app.debug = 1
     socketio.run(app, port=8000, host='0.0.0.0')

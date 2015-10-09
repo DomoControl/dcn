@@ -8,9 +8,6 @@ import copy
 import sht21
 import os
 import threading
-OutChange = {}
-A = {}
-P = {}
 
 class Domocontrol:
     """Class DomoControl"""
@@ -29,6 +26,10 @@ class Domocontrol:
         self.board_bin_val = []
         self.board_bin_onchange = []
         self.board_changerequest = []
+        self.board_IO_definition = ()
+        self.board_io_id = ()
+        self.board_io_address = ()
+        self.board_io_board_id = ()
         self.PThread = []
         self.prog_n = ()
         self.prog_id = ()
@@ -39,14 +40,14 @@ class Domocontrol:
         self.prog_timer = ()
         self.prog_chrono = ()
         self.prog_enable = ()
+        self.prog_counter = []
 
-        self.board_IO_definition = ()
         self.dir_root = os.path.dirname(os.path.abspath(__file__))
         self.initialize()
 
     def getBusValue(self):
         """
-        Controlla il numero del divice I2C
+        Controlla il numero del divice I2C, puo' essere 0 o 1....
         """
         print 'Start getBusValue'
         self.device = []
@@ -66,6 +67,9 @@ class Domocontrol:
         return bus.read_byte(board_address)
 
     def write_i2c(self, board_address, val):
+        """
+        Scrive il valore in byte su I2C
+        """
         print board_address, val
         bus = smbus.SMBus(self.i2c)
         bus.write_byte(board_address, val)
@@ -79,7 +83,7 @@ class Domocontrol:
         elif board_type_id == 1:  # I2C
 
             if self.board_changerequest[board_n] == 1:
-                print 'Passa di qui', board_n, self.board_bin_onchange,
+                # print 'Passa di qui', board_n, self.board_bin_onchange,
                 self.board_bin_val[board_n] = self.board_bin_onchange[board_n] | self.board_IO_definition[board_n]
                 self.write_i2c(self.board_address[board_n], self.board_bin_val[board_n])
                 self.board_changerequest[board_n] = 0
@@ -109,6 +113,9 @@ class Domocontrol:
         # print self.board_bin_val, self.board_changerequest, self.board_bin_onchange, board_id, board_type_id
 
     def InThread(self, board_id, board_type, board_n):
+        """
+        Thread che richiama getIO()
+        """
         threading.Thread(target=self.runIO, args=(board_id, board_type, board_n)).start()
 
     def getIO(self):
@@ -122,15 +129,56 @@ class Domocontrol:
                 self.IOThread[self.board_id.index(bid)] = 1
                 self.InThread(bid, self.board_type_id[self.board_id.index(bid)], self.board_id.index(bid))
 
+    def getIOStatus(self, io_id):
+        address = self.board_io_address[self.board_io_id.index(io_id)]
+        board_id = self.board_io_board_id[self.board_io_id.index(io_id)]
+        # print io_id, address, board_id, self.board_bin_val,
+        return self.getBitValue(self.board_bin_val[self.board_id.index(board_id)], address)
+
+    def getBoard_id(self, io_id):
+        return self.board_io_board_id[self.board_io_id.index(io_id)]
+
+    def getBoard_address(self, io_id):
+        return self.board_io_address[self.board_io_id.index(io_id)]
 
     def runProg(self, prog_id, prog_type_id, prog_n):
         """
         Si occupa di leggere e scrivere i valori degli IO
         """
         # print "prog_id:%s, prog_type_id:%s, prog_n:%s" %(prog_id, prog_type_id, prog_n)
-        pass
+        # print prog_n, prog_id, self.prog_id, self.prog_in_id, self.prog_out_id, self.board_bin_val, '\n' , self.board_io_address, '\n' , self.board_io_board_id, '\n' ,self.board_io_id
+
+        in_id = self.prog_in_id[prog_n]
+        out_id = self.prog_out_id[prog_n]
+        in_id_status = self.getIOStatus(in_id)
+        out_id_status = self.getIOStatus(out_id)
+        # print in_id_status, out_id_status, self.board_bin_onchange, self.board_changerequest
+        print 'cambia', self.board_bin_val, self.board_bin_onchange, self.getBoard_address(out_id), in_id_status, self.getBoard_id(out_id)
+        if prog_type_id == 1:  # Timer
+            pass
+        elif prog_type_id == 2:  # Timeout
+            pass
+        elif prog_type_id == 3:  # Automatic
+            pass
+        elif prog_type_id == 4:  # Manual
+            if out_id_status != in_id_status:
+
+                self.board_bin_onchange[self.getBoard_id(out_id)] = self.setBit(self.board_bin_val[self.getBoard_id(out_id)], self.getBoard_address(out_id), in_id_status)
+                self.board_changerequest[self.getBoard_id(out_id)] = 1
+
+
+
+
+        elif prog_type_id == 5:  # Thermostat
+            pass
+
+        print 'cambia', self.board_bin_val, self.board_bin_onchange, self.getBoard_address(out_id), in_id_status, self.getBoard_id(out_id)
+        self.PThread[self.prog_id.index(prog_id)] = 0
 
     def ProgThread(self, prog_id, prog_type_id, prog_n):
+        """
+        Thread che richiama runPro()
+        """
         threading.Thread(target=self.runProg, args=(prog_id, prog_type_id, prog_n)).start()
 
 
@@ -138,13 +186,15 @@ class Domocontrol:
         """
         LOOP si occupa del programma
         """
+        # print self.PThread
         for pid in self.prog_id:
-            # print pid
-            if self.PThread[self.prog_id.index(pid)] == 1:
-                pass
-            else:
-                self.PThread[self.prog_id.index(pid)] = 1
-                self.ProgThread(pid, self.prog_type_id[self.prog_id.index(pid)], self.prog_id.index(pid))
+            # print self.PThread, self.prog_enable, self.prog_n, self.prog_id, pid, self.prog_id.index(pid)
+            if self.prog_enable[self.prog_id.index(pid)]:
+                if self.PThread[self.prog_id.index(pid)]:
+                    pass
+                else:
+                    self.PThread[self.prog_id.index(pid)] = 1
+                    self.ProgThread(pid, self.prog_type_id[self.prog_id.index(pid)], self.prog_id.index(pid))
 
 
 
@@ -164,7 +214,11 @@ class Domocontrol:
         """
         return date.now()
 
-    def default(self):  # Set default value at start program
+    def default(self):
+        """
+        Set default value at start program
+        that is store into database
+        """
         q = 'SELECT * FROM board_io ORDER BY board_id, address'
         res = self.db.query(q)
         for r in res:
@@ -179,7 +233,6 @@ class Domocontrol:
         Funzione di setup
         Imposta il valore di tutti i dizionari per il corretto funzionamento
         """
-        global A
         print 'Start Domocontrol Setup'
         q = 'SELECT * FROM board ORDER BY id'
         res = self.db.query(q)
@@ -263,13 +316,21 @@ class Domocontrol:
         self.A['board'] = {}
         for r in res:
             self.A['board'].update({r['id']: r})
-            OutChange[r['id']] = {}
 
-        q = 'SELECT * FROM board_io'
+        q = 'SELECT * FROM board_io ORDER BY id'
         res = self.db.query(q)
         self.A['board_io'] = {}
+        board_io_id = []
+        board_io_address = []
+        board_io_board_id = []
         for r in res:
             self.A['board_io'].update({r['id']: r})
+            board_io_id.append(r['id'])
+            board_io_address.append(r['address'])
+            board_io_board_id.append(r['board_id'])
+        self.board_io_id = tuple(board_io_id)
+        self.board_io_address = tuple(board_io_address)
+        self.board_io_board_id = tuple(board_io_board_id)
 
 
         icon_path = os.path.join(self.dir_root, 'static/icon')
@@ -289,6 +350,7 @@ class Domocontrol:
         prog_timer = []
         prog_chrono = []
         prog_enable = []
+        prog_counter = []
         n = 0
         for r in res:
             self.PThread.append(0)
@@ -301,6 +363,7 @@ class Domocontrol:
             prog_timer.append(r['timer'])
             prog_chrono.append(r['chrono'])
             prog_enable.append(r['enable'])
+            prog_counter.append(round(time.time(), 1))
             n += 1
 
         self.prog_n = tuple(prog_n)
@@ -312,10 +375,11 @@ class Domocontrol:
         self.prog_timer = tuple(prog_timer)
         self.prog_chrono = tuple(prog_chrono)
         self.prog_enable = tuple(prog_enable)
+        self.prog_counter = tuple(prog_counter)
 
         print self.prog_n, self.prog_id, self.prog_type_id, \
             self.prog_in_id, self.prog_out_id, self.prog_inverted, \
-            self.prog_timer, self.prog_chrono, self.prog_enable
+            self.prog_timer, self.prog_chrono, self.prog_enable, self.prog_counter
 
         q = 'SELECT id, name, description, sort FROM area ORDER BY sort'
         res = self.db.query(q)
@@ -355,54 +419,6 @@ class Domocontrol:
 
     def getData(self, data):
         return eval(data)
-
-    def loop(self):
-        pass
-
-    def getInStatus(self):
-        """
-        Get Byte Status of all board
-        Legge il valore degli ingressi/uscite delle varie schede
-        """
-        for board_id in self.A['board']:
-            board = self.A['board'][board_id]
-            if int(board['board_type_id']) == 1:
-                bus = smbus.SMBus(self.i2c)
-                data = bus.read_byte(int(board['address']))
-                data_old = self.IO['io'][board['id']]['value']
-                if data != data_old:
-                    diff = int(data) ^ int(data_old)
-                    self.IO['io'].update({board['id']: {'value': data,
-                                   'update': diff}})
-            elif int(board['board_type_id']) == 2:
-                self.IO['io'].update({board['id']: 0})
-            elif int(board['board_type_id']) == 3:
-                self.IO['io'].update({board['id']: {'value': 0,
-                               'update': 0}})
-            elif int(board['board_type_id']) == 5:
-                pass
-
-    def updateIO(self):
-        """
-        funzione che aggiorna self.IO['board_io']
-        """
-        for board_id, data in self.IO['io'].iteritems():
-            address = 0
-            while data['update'] > 0:
-                if data['update'] & 1 == 1:
-                    board_io_id = self.M['board_io_m'].get((board_id, address), 0)
-                    if board_io_id > 0:
-                        bit_value = self.getBitValue(data['value'], address)
-                        self.IO['board_io'][board_io_id]['SA'] = bit_value
-                data['update'] = int(data['update']) / 2
-                address += 1
-
-    def counter(self):
-        """
-        Funzione che decrementa i timer interni al programma
-        """
-        pass
-
 
     def getBitValue(self, byteval, idx):
         """
