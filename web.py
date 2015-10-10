@@ -715,8 +715,9 @@ def getIO(start='y'):  # To update board IO values
 
     try:
         timebegin = now()
+        # print "\n------------------------"
         d.getIO()
-        print "getIO ==>> ", now() - timebegin
+        # print "getIO ==>> ", now() - timebegin
     except:
         print('Error Domocontrol.py getIn')
         traceback.print_exc()

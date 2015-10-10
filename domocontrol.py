@@ -17,6 +17,7 @@ class Domocontrol:
         self.i2c = 0
         self.getBusValue()
         self.A = {}
+        self.P = {}
         self.IOThread = []
         self.board_n = ()
         self.board_id = ()
@@ -70,7 +71,7 @@ class Domocontrol:
         """
         Scrive il valore in byte su I2C
         """
-        print board_address, val
+        # print board_address, val
         bus = smbus.SMBus(self.i2c)
         bus.write_byte(board_address, val)
 
@@ -80,15 +81,28 @@ class Domocontrol:
         """
         if board_type_id == 0:  # None
             pass
+
         elif board_type_id == 1:  # I2C
+            board_id_i2c_val = self.read_i2c(self.board_address[board_n])
+
+            # print "==>>", board_n, board_id_i2c_val, self.board_bin_onchange, self.board_bin_val, self.board_changerequest
+
+            if self.board_bin_val[board_n] != board_id_i2c_val:
+                # print "==>>", board_n, board_id_i2c_val, self.board_bin_onchange, self.board_bin_val
+                self.board_bin_onchange[board_n] = board_id_i2c_val
+
+                self.board_changerequest[board_n] = 1
+                pass
+
+
 
             if self.board_changerequest[board_n] == 1:
-                # print 'Passa di qui', board_n, self.board_bin_onchange,
-                self.board_bin_val[board_n] = self.board_bin_onchange[board_n] | self.board_IO_definition[board_n]
-                self.write_i2c(self.board_address[board_n], self.board_bin_val[board_n])
+                self.board_bin_val[board_n] = self.board_bin_onchange[board_n]
+                self.write_i2c(self.board_address[board_n], (self.board_bin_val[board_n] | self.board_IO_definition[board_n]))
                 self.board_changerequest[board_n] = 0
 
-            self.board_bin_val[board_n] = self.read_i2c(self.board_address[board_n])
+            # print "==>>", board_n, board_id_i2c_val, self.board_bin_onchange, self.board_bin_val, self.board_changerequest
+            # print
 
         elif board_type_id == 2:  # RS485
             pass
@@ -141,19 +155,15 @@ class Domocontrol:
     def getBoard_address(self, io_id):
         return self.board_io_address[self.board_io_id.index(io_id)]
 
-    def runProg(self, prog_id, prog_type_id, prog_n):
+    def runProg(self, prog_id, prog_n, P):
         """
         Si occupa di leggere e scrivere i valori degli IO
         """
-        # print "prog_id:%s, prog_type_id:%s, prog_n:%s" %(prog_id, prog_type_id, prog_n)
-        # print prog_n, prog_id, self.prog_id, self.prog_in_id, self.prog_out_id, self.board_bin_val, '\n' , self.board_io_address, '\n' , self.board_io_board_id, '\n' ,self.board_io_id
+        # print P
+        prog_type_id = P['type_id']
 
-        in_id = self.prog_in_id[prog_n]
-        out_id = self.prog_out_id[prog_n]
-        in_id_status = self.getIOStatus(in_id)
-        out_id_status = self.getIOStatus(out_id)
-        # print in_id_status, out_id_status, self.board_bin_onchange, self.board_changerequest
-        print 'cambia', self.board_bin_val, self.board_bin_onchange, self.getBoard_address(out_id), in_id_status, self.getBoard_id(out_id)
+        in_status = self.getIOStatus(P['in_id'])
+        out_status = self.getIOStatus(P['out_id'])
         if prog_type_id == 1:  # Timer
             pass
         elif prog_type_id == 2:  # Timeout
@@ -161,25 +171,22 @@ class Domocontrol:
         elif prog_type_id == 3:  # Automatic
             pass
         elif prog_type_id == 4:  # Manual
-            if out_id_status != in_id_status:
-
-                self.board_bin_onchange[self.getBoard_id(out_id)] = self.setBit(self.board_bin_val[self.getBoard_id(out_id)], self.getBoard_address(out_id), in_id_status)
-                self.board_changerequest[self.getBoard_id(out_id)] = 1
-
-
-
-
+            if in_status != (out_status ^ P['inverted']):
+                self.board_bin_onchange[self.board_id.index(self.getBoard_id(P['out_id']))] = self.setBit(self.board_bin_val[self.board_id.index(self.getBoard_id(P['out_id']))], self.getBoard_address(P['out_id']), in_status ^ P['inverted'])
+                # print "board_id:", self.getBoard_id(P['out_id'])
+                self.board_changerequest[self.board_id.index(self.getBoard_id(P['out_id']))] = 1
+                # print self.board_bin_onchange, self.board_bin_val, self.board_changerequest
         elif prog_type_id == 5:  # Thermostat
             pass
+#
+        # print 'cambia', self.board_bin_val, self.board_bin_onchange, self.getBoard_address(out_id), in_id_status, self.getBoard_id(out_id)
+        self.PThread[prog_n] = 0
 
-        print 'cambia', self.board_bin_val, self.board_bin_onchange, self.getBoard_address(out_id), in_id_status, self.getBoard_id(out_id)
-        self.PThread[self.prog_id.index(prog_id)] = 0
-
-    def ProgThread(self, prog_id, prog_type_id, prog_n):
+    def ProgThread(self, prog_id, prog_n, P):
         """
         Thread che richiama runPro()
         """
-        threading.Thread(target=self.runProg, args=(prog_id, prog_type_id, prog_n)).start()
+        threading.Thread(target=self.runProg, args=(prog_id, prog_n, P)).start()
 
 
     def setProg(self):
@@ -187,14 +194,16 @@ class Domocontrol:
         LOOP si occupa del programma
         """
         # print self.PThread
-        for pid in self.prog_id:
-            # print self.PThread, self.prog_enable, self.prog_n, self.prog_id, pid, self.prog_id.index(pid)
-            if self.prog_enable[self.prog_id.index(pid)]:
-                if self.PThread[self.prog_id.index(pid)]:
+        # print self.P
+        for pid in self.P:
+            prog_n = self.prog_id.index(pid)
+            # print self.PThread, self.prog_enable, self.prog_n, self.prog_id, pid, prog_n
+            if self.prog_enable[prog_n]:
+                if self.PThread[prog_n]:
                     pass
                 else:
-                    self.PThread[self.prog_id.index(pid)] = 1
-                    self.ProgThread(pid, self.prog_type_id[self.prog_id.index(pid)], self.prog_id.index(pid))
+                    self.PThread[prog_n] = 1
+                    self.ProgThread(pid, prog_n, self.P[pid])
 
 
 
@@ -336,11 +345,10 @@ class Domocontrol:
         icon_path = os.path.join(self.dir_root, 'static/icon')
         files = [ fn for fn in os.listdir(icon_path) ]
         self.A['icon'] = files
-        q = """SELECT id, in_id, delay, inverted, out_id, type_id, name, description, timer, chrono, enable
-            FROM program
-            """
+        q = """SELECT * FROM program ORDER BY id"""
         res = self.db.query(q)
         self.PThread = []
+        self.P = {}
         prog_n = []
         prog_id = []
         prog_type_id = []
@@ -353,6 +361,7 @@ class Domocontrol:
         prog_counter = []
         n = 0
         for r in res:
+            self.P.update({r['id']: r})
             self.PThread.append(0)
             prog_n.append(n)
             prog_id.append(r['id'])
