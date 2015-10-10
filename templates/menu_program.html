@@ -1,10 +1,8 @@
 {% extends "template.html"  %}
 {% block content %}
-    <h2>Program status</h2>
-    {% if error %}
-        <p class=error><strong>Error:</strong> {{ error }}
-    {% endif %}
-    
+    <h2>Program program</h2>
+
+
     <style type="text/css">
         #parent {
             display: table;
@@ -13,24 +11,26 @@
             margin: 10px;
             padding-left: 15px;
             padding-right: auto;
-            
-            
+
+
         }
         #child{
             display: table-cell;
             vertical-align: middle;
             padding:5px;
         }
-    </style> 
-               
+    </style>
+
         <script type="text/javascript">
             $(document).ready(function(){
-                
-                debug = '';             
+
+
+
+                debug = '';
                 namespace = '/menu_program';
                 var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
                 f = '';
-   
+
                 A = {}; //Dict with all other data
                 ACopy = {};
                 IO = {};
@@ -39,29 +39,29 @@
                 PCopy = {}
                 var reloadDictA = '';
                 var reloadDictIO='';
-                
+
                 socket.on('connect', function() {
                     socket.emit('menu_program_back', {data1: 'Connect'});
                 });
-                
+
                 socket.on('my response', function(dict) {
-                    
+
                     IOCopy = dict.IO; //Dict with IO status
                     PCopy = dict.P; //P with all data
                     ACopy = dict.A; //Dict with all data
-                    
+
                     //~ debug = JSON.stringify(IOCopy);
-                    
+
                     if(jQuery.isEmptyObject(PCopy) != true){
                         P = $.extend(P, PCopy);
                     }
                     if(Object.keys(ACopy).length>0){
-                        A = $.extend(A, ACopy);           
+                        A = $.extend(A, ACopy);
                     }
                     if(Object.keys(IOCopy).length>0){
-                        IO = $.extend(IO, IOCopy);           
+                        IO = $.extend(IO, IOCopy);
                     }
-                    
+
                     f = '';
                     f += '<div id="parent" >';
                     f += '<div id="child" style="width:130px;">IN</div>';
@@ -70,14 +70,14 @@
                     f += '<div style="text-align:center" id="child" >Type</div>';
                     f += '<div style="text-align:center" id="child" >Description</div>';
                     f += '</div>';
-                    
+
                     for( var p in P ){
                         //~ debug = JSON.stringify(data[d]);
                         //~ debug += JSON.stringify(IO);
                         id = '';
                         f += '<div id="parent" onClick="sendEvent('+P[p]['in_id']+')">';
-                        
-                        
+
+
                         IN_val = IO['board_io'][P[p]['in_id']]['SA'] //status value
                         if(IN_val == 0){
                             f += '<div id="child" style="width:130px;"><input id="target" name="'+id+'" value="'+0+'" type="image" src="static/icon/' + A['board_io'][P[p]['in_id']]['icon_off'] + '" style="height:50px;" ></div>';
@@ -111,28 +111,48 @@
                                 break;
                         }
                         f += '<div style="text-align:center;" id="child">'+P[p]['name']+'<br>'+P[p]['description']+'</div>';
-                        
+
                         f += '</div>';
                         f += '</div>';
                         f += '<div class="clear:both;"></div>';
-                        
-                            
-                        
+
+
+
                     }
 
                     document.getElementById('status').innerHTML = f;
-                    document.getElementById('debug').innerHTML = debug;  
+                    document.getElementById('debug').innerHTML = debug;
                 });
-                
+
                 sendEvent = function(event) {
                     socket.emit('change_menu_program', {id: event});
                     return false;
-                };   
-                
+                };
+
             });
-        
-            
+
+
     </script>
+
+
+    <table width=100% border=1><tr><td>ID</td><td>In ID</td><td>Type ID</td><td>Inverted</td><td>Delay</td><td>Out ID</td></tr>
+    {% for p in P %}
+<!--
+        {{P[p]}}
+-->
+        <tr>
+            <td>{{P[p]['id']}}</td>
+            <td>{{P[p]['in_id']}} <span id=out_id></span></td>
+
+            <td>{{P[p]['type_id']}}</td>
+            <td>{{P[p]['inverted']}}</td>
+            <td>{{P[p]['delay']}}</td>
+            <td>{{P[p]['out_id']}}</td>
+        </tr>
+    {%endfor%}
+    </table>
+
+
 
 <div id="debug"></div>
 <div id="status"></div>

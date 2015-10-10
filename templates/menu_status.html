@@ -107,14 +107,32 @@
                     socket.emit('change_menu_status', [bid, board_id_address, In]);
                     return false;
                 };
-
             });
 
 
     </script>
+{{A['area']}}
+
+
+{% for a in A['area'] %}
+    <div style="clear:both;"  >{{ A['area'][a]['description'] }}</div>
+
+    {% for bio in A['area_board_io'] %}
+        {% if A['area_board_io'][bio]['area_id'] == A['area'][a]['id'] %}
+            <div style='border:1px dotted gray;' class='sensor' onClick='sendEvent("")' >
+<!--
+            <span title="'+ area_board_io[bio]['board_io_description'] +'">'+area_board_io[bio]['board_io_name']+'</span><br>
+-->
+
+            </div>
+        {%endif%}
+    {%endfor%}
+{%endfor%}
+
 
 <div id="debug"></div>
 <div id="status"></div>
 <div id="log"></div>
+
 
 {% endblock %}

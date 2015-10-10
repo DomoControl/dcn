@@ -123,11 +123,13 @@ def menu_status():
     permission = checkPermission(2)  # check login and privilege
     if permission: return redirect(url_for(permission))
 
+    A = d.getData('self.A')
+
     global thread
     if thread is None:
         thread = Thread(target=event_menu_status)
         thread.start()
-    return render_template("menu_status.html", msg_type = '', msg = '')
+    return render_template("menu_status.html", A=A, msg_type='', msg='')
 
 
 @socketio.on('menu_status_back', namespace='/menu_status')
@@ -144,11 +146,6 @@ reloadD = False
 
 
 def event_menu_program():
-    """
-        Send data to menu_program by server sent event (SSE)
-        For something more intelligent, take a look at Redis pub/sub
-        stuff. A great example can be found here https://github.com/jakubroztocil/chat
-    """
     while True:
         global reloadD
         if reloadD:
@@ -164,8 +161,6 @@ def event_menu_program():
         # P = d.getDict('P', reloadDict=request)
         reloadD = False
         # print area_board_io
-
-        # socketio.emit('my response', {'A': A, 'P': P, 'IO': IO}, namespace='/menu_program')
         socketio.emit('my response', {'A': A, 'P': P, 'area_board_io': area_board_io}, namespace='/menu_program')
         time.sleep(0.5)
 
@@ -175,14 +170,15 @@ def menu_program():
     permission = checkPermission(2)  # check login and privilege
     if permission: return redirect(url_for(permission))
 
-    if int(session['privilege'][0: 1]) == 0 and int(session['privilege'][1: 2]) == 0:
-        msg = 'Insufficient privilege for Setup Status Menu!'
-        return render_template("no_permission.html", msg_type = 'danger', msg = msg)
+    P = d.getData('self.P')
+    A = d.getData('self.A')
+    print P
+
     global thread
     if thread is None:
         thread = Thread(target=event_menu_program)
         thread.start()
-    return render_template("menu_program.html")
+    return render_template("menu_program.html", P=P, A=A)
 
 
 @socketio.on('menu_program_back', namespace='/menu_program')
