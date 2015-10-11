@@ -6,7 +6,7 @@ AND      OR     XOR     Complement
 00|0    00|0    00|0    ~
 01|0    01|1    01|1
 10|0    10|1    10|1
-11|1    11|1    00|0
+11|1    11|1    11|0
 
 
 =============== IO ==============
@@ -69,6 +69,11 @@ self.prog_id -> ID programmi
 self.prog_type_id -> tipo di programma
 (4, 4)
 
+tipi programmi:
+- Manuale: out = 1 if in == 1 else 0
+- Timer: come timer scale: if timer > 0 or in == 1: out = 1
+- Timeout: if timer > 0: out = 1
+
 self.prog_in_id -> in_id
 (1, 2)
 
@@ -85,6 +90,6 @@ self.prog_enable -> program enable
 self.prog_counter -> contatore tempo
 
 -------------------------------------------
-Avviso Massaggi:
+Avviso Massaggi su interfaccia web:
 msg_type = 'danger'  -> primary (blue), success (lightgreen), info (lightblue), warning (Yellow), danger (Red)
 msg = 'bla bla bla'  -> Messaggio da scrivere sulla pagina

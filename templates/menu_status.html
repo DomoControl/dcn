@@ -68,6 +68,8 @@
                         // f += '<br>************'+ area_board_io[bio]['board_io_name'] + '*******<br>'
                         // debug += '<p>' + JSON.stringify(area_board_io[bio]) + '</p>';
 
+
+
                         bid = board_id.indexOf(area_board_io[bio]['board_io_board_id']);
                         board_type = area_board_io[bio]['board_io_io_type_id']
                         board_io_address = area_board_io[bio]['board_io_address'];
@@ -75,55 +77,45 @@
 
                         if(area_board_io[bio]['area_id'] == area[a]['id']) {
 
-
                             if (board_type == '4' || board_type == '5') {
                                 In = IOVal[bid];
                             } else {
                                 In = ((IOVal[bid] & (1 << board_io_address)) > 0) ? 1 : 0;
                             }
 
-
-                            f += '<div style="border:1px dotted gray;" class="sensor" onClick="sendEvent('+[bid, board_io_address, In]+')" >';
-                            f += '<span title="'+ area_board_io[bio]['board_io_description'] +'">'+area_board_io[bio]['board_io_name']+'</span><br>';
+                            document.getElementById("name"+bio).innerHTML = area_board_io[bio]['board_io_name'];
 
                             if(In == 0){
-                                f += '<span><input id="target" name="'+id+'" value="'+0+'" type="image" src="static/icon/' + area_board_io[bio]['board_io_icon_off'] + '" style="height:40px; max-width:50px;" ></span><br>';
+                                image = '<img src="static/icon/' + area_board_io[bio]['board_io_icon_off'] +'"  style="height:40px; max-width:50px;" >';
                             } else {
-                                f += '<span><input  id="target" name="'+id+'" value="'+1+'" type="image" src="static/icon/' + area_board_io[bio]['board_io_icon_on'] + '"  style="height:40px; max-width:50px;" ></span><br>';
+                                image = '<img src="static/icon/' + area_board_io[bio]['board_io_icon_on'] +'" style="height:40px; max-width:50px;">' ;
+
                             }
+                            document.getElementById("image"+bio).innerHTML = image;
+                            document.getElementById("val"+bio).innerHTML = In;
                             f += In;
-                            f += '</div>';
                         }
                     }
-                    f += '</div>';
                     n++;
                 }
-
-                document.getElementById('status').innerHTML = f;
                 document.getElementById('debug').innerHTML = debug;
-                });
-
-                sendEvent = function(bid, board_id_address, In) {
-                    socket.emit('change_menu_status', [bid, board_id_address, In]);
-                    return false;
-                };
             });
 
-
+            sendEvent = function(bid, board_id_address) {
+                socket.emit('change_menu_status', [bid, board_id_address]);
+            };
+        });
     </script>
-{{A['area']}}
-
 
 {% for a in A['area'] %}
     <div style="clear:both;"  >{{ A['area'][a]['description'] }}</div>
 
     {% for bio in A['area_board_io'] %}
         {% if A['area_board_io'][bio]['area_id'] == A['area'][a]['id'] %}
-            <div style='border:1px dotted gray;' class='sensor' onClick='sendEvent("")' >
-<!--
-            <span title="'+ area_board_io[bio]['board_io_description'] +'">'+area_board_io[bio]['board_io_name']+'</span><br>
--->
-
+            <div style='border:1px dotted gray;' class='sensor' onClick='sendEvent([{{ bio }}, {{ A["area_board_io"][bio]["board_io_address"] }}  ])' >
+                <span id='description{{bio}}'></span><span id='name{{bio}}'></span><br>
+                <span id='image{{bio}}'></span><br>
+                <span id='val{{bio}}'></span><br>
             </div>
         {%endif%}
     {%endfor%}

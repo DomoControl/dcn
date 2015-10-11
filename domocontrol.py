@@ -90,30 +90,22 @@ class Domocontrol:
             if self.board_bin_val[board_n] != board_id_i2c_val:
                 # print "==>>", board_n, board_id_i2c_val, self.board_bin_onchange, self.board_bin_val
                 self.board_bin_onchange[board_n] = board_id_i2c_val
-
                 self.board_changerequest[board_n] = 1
                 pass
-
-
 
             if self.board_changerequest[board_n] == 1:
                 self.board_bin_val[board_n] = self.board_bin_onchange[board_n]
                 self.write_i2c(self.board_address[board_n], (self.board_bin_val[board_n] | self.board_IO_definition[board_n]))
                 self.board_changerequest[board_n] = 0
-
             # print "==>>", board_n, board_id_i2c_val, self.board_bin_onchange, self.board_bin_val, self.board_changerequest
             # print
 
         elif board_type_id == 2:  # RS485
             pass
         elif board_type_id == 3:  # Web
-            # print board_n, self.board_changerequest, self.board_bin_onchange, self.board_IO_definition
-
             if self.board_changerequest[board_n] == 1:
                 self.board_bin_val[board_n] = self.board_bin_onchange[board_n]
                 self.board_changerequest[board_n] = 0
-
-            # print board_n, self.board_changerequest, self.board_bin_onchange, self.board_IO_definition
 
         elif board_type_id == 4 or board_type_id == 6:  # Temperature + humidity
             temperature = round(sht21.SHT21(self.i2c).read_temperature(), 1)
@@ -161,13 +153,24 @@ class Domocontrol:
         """
         # print P
         prog_type_id = P['type_id']
-
         in_status = self.getIOStatus(P['in_id'])
         out_status = self.getIOStatus(P['out_id'])
+
         if prog_type_id == 1:  # Timer
-            pass
+            print self.board_bin_onchange, self.board_bin_val, self.board_changerequest, in_status, self.prog_timer, self.prog_counter
+            if in_status == 1:
+                self.prog_counter[prog_n] = round(time.time(), 1)
+                self.board_bin_onchange[self.board_id.index(self.getBoard_id(P['out_id']))] = self.setBit(self.board_bin_val[self.board_id.index(self.getBoard_id(P['out_id']))], self.getBoard_address(P['out_id']), in_status ^ P['inverted'])
+                self.board_changerequest[self.board_id.index(self.getBoard_id(P['out_id']))] = 1
+            timer = self.prog_timer[prog_n]
+            # print timer, self.prog_counter[prog_n], time.time(), time.time() - self.prog_counter[prog_n]
+            if time.time() - self.prog_counter[prog_n] > timer:
+                self.board_bin_onchange[self.board_id.index(self.getBoard_id(P['out_id']))] = self.setBit(self.board_bin_val[self.board_id.index(self.getBoard_id(P['out_id']))], self.getBoard_address(P['out_id']), in_status ^ P['inverted'])
+                self.board_changerequest[self.board_id.index(self.getBoard_id(P['out_id']))] = 1
         elif prog_type_id == 2:  # Timeout
-            pass
+            if in_status == 1:
+                pass
+
         elif prog_type_id == 3:  # Automatic
             pass
         elif prog_type_id == 4:  # Manual
@@ -212,10 +215,15 @@ class Domocontrol:
         Called from web.py when clicked into I/O
         board_n, address, In value
         """
-        IO = 0 if data[2] else 1
-        self.board_bin_onchange[self.board_n[data[0]]] = self.setBit(self.board_bin_val[self.board_n[data[0]]], data[1], IO)
-        self.board_changerequest[self.board_n[data[0]]] = 1
-        print 'Data:%s,  self.board_changerequest: %s,  self.board_bin_onchange:%s   IO:%s' % (data, self.board_changerequest, self.board_bin_onchange, IO)
+        io_id = data[0][0]
+        address = data[0][1]
+        board_id = self.A['board_io'][io_id]['board_id']
+        io_value = self.getBitValue(self.board_bin_val[self.board_id.index(board_id)], address)
+        next_value = 0 if io_value == 1 else 1
+        next_bin = self.setBit(self.board_bin_onchange[self.board_id.index(board_id)], address, next_value)
+        self.board_bin_onchange[self.board_id.index(board_id)] = next_bin
+        self.board_changerequest[self.board_id.index(board_id)] = 1
+        print "io_id:%s,  address:%s,  board_id:%s,  current_value:%s,  next_value:%s  next_bin:%s" %(io_id, address, board_id, io_value, next_value, next_bin)
 
     def now(self):
         """
@@ -243,8 +251,10 @@ class Domocontrol:
         Imposta il valore di tutti i dizionari per il corretto funzionamento
         """
         print 'Start Domocontrol Setup'
+
         q = 'SELECT * FROM board ORDER BY id'
         res = self.db.query(q)
+        self.A['board'] = {}
         board_id = []
         board_type_id = []
         board_n = []
@@ -254,6 +264,7 @@ class Domocontrol:
         self.board_changerequest = []
         n = 0
         for r in res:
+            self.A['board'].update({r['id']: r})
             board_n.append(n)
             board_id.append(r['id'])
             board_type_id.append(r['board_type_id'])
@@ -320,11 +331,7 @@ class Domocontrol:
         print 'self.board_io_val :', self.board_io_val
         """
 
-        q = 'SELECT * FROM board'
-        res = self.db.query(q)
-        self.A['board'] = {}
-        for r in res:
-            self.A['board'].update({r['id']: r})
+
 
         q = 'SELECT * FROM board_io ORDER BY id'
         res = self.db.query(q)
@@ -369,7 +376,16 @@ class Domocontrol:
             prog_in_id.append(r['in_id'])
             prog_out_id.append(r['out_id'])
             prog_inverted.append(r['inverted'])
-            prog_timer.append(r['timer'])
+
+            # Trasforma r['timer'] in secondi
+            t = r['timer'].split('-')
+            t_sec = int(t[3])
+            t_min = int(t[2])
+            t_hour = int(t[1])
+            t_day = int(t[0])
+            timer_sec = t_sec + t_min * 60 + t_hour * 60 * 60 + t_day * 24 * 60 * 60
+            prog_timer.append(timer_sec)
+
             prog_chrono.append(r['chrono'])
             prog_enable.append(r['enable'])
             prog_counter.append(round(time.time(), 1))
@@ -384,7 +400,7 @@ class Domocontrol:
         self.prog_timer = tuple(prog_timer)
         self.prog_chrono = tuple(prog_chrono)
         self.prog_enable = tuple(prog_enable)
-        self.prog_counter = tuple(prog_counter)
+        self.prog_counter = prog_counter
 
         print self.prog_n, self.prog_id, self.prog_type_id, \
             self.prog_in_id, self.prog_out_id, self.prog_inverted, \
@@ -396,7 +412,13 @@ class Domocontrol:
         for r in res:
             self.A['area'].update({r['id']: r})
 
-        q = 'SELECT a.id AS area_id, a.name AS area_name, a.description AS area_description, bio.id AS  board_io_id,  bio.io_type_id AS board_io_io_type_id, bio.name AS board_io_name, bio.description AS board_io_description, bio.address AS board_io_address,                   bio.board_id AS board_io_board_id, bio.icon_on AS board_io_icon_on, bio.icon_off AS board_io_icon_off             FROM board_io AS bio    LEFT JOIN area AS a ON bio.area_id=a.id             ORDER BY a.sort'
+        q = """SELECT a.id AS area_id, a.name AS area_name, a.description AS area_description, bio.id AS  board_io_id,  bio.io_type_id AS board_io_io_type_id,
+                bio.name AS board_io_name, bio.description AS board_io_description, bio.address AS board_io_address, bio.board_id AS board_io_board_id,
+                bio.icon_on AS board_io_icon_on, bio.icon_off AS board_io_icon_off
+            FROM board_io AS bio
+            LEFT JOIN area AS a ON bio.area_id=a.id
+            ORDER BY a.sort
+            """
         res = self.db.query(q)
         self.A['area_board_io'] = {}
         for r in res:
