@@ -42,7 +42,7 @@ class Domocontrol:
         self.prog_chrono = ()
         self.prog_enable = ()
         self.prog_counter = []
-
+        self.prog_timeout = []  # dict per variabili temporane usata ad esempio per timeout
         self.dir_root = os.path.dirname(os.path.abspath(__file__))
         self.initialize()
 
@@ -157,22 +157,37 @@ class Domocontrol:
         out_status = self.getIOStatus(P['out_id'])
 
         if prog_type_id == 1:  # Timer
-            print self.board_bin_onchange, self.board_bin_val, self.board_changerequest, in_status, self.prog_timer, self.prog_counter
+            print in_status, self.prog_timer, self.prog_counter
             if in_status == 1:
                 self.prog_counter[prog_n] = round(time.time(), 1)
                 self.board_bin_onchange[self.board_id.index(self.getBoard_id(P['out_id']))] = self.setBit(self.board_bin_val[self.board_id.index(self.getBoard_id(P['out_id']))], self.getBoard_address(P['out_id']), in_status ^ P['inverted'])
                 self.board_changerequest[self.board_id.index(self.getBoard_id(P['out_id']))] = 1
             timer = self.prog_timer[prog_n]
-            # print timer, self.prog_counter[prog_n], time.time(), time.time() - self.prog_counter[prog_n]
             if time.time() - self.prog_counter[prog_n] > timer:
                 self.board_bin_onchange[self.board_id.index(self.getBoard_id(P['out_id']))] = self.setBit(self.board_bin_val[self.board_id.index(self.getBoard_id(P['out_id']))], self.getBoard_address(P['out_id']), in_status ^ P['inverted'])
                 self.board_changerequest[self.board_id.index(self.getBoard_id(P['out_id']))] = 1
+
         elif prog_type_id == 2:  # Timeout
-            if in_status == 1:
-                pass
+            timer = self.prog_timer[prog_n]
+            if in_status == 1 and self.prog_timeout[prog_n] == 0:
+                self.prog_timeout[prog_n] = 1
+                self.prog_counter[prog_n] = round(time.time(), 1)
+            elif in_status == 0 and self.prog_timeout[prog_n] == 1:
+                self.prog_timeout[prog_n] = 0
+
+            if timer > time.time() - self.prog_counter[prog_n]:
+                self.board_bin_onchange[self.board_id.index(self.getBoard_id(P['out_id']))] = self.setBit(self.board_bin_val[self.board_id.index(self.getBoard_id(P['out_id']))], self.getBoard_address(P['out_id']), 1 ^ P['inverted'])
+                self.board_changerequest[self.board_id.index(self.getBoard_id(P['out_id']))] = 1
+            else:
+                self.board_bin_onchange[self.board_id.index(self.getBoard_id(P['out_id']))] = self.setBit(self.board_bin_val[self.board_id.index(self.getBoard_id(P['out_id']))], self.getBoard_address(P['out_id']), 0 ^ P['inverted'])
+                self.board_changerequest[self.board_id.index(self.getBoard_id(P['out_id']))] = 1
+            print in_status, self.prog_timeout[prog_n], timer, time.time() - self.prog_counter[prog_n]
 
         elif prog_type_id == 3:  # Automatic
+            # print self.prog_chrono[prog_n]
             pass
+
+
         elif prog_type_id == 4:  # Manual
             if in_status != (out_status ^ P['inverted']):
                 self.board_bin_onchange[self.board_id.index(self.getBoard_id(P['out_id']))] = self.setBit(self.board_bin_val[self.board_id.index(self.getBoard_id(P['out_id']))], self.getBoard_address(P['out_id']), in_status ^ P['inverted'])
@@ -331,8 +346,6 @@ class Domocontrol:
         print 'self.board_io_val :', self.board_io_val
         """
 
-
-
         q = 'SELECT * FROM board_io ORDER BY id'
         res = self.db.query(q)
         self.A['board_io'] = {}
@@ -366,6 +379,7 @@ class Domocontrol:
         prog_chrono = []
         prog_enable = []
         prog_counter = []
+        self.prog_timeout = []
         n = 0
         for r in res:
             self.P.update({r['id']: r})
@@ -389,6 +403,7 @@ class Domocontrol:
             prog_chrono.append(r['chrono'])
             prog_enable.append(r['enable'])
             prog_counter.append(round(time.time(), 1))
+            self.prog_timeout.append(0)
             n += 1
 
         self.prog_n = tuple(prog_n)

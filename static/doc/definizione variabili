@@ -89,6 +89,8 @@ self.prog_enable -> program enable
 
 self.prog_counter -> contatore tempo
 
+self.timeout -> variabile che serve per il programma timeout
+
 -------------------------------------------
 Avviso Massaggi su interfaccia web:
 msg_type = 'danger'  -> primary (blue), success (lightgreen), info (lightblue), warning (Yellow), danger (Red)

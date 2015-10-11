@@ -3,16 +3,7 @@
     <h2>I/O Status</h2>
 
 
-    <style type="text/css">
-        .sensor {
-            text-align:center;
-            border:1px dotted gray;
-            padding:5px;
-            margin:5px;
-            float:left;
-            width:100px;
-        }
-    </style>
+
 
     <script type="text/javascript">
         $(document).ready(function(){
@@ -83,7 +74,11 @@
                                 In = ((IOVal[bid] & (1 << board_io_address)) > 0) ? 1 : 0;
                             }
 
+
+                            document.getElementById("name"+bio).title = area_board_io[bio]['board_io_description'];
+
                             document.getElementById("name"+bio).innerHTML = area_board_io[bio]['board_io_name'];
+
 
                             if(In == 0){
                                 image = '<img src="static/icon/' + area_board_io[bio]['board_io_icon_off'] +'"  style="height:40px; max-width:50px;" >';
@@ -107,13 +102,25 @@
         });
     </script>
 
+    <style type="text/css">
+        .sensor {
+            text-align:center;
+            border:1px dotted gray;
+            padding:5px;
+            margin:5px;
+            float:left;
+            width:100px;
+        }
+    </style>
+
+
 {% for a in A['area'] %}
     <div style="clear:both;"  >{{ A['area'][a]['description'] }}</div>
 
     {% for bio in A['area_board_io'] %}
         {% if A['area_board_io'][bio]['area_id'] == A['area'][a]['id'] %}
             <div style='border:1px dotted gray;' class='sensor' onClick='sendEvent([{{ bio }}, {{ A["area_board_io"][bio]["board_io_address"] }}  ])' >
-                <span id='description{{bio}}'></span><span id='name{{bio}}'></span><br>
+                <span title='description{{bio}}' id='name{{bio}}'></span><br>
                 <span id='image{{bio}}'></span><br>
                 <span id='val{{bio}}'></span><br>
             </div>
