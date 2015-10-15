@@ -1,3 +1,4 @@
+
 {% extends "template.html"  %}
 {% block content %}
     <h2>I/O Status</h2>
@@ -6,6 +7,8 @@
 
 
     <script type="text/javascript">
+        var tmp = '123';
+
         $(document).ready(function(){
             namespace = '/menu_status';
             var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
@@ -94,35 +97,48 @@
                     n++;
                 }
                 document.getElementById('debug').innerHTML = debug;
+
+
+
             });
 
-            sendEvent = function(bid, board_id_address) {
-                socket.emit('change_menu_status', [bid, board_id_address]);
+            sendEvent = function(board_io_id, board_id_address) {
+                socket.emit('change_menu_status', [board_io_id, board_id_address]);
             };
+
+            getInfo = function(board_io_id, board_id_address) {
+                socket.emit('menu_status_getInfo', [board_io_id, board_id_address]);
+            };
+
+            socket.on('menu_status_getInfo' , function(dict) {
+                title = dict.title;
+                text = dict.text;
+                document.getElementById("ms_info_title").innerHTML = title;
+                document.getElementById("ms_info_text").innerHTML = text;
+            });
+
         });
     </script>
 
-    <style type="text/css">
-        .sensor {
-            text-align:center;
-            border:1px dotted gray;
-            padding:5px;
-            margin:5px;
-            float:left;
-            width:100px;
-        }
-    </style>
+
 
 
 {% for a in A['area'] %}
     <div style="clear:both;"  >{{ A['area'][a]['description'] }}</div>
+    {% for board_io_id in A['area_board_io'] %}
+        {% if A['area_board_io'][board_io_id]['area_id'] == A['area'][a]['id'] %}
+            <div style='border:1px dotted gray;' class='sensor'  >
 
-    {% for bio in A['area_board_io'] %}
-        {% if A['area_board_io'][bio]['area_id'] == A['area'][a]['id'] %}
-            <div style='border:1px dotted gray;' class='sensor' onClick='sendEvent([{{ bio }}, {{ A["area_board_io"][bio]["board_io_address"] }}  ])' >
-                <span title='description{{bio}}' id='name{{bio}}'></span><br>
-                <span id='image{{bio}}'></span><br>
-                <span id='val{{bio}}'></span><br>
+                <div class='ms_info'>
+                    <span class='glyphicon glyphicon-question-sign' aria-hidden='true' data-toggle="modal" data-target="#ms_info" onClick='getInfo([{{ board_io_id }}, {{ A["area_board_io"][board_io_id]["board_io_address"] }} ])' > </span>
+                </div>
+
+                <span title='description{{board_io_id}}' id='name{{board_io_id}}'></span><br>
+
+                <span id='image{{board_io_id}}' onClick='sendEvent([{{ board_io_id }}, {{ A["area_board_io"][board_io_id]["board_io_address"] }}  ])'></span><br>
+
+                <span id='val{{board_io_id}}'></span><br>
+
             </div>
         {%endif%}
     {%endfor%}
@@ -132,6 +148,26 @@
 <div id="debug"></div>
 <div id="status"></div>
 <div id="log"></div>
+
+<!-- Modal -->
+<div id="ms_info" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title" id="ms_info_title"></h4>
+      </div>
+      <div class="modal-body">
+        <p id="ms_info_text"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 
 {% endblock %}

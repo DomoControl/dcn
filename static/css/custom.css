@@ -4,3 +4,25 @@
     color: #fff;
     font-weight: 900;
 }
+
+/* Menu status */
+.sensor {
+    text-align:center;
+    border:1px dotted gray;
+    padding:5px;
+    margin:5px;
+    float:left;
+    width:100px;
+}
+.ms_info {
+    all: none;
+    float: left;
+    width: 0px;
+    margin: 0;
+    padding: 0;
+}
+
+.ms_info button {
+    all: unset;
+    margin-top: 0;
+}

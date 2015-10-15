@@ -132,6 +132,8 @@ def menu_status():
     return render_template("menu_status.html", A=A, msg_type='', msg='')
 
 
+
+
 @socketio.on('menu_status_back', namespace='/menu_status')
 def test_message(message):
     global reloadD
@@ -141,7 +143,35 @@ def test_message(message):
 
 @socketio.on('change_menu_status', namespace='/menu_status')
 def change_menu_statuse(message):
+    """
+    Funzione chiamata dal pulsante IO per cambiare stato
+    (board_n, address)
+    """
     d.setClickData(message)  # Chama la funzione che aggiorna il dict con il vaore del tasto premuto
+
+@socketio.on('menu_status_getInfo', namespace='/menu_status')
+def menu_status_getInfo(message):
+    """
+    Funzione chiamata dal pulsante "?", ritorna tutti i dati relativi al quel pulsante
+    (board_id, address)
+    """
+    print message  # Chama la funzione che aggiorna il dict con il vaore del tasto premuto
+    A = d.getData('self.A')
+    board_io = A['board_io'][message[0][0]]
+    title = '<b>Information IO: %s - %s </b>' %(board_io['name'], board_io['description'])
+    area = A['area'][board_io['area_id']]
+    board = A['board'][board_io['board_id']]
+    board_type = A['board_type'][board_io['board_id']]
+    io_type = A['io_type'][board_io['board_id']]
+
+    text = """  <div class="row"><div class="col-md-4">Area</div><div class="col-md-8">%s - %s</div></div>
+                <div class="row"><div class="col-md-4">Board</div><div class="col-md-8">%s - %s</div></div>
+                <div class="row"><div class="col-md-4">Board Type</div><div class="col-md-8">%s</div></div>
+                <div class="row"><div class="col-md-4">IO Type</div><div class="col-md-8">%s</div></div>
+        """\
+    %(area['id'], area['description'], board['id'], board['description'], board_type['description'], io_type['description'])
+    socketio.emit('menu_status_getInfo', {'title': title, 'text': text}, namespace='/menu_status' )
+
 reloadD = False
 
 

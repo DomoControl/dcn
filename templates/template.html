@@ -83,23 +83,38 @@
 
                 <div class="col-md-12">
                     {% if msg_type == 'primary' %}
-                        <h4 style="text-align: center;" class="bg-primary center">Primary: {{ msg }} </h4>
+                        <div class="alert alert-primary" style="text-align: center;">
+                            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                            <strong>Primary!</strong> {{ msg }}
+                        </div>
                     {% endif %}
 
                     {% if msg_type == 'success' %}
-                        <h4 style="text-align: center;" class="bg-success">Success: {{ msg }} </h4>
+                        <div class="alert alert-success" style="text-align: center;">
+                            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                            <strong>Success!</strong> {{ msg }}
+                        </div>
                     {% endif %}
 
                     {% if msg_type == 'info' %}
-                        <h4 style="text-align: center;" class="bg-info">Information: {{ msg }} </h4>
+                        <div class="alert alert-info" style="text-align: center;">
+                            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                            <strong>Info!</strong> {{ msg }}
+                        </div>
                     {% endif %}
 
                     {% if msg_type == 'warning' %}
-                        <h4 style="text-align: center; color: red;" class="bg-warning">Warning: {{ msg }} </h3>
+                        <div class="alert alert-warning" style="text-align: center;">
+                            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                            <strong>Warning!</strong> {{ msg }}
+                        </div>
                     {% endif %}
 
                     {% if msg_type == 'danger' %}
-                        <h4 style="text-align: center; color: red;" class="bg-danger">Error: {{ msg }} </h3>
+                        <div class="alert alert-danger" style="text-align: center;">
+                            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                            <strong>Error!</strong> {{ msg }}
+                        </div>
                     {% endif %}
                 </div>
 
