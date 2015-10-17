@@ -4,10 +4,58 @@
     <h2>I/O Status</h2>
 
 
+    <div id="debug"></div>
+    <div id="status"></div>
+    <div id="log"></div>
+    <div id="check_menu"></div>
+
+    <!-- Modal -->
+    <div id="ms_info" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+        <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title" id="ms_info_title"></h4>
+                </div>
+                <div class="modal-body">
+                    <p id="ms_info_text"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    {% for a in A['area'] %}
+        <div style="clear:both;"  >{{ A['area'][a]['description'] }}</div>
+        {% for board_io_id in A['area_board_io'] %}
+            {% if A['area_board_io'][board_io_id]['area_id'] == A['area'][a]['id'] %}
+                <div style='border:1px dotted gray;' class='sensor'  >
+
+                    <div class='ms_info'>
+                        <span class='glyphicon glyphicon-question-sign' aria-hidden='true' data-toggle="modal" data-target="#ms_info" onClick='getInfo([{{ board_io_id }}, {{ A["area_board_io"][board_io_id]["board_io_address"] }} ])' > </span>
+                    </div>
+
+                    <span title='description{{board_io_id}}' id='name{{board_io_id}}'></span><br>
+
+                    <span id='image{{board_io_id}}' onClick='sendEvent([{{ board_io_id }}, {{ A["area_board_io"][board_io_id]["board_io_address"] }}  ])'></span><br>
+
+                    <div class='ms_check'>
+                        <input type="checkbox" name="io_check" value="{{board_io_id}}" aria-label="Close">
+                    </div>
+
+                    <span id='val{{board_io_id}}'></span><br>
+
+                </div>
+            {%endif%}
+        {%endfor%}
+    {%endfor%}
 
 
     <script type="text/javascript">
-        var tmp = '123';
 
         $(document).ready(function(){
             namespace = '/menu_status';
@@ -15,10 +63,13 @@
             f = '';
             debug = '';
             A = {}; //Dict with all other data
-            ACopy = {};
 
             var reloadDictA = '';
             var reloadDictIO='';
+
+            var io_check = []; //Contiene tutti gli IO da modificare
+            $('input:checkbox').removeAttr('checked'); //azzera lo stato di tutti i checkbox
+
 
             socket.on('connect', function() {
                 socket.emit('menu_status_back', {data1: 'Connect'});
@@ -117,57 +168,53 @@
                 document.getElementById("ms_info_text").innerHTML = text;
             });
 
+            getIoCheck = function(type_menu) {
+                socket.emit('menu_status_getIoCheck', { 'type': type_menu, 'io': io_check});
+            };
+
+            //Creazione pulsanti quanto viene fatto il check di un IO.
+            $('input[type="checkbox"]').click(function(){
+                var f = '';
+                if($(this).is(":checked")){
+                    io_check.push($(this).val());
+                }
+                else if($(this).is(":not(:checked)")){
+                    if ($.inArray($(this).val(), io_check) > -1) {
+                        io_check.splice($.inArray($(this).val(), io_check),1);
+
+                    }
+                }
+
+                if(Object.keys(io_check).length == 1){ //To set parameters
+                    f += "<div class='btn-group' role='group' aria-label='...'> <button type='button' class='btn btn-default' onClick='getIoCheck(\"Modity\")'; >Modify</button> </div>";
+                }
+                else if(Object.keys(io_check).length >= 2){ //To set parameters
+                    f += "<div class='btn-group' role='group' aria-label='...'> <button type='button' class='btn btn-default' onClick='getIoCheck(\"Modity\")'; >Modify</button> </div>";
+                    f += "<div class='btn-group' role='group' aria-label='...'> <button type='button' class='btn btn-default' onClick='getIoCheck(\"Association\")'; >Associate</button> </div>";
+                }
+                document.getElementById("check_menu").innerHTML = f;
+
+            });
+
+
+
+
+
+
         });
     </script>
 
 
 
 
-{% for a in A['area'] %}
-    <div style="clear:both;"  >{{ A['area'][a]['description'] }}</div>
-    {% for board_io_id in A['area_board_io'] %}
-        {% if A['area_board_io'][board_io_id]['area_id'] == A['area'][a]['id'] %}
-            <div style='border:1px dotted gray;' class='sensor'  >
-
-                <div class='ms_info'>
-                    <span class='glyphicon glyphicon-question-sign' aria-hidden='true' data-toggle="modal" data-target="#ms_info" onClick='getInfo([{{ board_io_id }}, {{ A["area_board_io"][board_io_id]["board_io_address"] }} ])' > </span>
-                </div>
-
-                <span title='description{{board_io_id}}' id='name{{board_io_id}}'></span><br>
-
-                <span id='image{{board_io_id}}' onClick='sendEvent([{{ board_io_id }}, {{ A["area_board_io"][board_io_id]["board_io_address"] }}  ])'></span><br>
-
-                <span id='val{{board_io_id}}'></span><br>
-
-            </div>
-        {%endif%}
-    {%endfor%}
-{%endfor%}
 
 
-<div id="debug"></div>
-<div id="status"></div>
-<div id="log"></div>
 
-<!-- Modal -->
-<div id="ms_info" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-    <!-- Modal content-->
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title" id="ms_info_title"></h4>
-      </div>
-      <div class="modal-body">
-        <p id="ms_info_text"></p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
-    </div>
 
-  </div>
-</div>
+
+
+
+
 
 
 {% endblock %}

@@ -172,6 +172,14 @@ def menu_status_getInfo(message):
     %(area['id'], area['description'], board['id'], board['description'], board_type['description'], io_type['description'])
     socketio.emit('menu_status_getInfo', {'title': title, 'text': text}, namespace='/menu_status' )
 
+@socketio.on('menu_status_getIoCheck', namespace='/menu_status')
+def menu_status_getIoClick(message):
+    """
+    Chamata da IO web per definire il tipo di IO oppure per l'associazione dei vari IO in programmi
+    """
+    print message
+
+
 reloadD = False
 
 

@@ -157,7 +157,7 @@ class Domocontrol:
         out_status = self.getIOStatus(P['out_id'])
 
         if prog_type_id == 1:  # Timer
-            print in_status, self.prog_timer, self.prog_counter
+            # print in_status, self.prog_timer, self.prog_counter
             if in_status == 1:
                 self.prog_counter[prog_n] = round(time.time(), 1)
                 self.board_bin_onchange[self.board_id.index(self.getBoard_id(P['out_id']))] = self.setBit(self.board_bin_val[self.board_id.index(self.getBoard_id(P['out_id']))], self.getBoard_address(P['out_id']), in_status ^ P['inverted'])
@@ -181,7 +181,7 @@ class Domocontrol:
             else:
                 self.board_bin_onchange[self.board_id.index(self.getBoard_id(P['out_id']))] = self.setBit(self.board_bin_val[self.board_id.index(self.getBoard_id(P['out_id']))], self.getBoard_address(P['out_id']), 0 ^ P['inverted'])
                 self.board_changerequest[self.board_id.index(self.getBoard_id(P['out_id']))] = 1
-            print in_status, self.prog_timeout[prog_n], timer, time.time() - self.prog_counter[prog_n]
+            # print in_status, self.prog_timeout[prog_n], timer, time.time() - self.prog_counter[prog_n]
 
         elif prog_type_id == 3:  # Automatic
             # print self.prog_chrono[prog_n]

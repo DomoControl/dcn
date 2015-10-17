@@ -26,3 +26,16 @@
     all: unset;
     margin-top: 0;
 }
+
+.ms_check {
+    all: none;
+    float: left;
+    width: 0px;
+    margin: 0;
+    padding: 0;
+}
+
+.ms_check button {
+    all: unset;
+    margin-top: 0;
+}
