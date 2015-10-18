@@ -158,16 +158,19 @@ def menu_status_getInfo(message):
     print message  # Chama la funzione che aggiorna il dict con il vaore del tasto premuto
     A = d.getData('self.A')
     board_io = A['board_io'][message[0][0]]
-    title = '<b>Information IO: %s - %s </b>' %(board_io['name'], board_io['description'])
+    title = '%s - %s' %(board_io['name'], board_io['description'])
+    print A['area']
+    print board_io
     area = A['area'][board_io['area_id']]
+    print area
     board = A['board'][board_io['board_id']]
     board_type = A['board_type'][board_io['board_id']]
-    io_type = A['io_type'][board_io['board_id']]
+    io_type = A['io_type'][board_io['io_type_id']]
 
-    text = """  <div class="row"><div class="col-md-4">Area</div><div class="col-md-8">%s - %s</div></div>
-                <div class="row"><div class="col-md-4">Board</div><div class="col-md-8">%s - %s</div></div>
-                <div class="row"><div class="col-md-4">Board Type</div><div class="col-md-8">%s</div></div>
-                <div class="row"><div class="col-md-4">IO Type</div><div class="col-md-8">%s</div></div>
+    text = """  <div class="row"><div class="col-xs-4 col-md-4">Area</div><div class="col-xs-8 col-md-8">%s - %s</div></div>
+                <div class="row"><div class="col-xs-4 col-md-4">Board</div><div class="col-xs-8 col-md-8">%s - %s</div></div>
+                <div class="row"><div class="col-xs-4 col-md-4">Board Type</div><div class="col-xs-8 col-md-8">%s</div></div>
+                <div class="row"><div class="col-xs-4 col-md-4">IO Type</div><div class="col-xs-8 col-md-8">%s</div></div>
         """\
     %(area['id'], area['description'], board['id'], board['description'], board_type['description'], io_type['description'])
     socketio.emit('menu_status_getInfo', {'title': title, 'text': text}, namespace='/menu_status' )

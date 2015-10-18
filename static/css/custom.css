@@ -47,7 +47,7 @@
 
 @media(max-width:767px){
     body {
-        background-color:green;
+        background-color:lightgreen;
     }
 }
 @media(min-width:768px){
@@ -82,7 +82,7 @@
 }
 @media(min-width:992px){
     body {
-        background-color:blue;
+        background-color:lightblue;
     }
 }
 
