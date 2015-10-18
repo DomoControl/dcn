@@ -41,7 +41,7 @@
 
                     <span title='description{{board_io_id}}' id='name{{board_io_id}}'></span><br>
 
-                    <span id='image{{board_io_id}}' onClick='sendEvent([{{ board_io_id }}, {{ A["area_board_io"][board_io_id]["board_io_address"] }}  ])'></span><br>
+                    <span class='ms_image' id='image{{board_io_id}}' onClick='sendEvent([{{ board_io_id }}, {{ A["area_board_io"][board_io_id]["board_io_address"] }}  ])'></span><br>
 
                     <div class='ms_check'>
                         <input type="checkbox" name="io_check" value="{{board_io_id}}" aria-label="Close">
@@ -135,9 +135,9 @@
 
 
                             if(In == 0){
-                                image = '<img src="static/icon/' + area_board_io[bio]['board_io_icon_off'] +'"  style="height:40px; max-width:50px;" >';
+                                image = '<img class="ms_image" src="static/icon/' + area_board_io[bio]['board_io_icon_off'] +'" >';
                             } else {
-                                image = '<img src="static/icon/' + area_board_io[bio]['board_io_icon_on'] +'" style="height:40px; max-width:50px;">' ;
+                                image = '<img class="ms_image" src="static/icon/' + area_board_io[bio]['board_io_icon_on'] +'" >' ;
 
                             }
                             document.getElementById("image"+bio).innerHTML = image;

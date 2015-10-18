@@ -1,4 +1,3 @@
-.error{color:red;}
 .navbar-inverse .navbar-nav > .active > a, .navbar-inverse .navbar-nav > .active > a:hover, .navbar-inverse .navbar-nav > .active > a:focus {
     background-color: #080808;
     color: #fff;
@@ -38,4 +37,71 @@
 .ms_check button {
     all: unset;
     margin-top: 0;
+}
+
+.ms_image {
+    height: 40px;
+    max-width: 50px;
+
+}
+
+@media(max-width:767px){
+    body {
+        background-color:green;
+    }
+}
+@media(min-width:768px){
+/* NEXUS4 */
+    body {
+        background-color: #D6FCDB; /* Light Green */
+        font-size: 36px;
+    }
+
+    h2, .h2 {
+        font-size: 36px;
+        font-weight: 900;
+    }
+    .navbar-inverse .navbar-nav > .active > a, .navbar-inverse .navbar-nav > .active > a:hover, .navbar-inverse .navbar-nav > .active > a:focus {
+        background-color: #080808;
+        color: #fff;
+        font-weight: 1300;
+        font-size: 40px;
+    }
+    .sensor {
+        text-align:center;
+        border:1px dotted gray;
+        padding:5px;
+        margin:5px;
+        float:left;
+        width:200px;
+    }
+    .ms_image {
+    height: 70px;
+    max-width: 90px;
+    }
+}
+@media(min-width:992px){
+    body {
+        background-color:blue;
+    }
+}
+
+@media(min-width:1200px){
+/* PC */
+    body {
+        background-color: #F1E7F4; /* Light Blu */
+        font-size: 16px;
+    }
+    .sensor {
+        text-align:center;
+        border:1px dotted gray;
+        padding:5px;
+        margin:5px;
+        float:left;
+        width:100px;
+    }
+    .ms_image {
+        height: 40px;
+        max-width: 50px;
+    }
 }
