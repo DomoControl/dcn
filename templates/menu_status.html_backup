@@ -61,8 +61,6 @@
             namespace = '/menu_status';
             var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
 
-
-
             f = '';
             debug = '';
             A = {}; //Dict with all other data
@@ -74,8 +72,14 @@
             $('input:checkbox').removeAttr('checked'); //azzera lo stato di tutti i checkbox
 
 
+            socket.on('connect', function() {
+                socket.emit('menu_status_start', {data1: 'Connect'});
+            });
 
 
+            getInfo = function(board_io_id, board_id_address) {
+                socket.emit('menu_status_getInfo', {board_io_id: board_io_id, board_id_address: board_id_address});
+            };
 
             socket.on('menu_status_data', function(dict) {
                 area = dict.area;
@@ -120,6 +124,8 @@
                         // f += '<br>************'+ area_board_io[bio]['board_io_name'] + '*******<br>'
                         // debug += '<p>' + JSON.stringify(area_board_io[bio]) + '</p>';
 
+
+
                         bid = board_id.indexOf(area_board_io[bio]['board_io_board_id']);
                         board_type = area_board_io[bio]['board_io_io_type_id']
                         board_io_address = area_board_io[bio]['board_io_address'];
@@ -154,22 +160,15 @@
                 }
                 document.getElementById('debug').innerHTML = debug;
 
+
+
             });
 
-            function on_start(){
-                socket.emit('menu_status_start', {data: 'Connect'}); //Richiede i nuvi dati quando viene ricaricata la pagine
-            }
-
-
             sendEvent = function(board_io_id, board_id_address) {
-                debug += board_io_id;
-                debug += board_io_address;
                 socket.emit('change_menu_status', [board_io_id, board_id_address]);
             };
 
-            getInfo = function(board_io_id, board_id_address) {
-                socket.emit('menu_status_getInfo', {board_io_id: board_io_id, board_id_address: board_id_address});
-            };
+
 
             socket.on('menu_status_getInfo' , function(dict) {
                 title = dict.title;

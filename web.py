@@ -86,37 +86,77 @@ def checkPermission(permission=255, error=''):  # Check if user is logged and th
     else:
         return 'no_permission'
 
-
 @app.route('/getTime')  # return datetime now() to show in footer
 def getTime():
-    return jsonify(result=now().strftime("%a %d/%m/%y  %H:%M"))
+    return jsonify(result=now().strftime("%a  %d/%m/%y   %H:%M:%S"))
+
+
 
 reloadD = False
-def event_menu_status():
+def event_menu_status(start=0):
     """
     Send data to menu_status by server sent event (SSE)
     For something more intelligent, take a look at Redis pub/sub
     stuff. A great example can be found here https://github.com/jakubroztocil/chat
     """
-    print "event_menu_status"
+    print "event_menu_status", start
+    change = 0
+    board_bin_val = list(d.getData('self.board_bin_val'))
+    A = d.getData('self.A')
+    area_board_io = d.getData('self.A["area_board_io"]').copy()
+    area = d.getData('self.A["area"]').copy()
+    board_id = d.getData('self.board_id')
+
     while True:
+        page_reload = 0
+
         global reloadD
         if reloadD:
             request = True
         else:
             request = False
 
-        board_bin_val = d.getData('self.board_bin_val')
-        board_id = d.getData('self.board_id')
-        # print "IO:", board_bin_val, board_id
-        A = d.getData('self.A')
-        reloadD = False
-        area_board_io = A['area_board_io']
-        area = A['area']
-        # print IOVal
-        socketio.emit('my response', {'IOVal': board_bin_val, 'area_board_io': area_board_io, 'area': area, 'board_id': board_id }, namespace='/menu_status')
-        time.sleep(0.5)
+        # print dir(d.getData('self.board_bin_val'))
+        if board_bin_val != d.getData('self.board_bin_val'):
+            print "cambia board_bin_val", board_bin_val
+            board_bin_val = list(d.getData('self.board_bin_val'))
+            change += 1
 
+        if board_id != d.getData('self.board_id'):
+            print "cambia board_id", board_id
+            board_id = list(d.getData('board_id'))
+            change += 1
+
+        if area_board_io != d.getData('self.A["area_board_io"]'):
+            print "cambia area_board_io", area_board_io
+            area_board_io = d.getData('self.A["area_board_io"]').copy()
+            page_reload = 1
+
+        # print "cambia area", area, d.getData('self.A["area"]'), d.getData('self.A["area"]') == area
+        if area != d.getData('self.A["area"]'):
+            print "cambia area", area
+            area = d.getData('self.A["area"]').copy()
+            page_reload = 1
+
+        reloadD = False
+
+
+        if start == 1 or change == 1:
+            print "PageReload", page_reload, 'change', change, board_bin_val
+            socketio.emit('menu_status_data', {'board_bin_val': board_bin_val, 'area_board_io': area_board_io, 'area': area, 'board_id': board_id, 'page_reload': page_reload }, namespace='/menu_status')
+            change = 0
+            start = 0
+            time.sleep(0.5)
+        else:
+            print "PageReload", page_reload, 'NO changed'
+            time.sleep(1)
+
+@socketio.on('menu_status_start', namespace='/menu_status')
+def menu_status_start(message):
+    global reloadD
+    reloadD = True
+    event_menu_status(1)
+    print "menu_status_start:", message
 
 @app.route('/menu_status')
 def menu_status():
@@ -127,42 +167,30 @@ def menu_status():
 
     global thread
     if thread is None:
-        thread = Thread(target=event_menu_status)
+        thread = Thread(target=event_menu_status, args=('1',))
         thread.start()
     return render_template("menu_status.html", A=A, msg_type='', msg='')
 
-
-
-
-@socketio.on('menu_status_back', namespace='/menu_status')
-def test_message(message):
-    global reloadD
-    reloadD = True
-    print "menu_status_back:", message
-
-
 @socketio.on('change_menu_status', namespace='/menu_status')
-def change_menu_statuse(message):
+def change_menu_status(message):
     """
     Funzione chiamata dal pulsante IO per cambiare stato
     (board_n, address)
     """
-    d.setClickData(message)  # Chama la funzione che aggiorna il dict con il vaore del tasto premuto
+    print "Ckick by web, Update IO ", message
+    d.setClickData(message)  # Chiama la funzione che aggiorna il dict con il vaore del tasto premuto
 
 @socketio.on('menu_status_getInfo', namespace='/menu_status')
-def menu_status_getInfo(message):
+def menu_status_getInfo(*message):
     """
     Funzione chiamata dal pulsante "?", ritorna tutti i dati relativi al quel pulsante
     (board_id, address)
     """
-    print message  # Chama la funzione che aggiorna il dict con il vaore del tasto premuto
+    print "menu_status_getInfo", message  # Chiama la funzione che aggiorna il dict con il vaore del tasto premuto
     A = d.getData('self.A')
-    board_io = A['board_io'][message[0][0]]
+    board_io = A['board_io'][message[0]['board_io_id']]
     title = '%s - %s' %(board_io['name'], board_io['description'])
-    print A['area']
-    print board_io
     area = A['area'][board_io['area_id']]
-    print area
     board = A['board'][board_io['board_id']]
     board_type = A['board_type'][board_io['board_id']]
     io_type = A['io_type'][board_io['io_type_id']]
@@ -176,11 +204,11 @@ def menu_status_getInfo(message):
     socketio.emit('menu_status_getInfo', {'title': title, 'text': text}, namespace='/menu_status' )
 
 @socketio.on('menu_status_getIoCheck', namespace='/menu_status')
-def menu_status_getIoClick(message):
+def menu_status_getIoCheck(message):
     """
     Chamata da IO web per definire il tipo di IO oppure per l'associazione dei vari IO in programmi
     """
-    print message
+    print 'menu_status_getIoCheck', message
 
 
 reloadD = False
@@ -206,20 +234,7 @@ def event_menu_program():
         time.sleep(0.5)
 
 
-@app.route('/menu_program')
-def menu_program():
-    permission = checkPermission(2)  # check login and privilege
-    if permission: return redirect(url_for(permission))
 
-    P = d.getData('self.P')
-    A = d.getData('self.A')
-    print P
-
-    global thread
-    if thread is None:
-        thread = Thread(target=event_menu_program)
-        thread.start()
-    return render_template("menu_program.html", P=P, A=A)
 
 
 @socketio.on('menu_program_back', namespace='/menu_program')
@@ -261,6 +276,8 @@ def setup_area():
     if request.method == "POST":
         f = request.form  # get input value
         db.setForm('UPDATE', f.to_dict(), 'area')  # recall db.setForm to update query. UPDATE=Update method, f.to_dict=dictionary with input value, area:database table
+        d.setup_area()
+        d.area_board_io()
     q = 'SELECT * FROM area ORDER by sort'
     res = db.query(q)
     return render_template("setup_area.html", data=res)
@@ -421,6 +438,8 @@ def setup_board_io():
                 q = 'UPDATE board_io SET id="{}", io_type_id="{}", name="{}", description="{}", area_id="{}", enable="{}", board_id="{}", address="{}", icon_on="{}", icon_off="{}" WHERE id="{}"'\
                     .format(f['id'], f['io_type_id'], f['name'], f['description'], f['area_id'], enable, f['board_id'], f['address'], f['icon_on'], f['icon_off'], f['id'])
                 db.query(q)
+                d.area_board_io()
+                d.setup_board_io()
                 print q
         elif f['submit'] == 'Add IO':
             if 'enable' in f:
@@ -431,12 +450,17 @@ def setup_board_io():
                 .format(f['io_type_id'], f["name"], f["description"], f["area_id"], enable, f['board_id'], f["address"])
             print q
             db.query(q)
+            d.area_board_io()
+            d.setup_board_io()
         elif f['submit'] == 'Delete':
             if checkEnable(f["id"]):
                 error = 'Cannot delete I/O used in Program, first change Program '
             else:
                 q = "DELETE FROM board_io WHERE id={}".format(f['id'])
                 db.query(q)
+                d.area_board_io()
+                d.setup_board_io()
+
     id = request.args['id']
     q = 'SELECT * FROM board_io WHERE board_id={}'.format(id)
     res = db.query(q)
@@ -776,9 +800,22 @@ def setProg(start='y'):  # To update Program
     else:
         threading.Timer(1, setProg).cancel()
 
+def counter(start='y'):  # One second counter
+    try:
+        # print "counter"
+        pass
+    except:
+        print('Error Counter')
+        traceback.print_exc()
+    if start == 'y':
+        threading.Timer(1, counter).start()
+    else:
+        threading.Timer(1, counter).cancel()
+
 if __name__ == '__main__':
     getIO()
     setProg()
+    counter()
 
     app.debug = 1
     socketio.run(app, port=8000, host='0.0.0.0')

@@ -4,7 +4,6 @@ import time
 import smbus
 from db import Database
 import datetime
-import copy
 import sht21
 import os
 import threading
@@ -109,7 +108,7 @@ class Domocontrol:
 
         elif board_type_id == 4 or board_type_id == 6:  # Temperature + humidity
             temperature = round(sht21.SHT21(self.i2c).read_temperature(), 1)
-            humidity = round(sht21.SHT21(self.i2c).read_humidity(), 1)
+            humidity = round(sht21.SHT21(self.i2c).read_humidity(), 0)
             self.board_bin_val[self.board_type_id.index(4)] = temperature
             self.board_bin_val[self.board_type_id.index(6)] = humidity
             time.sleep(1)
@@ -348,12 +347,10 @@ class Domocontrol:
 
         q = 'SELECT * FROM board_io ORDER BY id'
         res = self.db.query(q)
-        self.A['board_io'] = {}
         board_io_id = []
         board_io_address = []
         board_io_board_id = []
         for r in res:
-            self.A['board_io'].update({r['id']: r})
             board_io_id.append(r['id'])
             board_io_address.append(r['address'])
             board_io_board_id.append(r['board_id'])
@@ -421,12 +418,53 @@ class Domocontrol:
             self.prog_in_id, self.prog_out_id, self.prog_inverted, \
             self.prog_timer, self.prog_chrono, self.prog_enable, self.prog_counter
 
+        self.setup_board_io()  # Setup Board_IO
+        self.setup_area()  # Setup Area
+        self.setup_io_type()  # Setup Io_Type
+        self.setup_board_type()  # Setup Board_Type
+        self.setup_program_type()  # Setup Program_Type
+        self.setup_area_board_io()  # Area_Board_IO
+
+        self.default()  # Chiama la funzione per settare gli stati degli IO come da default
+
+        print 'End Domocontrol Setup'
+
+    def setup_board_io(self):
+        q = 'SELECT * FROM board_io ORDER BY id'
+        res = self.db.query(q)
+        self.A['board_io'] = {}
+        for r in res:
+            self.A['board_io'].update({r['id']: r})
+
+    def setup_area(self):
         q = 'SELECT id, name, description, sort FROM area ORDER BY sort'
         res = self.db.query(q)
         self.A['area'] = {}
         for r in res:
             self.A['area'].update({r['id']: r})
 
+    def setup_io_type(self):
+        q = 'SELECT id, type, name, description FROM io_type'
+        res = self.db.query(q)
+        self.A['io_type'] = {}
+        for r in res:
+            self.A['io_type'].update({r['id']: r})
+
+    def setup_board_type(self):
+        q = 'SELECT * FROM board_type'
+        res = self.db.query(q)
+        self.A['board_type'] = {}
+        for r in res:
+            self.A['board_type'].update({r['id']: r})
+
+    def setup_program_type(self):
+        q = 'SELECT * FROM program_type'
+        res = self.db.query(q)
+        self.A['program_type'] = {}
+        for r in res:
+            self.A['program_type'].update({r['id']: r})
+
+    def setup_area_board_io(self):
         q = """SELECT a.id AS area_id, a.name AS area_name, a.description AS area_description, bio.id AS  board_io_id,  bio.io_type_id AS board_io_io_type_id,
                 bio.name AS board_io_name, bio.description AS board_io_description, bio.address AS board_io_address, bio.board_id AS board_io_board_id,
                 bio.icon_on AS board_io_icon_on, bio.icon_off AS board_io_icon_off
@@ -438,30 +476,6 @@ class Domocontrol:
         self.A['area_board_io'] = {}
         for r in res:
             self.A['area_board_io'].update({r['board_io_id']: r})
-
-        q = 'SELECT id, type, name, description FROM io_type'
-        res = self.db.query(q)
-        self.A['io_type'] = {}
-        for r in res:
-            self.A['io_type'].update({r['id']: r})
-
-        q = 'SELECT * FROM board_type'
-        res = self.db.query(q)
-        self.A['board_type'] = {}
-        for r in res:
-            self.A['board_type'].update({r['id']: r})
-
-        q = 'SELECT * FROM program_type'
-        res = self.db.query(q)
-        self.A['program_type'] = {}
-        for r in res:
-            self.A['program_type'].update({r['id']: r})
-
-        # A = self.A
-
-        self.default()  # Chiama la funzione per settare gli stati degli IO come da default
-
-        print 'End Domocontrol Setup'
 
     def getData(self, data):
         return eval(data)

@@ -9,7 +9,9 @@
 <!--
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
 -->
+
         <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
+
     </head>
 
     <body height: 100%;">
@@ -33,9 +35,6 @@
                     <ul class="nav navbar-nav">
                         <li id="home"><a href="{{ url_for('home')}}">Home</a></li>
                         <li id="menu_status"><a href="{{ url_for('menu_status')}}">{{_('Status')}}</a></li>
-<!--
-                        <li id="menu_program"><a href="{{ url_for('menu_program')}}">{{_('Program')}}</a></li>
--->
                         <li id="menu_sensor"><a href="{{ url_for('menu_sensor')}}">{{_('Sensor')}}</a></li>
                         <li id="#" class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Setup<span class="caret"></span></a>
@@ -124,7 +123,7 @@
             </div>
 
 
-        <footer class="navbar-fixed-bottom container-fluid" style="margin-top:50px;">
+        <footer class="footer" style="margin-top:50px;">
             <div class="row">
                 <div class="col-md-4">
                     {% if session.logged_in %}
@@ -155,7 +154,7 @@
                 },  function(data) {
                       $("#time").text(data.result);
                     }
-                )}, 60000);
+                )}, 1000);
             getTime();
         </script>
 

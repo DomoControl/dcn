@@ -44,6 +44,17 @@
     max-width: 50px;
 
 }
+.footer {
+    width:100%;
+    height:25px;
+    background-color:#000;
+    color: #9d9d9d;
+    background-attachment: scroll;
+    background-position: 0% 0%;
+    position: fixed;
+    bottom: 0pt;
+    left: 0pt;
+}
 
 @media(max-width:767px){
     body {
@@ -55,6 +66,7 @@
     body {
         background-color: #D6FCDB; /* Light Green */
         font-size: 36px;
+        margin-bottom: 30px;
     }
 
     h2, .h2 {
@@ -91,6 +103,14 @@
     body {
         background-color: #F1E7F4; /* Light Blu */
         font-size: 16px;
+        margin-bottom: 30px;
+    }
+
+    .navbar-inverse .navbar-nav > .active > a, .navbar-inverse .navbar-nav > .active > a:hover, .navbar-inverse .navbar-nav > .active > a:focus {
+        background-color: #080808;
+        color: #fff;
+        font-weight: 700;
+        font-size: 20px;
     }
     .sensor {
         text-align:center;
@@ -98,7 +118,7 @@
         padding:5px;
         margin:5px;
         float:left;
-        width:100px;
+        width:120px;
     }
     .ms_image {
         height: 40px;
