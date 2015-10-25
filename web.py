@@ -141,7 +141,7 @@ def event_menu_status(start=0):
         reloadD = False
 
 
-        if start == 1 or change == 1:
+        if start == 1 or change == 1 or 1==1:
             print "PageReload", page_reload, 'change', change, board_bin_val
             socketio.emit('menu_status_data', {'board_bin_val': board_bin_val, 'area_board_io': area_board_io, 'area': area, 'board_id': board_id, 'page_reload': page_reload }, namespace='/menu_status')
             change = 0
@@ -157,6 +157,7 @@ def menu_status_start(message):
     reloadD = True
     event_menu_status(1)
     print "menu_status_start:", message
+    return
 
 @app.route('/menu_status')
 def menu_status():

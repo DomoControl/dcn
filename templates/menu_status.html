@@ -6,7 +6,7 @@
 
     <div id="debug"></div>
     <div id="status"></div>
-    <div id="log"></div>
+    <div id="info"></div>
     <div id="check_menu"></div>
 
     <!-- Modal -->
@@ -55,25 +55,20 @@
     {%endfor%}
 
 
+
     <script type="text/javascript" charset="utf-8">
 
         $(document).ready(function(){
             namespace = '/menu_status';
             var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
-
-
-
             f = '';
-            debug = '';
+            debug = '*';
+            info = '';
             A = {}; //Dict with all other data
-
-            var reloadDictA = '';
-            var reloadDictIO='';
 
             var io_check = []; //Contiene tutti gli IO da modificare
             $('input:checkbox').removeAttr('checked'); //azzera lo stato di tutti i checkbox
-
-
+            page_reload = 0
 
 
 
@@ -82,34 +77,6 @@
                 area_board_io = dict.area_board_io;
                 board_bin_val = dict.board_bin_val; //Dict with input value
                 board_id = dict.board_id;
-
-                //refresh page when database changed
-                page_realod = dict.page_reload;
-                if(page_realod == 1){
-                    location.reload();
-                }
-
-                // //~ debug = JSON.stringify(IOCopy);
-
-                // if(jQuery.isEmptyObject(ACopy) != true){
-                    // A = $.extend(A, ACopy);
-                // }
-
-                // if(Object.keys(IOCopy).length>0){
-                    // IO = $.extend(IO, IOCopy);
-                    //~ debug = JSON.stringify('IO Cambiato');
-                // }
-                //~ debug = JSON.stringify(IO);
-
-
-                // debug += JSON.stringify(area_board_io[39])
-                // debug += JSON.stringify(board_bin_val);
-                // debug += Object.keys(area_board_io).length
-                // debug += '<br>';
-                // debug += board_bin_val;
-                // debug += '<br>';
-                // debug += board_id;
-                // debug += board_id.indexOf(1);
 
                 n = 0;
                 for( var a in area){
@@ -152,18 +119,23 @@
                     }
                     n++;
                 }
-                document.getElementById('debug').innerHTML = debug;
+
 
             });
 
+
+            if(page_reload == 0) {
+                onStart();
+                page_reload = 1;
+                // alert('ciccio');
+            }
+
             function on_start(){
-                socket.emit('menu_status_start', {data: 'Connect'}); //Richiede i nuvi dati quando viene ricaricata la pagine
+                aaa = socket.emit('menu_status_start', {data: 'Connect'}); //Richiede i nuvi dati quando viene ricaricata la pagine
             }
 
 
             sendEvent = function(board_io_id, board_id_address) {
-                debug += board_io_id;
-                debug += board_io_address;
                 socket.emit('change_menu_status', [board_io_id, board_id_address]);
             };
 
@@ -206,11 +178,16 @@
             });
 
 
-
+            document.getElementById('debug').innerHTML = debug;
 
 
 
         });
+
+                    function onStart() {
+                //socket.emit('menu_status_start', {message: 'Get Data Request'});
+            };
+
     </script>
 
 
