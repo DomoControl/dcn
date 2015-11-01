@@ -28,7 +28,6 @@
         </div>
     </div>
 
-
     {% for a in A['area'] %}
         <div style="clear:both;"  >{{ A['area'][a]['description'] }}</div>
         {% for board_io_id in A['area_board_io'] %}
@@ -37,6 +36,9 @@
 
                     <div class='ms_info'>
                         <span class='glyphicon glyphicon-question-sign' aria-hidden='true' data-toggle="modal" data-target="#ms_info" onClick='getInfo({{ board_io_id }}, {{ A["area_board_io"][board_io_id]["board_io_address"] }})' > </span>
+                    </div>
+                    <div class='ms_prog'>
+                        <span id='prog{{board_io_id}}'  data-toggle="modal" data-target="#ms_prog" onClick='getProg({{ board_io_id }}, {{ A["area_board_io"][board_io_id]["board_io_address"] }})' ></span>
                     </div>
 
                     <span title='description{{board_io_id}}' id='name{{board_io_id}}'></span><br>
@@ -56,137 +58,123 @@
 
 
 
-    <script type="text/javascript" charset="utf-8">
+<script type="text/javascript" charset="utf-8">
 
-        $(document).ready(function(){
-            namespace = '/menu_status';
-            var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
-            f = '';
-            debug = '*';
-            info = '';
-            A = {}; //Dict with all other data
+namespace = '/menu_status'
+var socket = io.connect('http://' + document.domain + ':' + location.port + namespace)
+var form = 0
+$(document).ready(function(){
+    f = '';
+    debug = '*';
+    info = '';
+    A = {}; //Dict with all other data
+    var io_check = []; //Contiene tutti gli IO da modificare
+    $('input:checkbox').removeAttr('checked'); //azzera lo stato di tutti i checkbox
+    document.getElementById('debug').innerHTML = debug;
+});
 
-            var io_check = []; //Contiene tutti gli IO da modificare
-            $('input:checkbox').removeAttr('checked'); //azzera lo stato di tutti i checkbox
-            page_reload = 0
+//Get all data from server
+socket.on('menu_status_data', function(dict) {
+    area = dict.area;
+    area_board_io = dict.area_board_io;
+    board_bin_val = dict.board_bin_val; //Dict with input value
+    board_id = dict.board_id;
+    P = dict.P;
+    n = 0;
+    for( var a in area){
+        form = 1;
+        f += '<div style="clear:both;"  >'+ area[a]["description"] +'</div>';
+        for( var bio in area_board_io ){
+            // f += bio;
+            // f += ' ';
+            // f += '<br>************'+ area_board_io[bio]['board_io_name'] + '*******<br>'
+            // debug += '<p>' + JSON.stringify(area_board_io[bio]) + '</p>';
 
+            bid = board_id.indexOf(area_board_io[bio]['board_io_board_id']);
+            board_type = area_board_io[bio]['board_io_io_type_id']
+            board_io_address = area_board_io[bio]['board_io_address'];
+            id = area_board_io[bio]['board_io_id'];
 
+            if(area_board_io[bio]['area_id'] == area[a]['id']) {
 
-            socket.on('menu_status_data', function(dict) {
-                area = dict.area;
-                area_board_io = dict.area_board_io;
-                board_bin_val = dict.board_bin_val; //Dict with input value
-                board_id = dict.board_id;
-
-                n = 0;
-                for( var a in area){
-                    f += '<div style="clear:both;"  >'+ area[a]["description"] +'</div>';
-                    for( var bio in area_board_io ){
-                        // f += bio;
-                        // f += ' ';
-                        // f += '<br>************'+ area_board_io[bio]['board_io_name'] + '*******<br>'
-                        // debug += '<p>' + JSON.stringify(area_board_io[bio]) + '</p>';
-
-                        bid = board_id.indexOf(area_board_io[bio]['board_io_board_id']);
-                        board_type = area_board_io[bio]['board_io_io_type_id']
-                        board_io_address = area_board_io[bio]['board_io_address'];
-                        id = area_board_io[bio]['board_io_id'];
-
-                        if(area_board_io[bio]['area_id'] == area[a]['id']) {
-
-                            if (board_type == '4' || board_type == '5') {
-                                In = board_bin_val[bid];
-                            } else {
-                                In = ((board_bin_val[bid] & (1 << board_io_address)) > 0) ? 1 : 0;
-                            }
-
-
-                            document.getElementById("name"+bio).title = area_board_io[bio]['board_io_description'];
-
-                            document.getElementById("name"+bio).innerHTML = area_board_io[bio]['board_io_name'];
-
-
-                            if(In == 0){
-                                image = '<img class="ms_image" src="static/icon/' + area_board_io[bio]['board_io_icon_off'] +'" >';
-                            } else {
-                                image = '<img class="ms_image" src="static/icon/' + area_board_io[bio]['board_io_icon_on'] +'" >' ;
-
-                            }
-                            document.getElementById("image"+bio).innerHTML = image;
-                            document.getElementById("val"+bio).innerHTML = In;
-                            f += In;
-                        }
-                    }
-                    n++;
+                if (board_type == '4' || board_type == '5') {
+                    In = board_bin_val[bid];
+                } else {
+                    In = ((board_bin_val[bid] & (1 << board_io_address)) > 0) ? 1 : 0;
                 }
+                document.getElementById("name"+bio).title = area_board_io[bio]['board_io_description'];
+                document.getElementById("name"+bio).innerHTML = area_board_io[bio]['board_io_name'];
 
+                var prog = '';
+                for(var p in P){
+                    if(P[p]['in_id'] == bio){prog = P[p]['id']}
+                    else if(P[p]['out_id'] == bio){prog = P[p]['id']}
+                }
+                document.getElementById("prog"+bio).innerHTML = prog;
 
-            });
+                if(In == 0){
+                    image = '<img class="ms_image" src="static/icon/' + area_board_io[bio]['board_io_icon_off'] +'" >';
+                } else {
+                    image = '<img class="ms_image" src="static/icon/' + area_board_io[bio]['board_io_icon_on'] +'" >' ;
+                }
+                document.getElementById("image"+bio).innerHTML = image;
 
-
-            if(page_reload == 0) {
-                onStart();
-                page_reload = 1;
-                // alert('ciccio');
+                document.getElementById("val"+bio).innerHTML = In;
+                f += In;
             }
+        }
+        n++;
+        document.getElementById('debug').innerHTML = debug;
+    }
+});
 
-            function on_start(){
-                aaa = socket.emit('menu_status_start', {data: 'Connect'}); //Richiede i nuvi dati quando viene ricaricata la pagine
+
+
+getInfo = function(board_io_id, board_id_address) {
+    socket.emit('menu_status_getInfo', {board_io_id: board_io_id, board_id_address: board_id_address});
+};
+
+if(form == 0){
+    socket.emit('menu_status_start', {data: 'Connect'}); //Richiede i nuvi dati quando viene ricaricata la pagine
+}
+
+
+socket.on('menu_status_getInfo' , function(dict) {
+    title = dict.title;
+    text = dict.text;
+    document.getElementById("ms_info_title").innerHTML = title;
+    document.getElementById("ms_info_text").innerHTML = text;
+});
+
+sendEvent = function(board_io_id, board_id_address) {
+        socket.emit('change_menu_status', [board_io_id, board_id_address]);
+}
+
+getIoCheck = function(type_menu) {
+        socket.emit('menu_status_getIoCheck', { 'type': type_menu, 'io': io_check});
+};
+
+//Creazione pulsanti quanto viene fatto il check di un IO.
+$('input[type="checkbox"]').click(function(){
+        var f = '';
+        if($(this).is(":checked")){
+            io_check.push($(this).val());
+        }
+        else if($(this).is(":not(:checked)")){
+            if ($.inArray($(this).val(), io_check) > -1) {
+                io_check.splice($.inArray($(this).val(), io_check),1);
             }
+        }
 
-
-            sendEvent = function(board_io_id, board_id_address) {
-                socket.emit('change_menu_status', [board_io_id, board_id_address]);
-            };
-
-            getInfo = function(board_io_id, board_id_address) {
-                socket.emit('menu_status_getInfo', {board_io_id: board_io_id, board_id_address: board_id_address});
-            };
-
-            socket.on('menu_status_getInfo' , function(dict) {
-                title = dict.title;
-                text = dict.text;
-                document.getElementById("ms_info_title").innerHTML = title;
-                document.getElementById("ms_info_text").innerHTML = text;
-            });
-
-            getIoCheck = function(type_menu) {
-                socket.emit('menu_status_getIoCheck', { 'type': type_menu, 'io': io_check});
-            };
-
-            //Creazione pulsanti quanto viene fatto il check di un IO.
-            $('input[type="checkbox"]').click(function(){
-                var f = '';
-                if($(this).is(":checked")){
-                    io_check.push($(this).val());
-                }
-                else if($(this).is(":not(:checked)")){
-                    if ($.inArray($(this).val(), io_check) > -1) {
-                        io_check.splice($.inArray($(this).val(), io_check),1);
-
-                    }
-                }
-
-                if(Object.keys(io_check).length == 1){ //To set parameters
-                    f += "<div class='btn-group' role='group' aria-label='...'> <button type='button' class='btn btn-default' onClick='getIoCheck(\"Modity\")'; >Modify</button> </div>";
-                }
-                else if(Object.keys(io_check).length >= 2){ //To set parameters
-                    f += "<div class='btn-group' role='group' aria-label='...'> <button type='button' class='btn btn-default' onClick='getIoCheck(\"Modity\")'; >Modify</button> </div>";
-                    f += "<div class='btn-group' role='group' aria-label='...'> <button type='button' class='btn btn-default' onClick='getIoCheck(\"Association\")'; >Associate</button> </div>";
-                }
-                document.getElementById("check_menu").innerHTML = f;
-            });
-
-
-            document.getElementById('debug').innerHTML = debug;
-
-
-
-        });
-
-                    function onStart() {
-                //socket.emit('menu_status_start', {message: 'Get Data Request'});
-            };
+        if(Object.keys(io_check).length == 1){ //To set parameters
+            f += "<div class='btn-group' role='group' aria-label='...'> <button type='button' class='btn btn-default' onClick='getIoCheck(\"Modity\")'; >Modify</button> </div>";
+        }
+        else if(Object.keys(io_check).length >= 2){ //To set parameters
+            f += "<div class='btn-group' role='group' aria-label='...'> <button type='button' class='btn btn-default' onClick='getIoCheck(\"Modity\")'; >Modify</button> </div>";
+            f += "<div class='btn-group' role='group' aria-label='...'> <button type='button' class='btn btn-default' onClick='getIoCheck(\"Association\")'; >Associate</button> </div>";
+        }
+        document.getElementById("check_menu").innerHTML = f;
+    });
 
     </script>
 

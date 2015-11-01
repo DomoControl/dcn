@@ -90,31 +90,26 @@ def checkPermission(permission=255, error=''):  # Check if user is logged and th
 def getTime():
     return jsonify(result=now().strftime("%a  %d/%m/%y   %H:%M:%S"))
 
-
-
-reloadD = False
-def event_menu_status(start=0):
+event_menu_status_start = 0
+def event_menu_status():
     """
     Send data to menu_status by server sent event (SSE)
     For something more intelligent, take a look at Redis pub/sub
     stuff. A great example can be found here https://github.com/jakubroztocil/chat
     """
-    print "event_menu_status", start
-    change = 0
+    print "event_menu_status"
+    global event_menu_status_start
+    print event_menu_status_start
     board_bin_val = list(d.getData('self.board_bin_val'))
     A = d.getData('self.A')
     area_board_io = d.getData('self.A["area_board_io"]').copy()
     area = d.getData('self.A["area"]').copy()
     board_id = d.getData('self.board_id')
+    P = d.getData('self.P')
 
     while True:
         page_reload = 0
-
-        global reloadD
-        if reloadD:
-            request = True
-        else:
-            request = False
+        change = 0
 
         # print dir(d.getData('self.board_bin_val'))
         if board_bin_val != d.getData('self.board_bin_val'):
@@ -138,26 +133,26 @@ def event_menu_status(start=0):
             area = d.getData('self.A["area"]').copy()
             page_reload = 1
 
-        reloadD = False
+        if P != d.getData('self.P'):
+            print "cambia P", P
+            P = d.getData('self.P').copy()
+            page_reload = 1
 
-
-        if start == 1 or change == 1 or 1==1:
-            print "PageReload", page_reload, 'change', change, board_bin_val
-            socketio.emit('menu_status_data', {'board_bin_val': board_bin_val, 'area_board_io': area_board_io, 'area': area, 'board_id': board_id, 'page_reload': page_reload }, namespace='/menu_status')
-            change = 0
-            start = 0
-            time.sleep(0.5)
+        if event_menu_status_start == 1 or change == 1 or page_reload == 1:
+            print "PageReload", page_reload, 'change', change, board_bin_val, P
+            socketio.emit('menu_status_data', {'board_bin_val': board_bin_val,
+                'area_board_io': area_board_io, 'area': area, 'board_id': board_id, 'page_reload': page_reload, 'P': P},
+                namespace='/menu_status')
+            event_menu_status_start = 0
         else:
             print "PageReload", page_reload, 'NO changed'
             time.sleep(1)
 
 @socketio.on('menu_status_start', namespace='/menu_status')
 def menu_status_start(message):
-    global reloadD
-    reloadD = True
-    event_menu_status(1)
+    global event_menu_status_start
+    event_menu_status_start = 1
     print "menu_status_start:", message
-    return
 
 @app.route('/menu_status')
 def menu_status():
@@ -168,7 +163,7 @@ def menu_status():
 
     global thread
     if thread is None:
-        thread = Thread(target=event_menu_status, args=('1',))
+        thread = Thread(target=event_menu_status)
         thread.start()
     return render_template("menu_status.html", A=A, msg_type='', msg='')
 

@@ -26,6 +26,19 @@
     margin-top: 0;
 }
 
+.ms_prog {
+    all: none;
+    float: right;
+    width: 0px;
+    margin-right: 10px;
+    padding: 0;
+}
+
+.ms_prog button {
+    all: unset;
+    margin-top: 0;
+}
+
 .ms_check {
     all: none;
     float: left;
