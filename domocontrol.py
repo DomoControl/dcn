@@ -465,6 +465,10 @@ class Domocontrol:
             self.A['program_type'].update({r['id']: r})
 
     def setup_area_board_io(self):
+        """
+        Query che mette in relazione gli IO ordinati per AREA.
+        Il risutato viene usato sul WEB menu_status
+        """
         q = """SELECT a.id AS area_id, a.name AS area_name, a.description AS area_description, bio.id AS  board_io_id,  bio.io_type_id AS board_io_io_type_id,
                 bio.name AS board_io_name, bio.description AS board_io_description, bio.address AS board_io_address, bio.board_id AS board_io_board_id,
                 bio.icon_on AS board_io_icon_on, bio.icon_off AS board_io_icon_off
@@ -478,6 +482,9 @@ class Domocontrol:
             self.A['area_board_io'].update({r['board_io_id']: r})
 
     def getData(self, data):
+        """
+        Ritorna qualsiasi variabile (es. "self.A")
+        """
         return eval(data)
 
     def getBitValue(self, byteval, idx):

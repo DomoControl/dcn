@@ -190,13 +190,23 @@ def menu_status_getInfo(*message):
     board = A['board'][board_io['board_id']]
     board_type = A['board_type'][board_io['board_id']]
     io_type = A['io_type'][board_io['io_type_id']]
+    P = d.getData('self.P')
+    prog_id = prog_name = prog_description = ''
 
-    text = """  <div class="row"><div class="col-xs-4 col-md-4">Area</div><div class="col-xs-8 col-md-8">%s - %s</div></div>
-                <div class="row"><div class="col-xs-4 col-md-4">Board</div><div class="col-xs-8 col-md-8">%s - %s</div></div>
-                <div class="row"><div class="col-xs-4 col-md-4">Board Type</div><div class="col-xs-8 col-md-8">%s</div></div>
-                <div class="row"><div class="col-xs-4 col-md-4">IO Type</div><div class="col-xs-8 col-md-8">%s</div></div>
+    for p in P:
+        if P[p]['in_id'] == message[0]['board_io_id'] or P[p]['out_id'] == message[0]['board_io_id']:
+            prog_id = P[p]['id']
+            prog_name = P[p]['name']
+            prog_description = P[p]['description']
+
+    text = """
+            <div class="row"><div class="col-xs-4 col-md-4">Area</div><div class="col-xs-8 col-md-8">%s - %s</div></div>
+            <div class="row"><div class="col-xs-4 col-md-4">Board</div><div class="col-xs-8 col-md-8">%s - %s</div></div>
+            <div class="row"><div class="col-xs-4 col-md-4">Board Type</div><div class="col-xs-8 col-md-8">%s</div></div>
+            <div class="row"><div class="col-xs-4 col-md-4">IO Type</div><div class="col-xs-8 col-md-8">%s</div></div>
+            <div class="row" style="background:#D2D7EF;"><div class="col-xs-4 col-md-4">Program</div><div class="col-xs-8 col-md-8">ID: %s<br>Name: %s<br>Decription: %s</div></div>
         """\
-    %(area['id'], area['description'], board['id'], board['description'], board_type['description'], io_type['description'])
+    %(area['id'], area['description'], board['id'], board['description'], board_type['description'], io_type['description'], prog_id, prog_name, prog_description)
     socketio.emit('menu_status_getInfo', {'title': title, 'text': text}, namespace='/menu_status' )
 
 @socketio.on('menu_status_getIoCheck', namespace='/menu_status')
@@ -205,50 +215,6 @@ def menu_status_getIoCheck(message):
     Chamata da IO web per definire il tipo di IO oppure per l'associazione dei vari IO in programmi
     """
     print 'menu_status_getIoCheck', message
-
-
-reloadD = False
-
-
-def event_menu_program():
-    while True:
-        global reloadD
-        if reloadD:
-            request = True
-        else:
-            request = False
-        IOVal = d.getDict('IOVal')
-        OutVal = d.getDict('OutVal')
-        A = d.getDict('A')
-        area_board_io = A['area_board_io']
-        # IO = d.getDict('IO', reloadDict=request)
-        # A = d.getDict('A', reloadDict=request)
-        # P = d.getDict('P', reloadDict=request)
-        reloadD = False
-        # print area_board_io
-        socketio.emit('my response', {'A': A, 'P': P, 'area_board_io': area_board_io}, namespace='/menu_program')
-        time.sleep(0.5)
-
-
-
-
-
-@socketio.on('menu_program_back', namespace='/menu_program')
-def test_message(message):
-    global reloadD
-    reloadD = True
-    print "menu_program_back:", message
-
-
-@socketio.on('change_menu_program', namespace='/menu_program')
-def test_broadcast_message(message):
-    board_io_id = message['id']  # pulsante premuto
-    if d.IO['board_io'][board_io_id]['io_type_id'] == 0:  # che se e' stato premuto un pulsante virtuale
-        SA = d.IO['board_io'][board_io_id]['SA']  # Attuale stato del pulsante virtuale
-        d.IO['board_io'][board_io_id]['SA'] = 1 if d.IO['board_io'][board_io_id]['SA'] == 0 else 0  # cambia stato del pulsante virtuale
-        print "SA:", d.IO['board_io'][board_io_id]['SA']
-        d.updateOut()
-
 
 @app.route('/setup_program_type', methods=["GET", "POST"])
 def setup_program_type():

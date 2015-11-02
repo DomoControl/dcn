@@ -65,15 +65,39 @@ var socket = io.connect('http://' + document.domain + ':' + location.port + name
 var form = 0
 $(document).ready(function(){
     f = '';
-    debug = '*';
+    debug = '';
     info = '';
     A = {}; //Dict with all other data
     var io_check = []; //Contiene tutti gli IO da modificare
     $('input:checkbox').removeAttr('checked'); //azzera lo stato di tutti i checkbox
     document.getElementById('debug').innerHTML = debug;
+    //Creazione pulsanti quanto viene fatto il check di un IO.
+
+    $('input[type="checkbox"]').click(function(){
+            var f = '';
+            if($(this).is(":checked")){
+                io_check.push($(this).val());
+            }
+            else if($(this).is(":not(:checked)")){
+                if ($.inArray($(this).val(), io_check) > -1) {
+                    io_check.splice($.inArray($(this).val(), io_check),1);
+                }
+            }
+
+            if(Object.keys(io_check).length == 1){ //To set parameters
+                f += "<div class='btn-group' role='group' aria-label='...'> <button type='button' class='btn btn-default' onClick='getIoCheck(\"Modity\")'; >Modify</button> </div>";
+            }
+            else if(Object.keys(io_check).length >= 2){ //To set parameters
+                f += "<div class='btn-group' role='group' aria-label='...'> <button type='button' class='btn btn-default' onClick='getIoCheck(\"Modity\")'; >Modify</button> </div>";
+                f += "<div class='btn-group' role='group' aria-label='...'> <button type='button' class='btn btn-default' onClick='getIoCheck(\"Association\")'; >Associate</button> </div>";
+            }
+            document.getElementById("check_menu").innerHTML = f;
+        });
+
+
 });
 
-//Get all data from server
+//Get all data from server to populate all IO
 socket.on('menu_status_data', function(dict) {
     area = dict.area;
     area_board_io = dict.area_board_io;
@@ -105,12 +129,7 @@ socket.on('menu_status_data', function(dict) {
                 document.getElementById("name"+bio).title = area_board_io[bio]['board_io_description'];
                 document.getElementById("name"+bio).innerHTML = area_board_io[bio]['board_io_name'];
 
-                var prog = '';
-                for(var p in P){
-                    if(P[p]['in_id'] == bio){prog = P[p]['id']}
-                    else if(P[p]['out_id'] == bio){prog = P[p]['id']}
-                }
-                document.getElementById("prog"+bio).innerHTML = prog;
+
 
                 if(In == 0){
                     image = '<img class="ms_image" src="static/icon/' + area_board_io[bio]['board_io_icon_off'] +'" >';
@@ -129,16 +148,12 @@ socket.on('menu_status_data', function(dict) {
 });
 
 
-
+//Richiede al server i dati relativi all'IO quando viene premuto il tasto "?"
 getInfo = function(board_io_id, board_id_address) {
     socket.emit('menu_status_getInfo', {board_io_id: board_io_id, board_id_address: board_id_address});
 };
 
-if(form == 0){
-    socket.emit('menu_status_start', {data: 'Connect'}); //Richiede i nuvi dati quando viene ricaricata la pagine
-}
-
-
+//Riceve i dati quando viene premuto il tasto "?" e li passa alla finestra
 socket.on('menu_status_getInfo' , function(dict) {
     title = dict.title;
     text = dict.text;
@@ -146,6 +161,12 @@ socket.on('menu_status_getInfo' , function(dict) {
     document.getElementById("ms_info_text").innerHTML = text;
 });
 
+//Quando viene caricata la agina del browser, viene inviata la richiesta di inviare i dati
+if(form == 0){
+    socket.emit('menu_status_start', {data: 'Connect'}); //Richiede i nuvi dati quando viene ricaricata la pagine
+}
+
+//Inverte lo stato dell'IO quando viene premuto dal web
 sendEvent = function(board_io_id, board_id_address) {
         socket.emit('change_menu_status', [board_io_id, board_id_address]);
 }
@@ -154,27 +175,7 @@ getIoCheck = function(type_menu) {
         socket.emit('menu_status_getIoCheck', { 'type': type_menu, 'io': io_check});
 };
 
-//Creazione pulsanti quanto viene fatto il check di un IO.
-$('input[type="checkbox"]').click(function(){
-        var f = '';
-        if($(this).is(":checked")){
-            io_check.push($(this).val());
-        }
-        else if($(this).is(":not(:checked)")){
-            if ($.inArray($(this).val(), io_check) > -1) {
-                io_check.splice($.inArray($(this).val(), io_check),1);
-            }
-        }
 
-        if(Object.keys(io_check).length == 1){ //To set parameters
-            f += "<div class='btn-group' role='group' aria-label='...'> <button type='button' class='btn btn-default' onClick='getIoCheck(\"Modity\")'; >Modify</button> </div>";
-        }
-        else if(Object.keys(io_check).length >= 2){ //To set parameters
-            f += "<div class='btn-group' role='group' aria-label='...'> <button type='button' class='btn btn-default' onClick='getIoCheck(\"Modity\")'; >Modify</button> </div>";
-            f += "<div class='btn-group' role='group' aria-label='...'> <button type='button' class='btn btn-default' onClick='getIoCheck(\"Association\")'; >Associate</button> </div>";
-        }
-        document.getElementById("check_menu").innerHTML = f;
-    });
 
     </script>
 
