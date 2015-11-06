@@ -92,6 +92,25 @@ self.prog_counter -> contatore tempo
 self.timeout -> variabile che serve per il programma timeout
 
 -------------------------------------------
-Avviso Massaggi su interfaccia web:
+Avviso Massaggi su interfaccia web tramite CSS:
 msg_type = 'danger'  -> primary (blue), success (lightgreen), info (lightblue), warning (Yellow), danger (Red)
 msg = 'bla bla bla'  -> Messaggio da scrivere sulla pagina
+------------------------------------------
+Definizione variabili per formula uscite:
+
+Giorni:
+DAY: Variabile giorno
+MO: Lunedi
+TU: Martedi
+WE: Mercoledi
+TH: Giovedi
+FR: Venerdi
+SA: Sabato
+SU: Domenica
+
+H: Variabile ora
+
+Operatori:
+OR, AND, XOR, NOT, ==, >, >=, <, <=
+
+Timer: TI

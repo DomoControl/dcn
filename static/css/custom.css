@@ -1,87 +1,10 @@
-.navbar-inverse .navbar-nav > .active > a, .navbar-inverse .navbar-nav > .active > a:hover, .navbar-inverse .navbar-nav > .active > a:focus {
-    background-color: #080808;
-    color: #fff;
-    font-weight: 900;
-}
-
-/* Menu status */
-.sensor {
-    text-align:center;
-    border:1px dotted gray;
-    padding:5px;
-    margin:5px;
-    float:left;
-    width:100px;
-}
-.ms_info {
-    all: none;
-    float: left;
-    width: 0px;
-    margin: 0;
-    padding: 0;
-}
-
-.ms_info button {
-    all: unset;
-    margin-top: 0;
-}
-
-.ms_prog {
-    all: none;
-    float: right;
-    width: 0px;
-    margin-right: 10px;
-    padding: 0;
-}
-
-.ms_prog button {
-    all: unset;
-    margin-top: 0;
-}
-
-.ms_check {
-    all: none;
-    float: left;
-    width: 0px;
-    margin: 0;
-    padding: 0;
-}
-
-.ms_check button {
-    all: unset;
-    margin-top: 0;
-}
-
-.ms_image {
-    height: 40px;
-    max-width: 50px;
-
-}
-.footer {
-    width:100%;
-    height:25px;
-    background-color:#000;
-    color: #9d9d9d;
-    background-attachment: scroll;
-    background-position: 0% 0%;
-    position: fixed;
-    bottom: 0pt;
-    left: 0pt;
-}
-
 @media(max-width:767px){
-    body {
-        background-color:lightgreen;
-    }
-}
-@media(min-width:768px){
-/* NEXUS4 */
+/* SMALL */
     body {
         background-color: #D6FCDB; /* Light Green */
         font-size: 36px;
         margin-bottom: 30px;
     }
-
     h2, .h2 {
         font-size: 36px;
         font-weight: 900;
@@ -92,22 +15,216 @@
         font-weight: 1300;
         font-size: 40px;
     }
-    .sensor {
-        text-align:center;
+    .IO {
+        float: left;
         border:1px dotted gray;
-        padding:5px;
-        margin:5px;
-        float:left;
-        width:200px;
+        padding:1px;
+        margin: 4px 4px;
+        width:220px;
+        text-align:center;
+        overflow:hidden;
     }
+    .ms_first{
+        width: 100%;
+    }
+
+    .ms_info {
+        display: inline;
+        float: left;
+        width: auto;
+        margin: 0px;
+        padding: 0px;
+        color: white;
+        background: green repeat;
+    }
+    .ms_val {
+        float: right;
+        width: auto;
+        margin: 0px;
+        padding: 0px;
+        color: green;
+        background: lightgreen repeat;
+    }
+
     .ms_image {
-    height: 70px;
-    max-width: 90px;
+        height: 70px;
+        max-width: 90px;
+    }
+
+    .ms_check {
+        all: none;
+        float: left;
+        width: 0px;
+        margin: 0;
+        padding: 0;
+    }
+    .ms_check button {
+        all: unset;
+        margin-top: 0;
+    }
+
+
+    .footer {
+        width:100%;
+        height:25px;
+        background-color:#000;
+        color: #9d9d9d;
+        background-attachment: scroll;
+        background-position: 0% 0%;
+        position: fixed;
+        bottom: 0pt;
+        left: 0pt;
+    }
+
+}
+
+@media(min-width:768px){
+/* NEXUS4 */
+    body {
+        background-color: #D6FCDB; /* Light Green */
+        font-size: 32px;
+        margin-bottom: 30px;
+    }
+    h2, .h2 {
+        font-size: 36px;
+        font-weight: 900;
+    }
+    .navbar-inverse .navbar-nav > .active > a, .navbar-inverse .navbar-nav > .active > a:hover, .navbar-inverse .navbar-nav > .active > a:focus {
+        background-color: #080808;
+        color: #fff;
+        font-weight: 600;
+        font-size: 40px;
+    }
+    .IO {
+        float: left;
+        border:1px dotted gray;
+        padding:1px;
+        margin: 4px 4px;
+        width:220px;
+        text-align:center;
+        overflow:hidden;
+    }
+    .ms_first{
+        width: 100%;
+    }
+
+    .ms_info {
+        display: inline;
+        float: left;
+        width: auto;
+        margin: 0px;
+        padding: 0px;
+        color: white;
+        background: green repeat;
+    }
+    .ms_val {
+        float: right;
+        width: auto;
+        margin: 0px;
+        padding: 0px;
+        color: green;
+        background: lightgreen repeat;
+    }
+
+    .ms_image {
+        height: 70px;
+        max-width: 90px;
+    }
+
+    .ms_check {
+        all: none;
+        float: left;
+        width: 0px;
+        margin: 0;
+        padding: 0;
+    }
+    .ms_check button {
+        all: unset;
+        margin-top: 0;
+    }
+
+    .footer {
+        width:100%;
+        height:25px;
+        background-color:#000;
+        color: #9d9d9d;
+        background-attachment: scroll;
+        background-position: 0% 0%;
+        position: fixed;
+        bottom: 0pt;
+        left: 0pt;
     }
 }
+
 @media(min-width:992px){
     body {
-        background-color:lightblue;
+        background-color: lightblue; /* Light Blu */
+        font-size: 16px;
+        margin-bottom: 30px;
+    }
+    .navbar-inverse .navbar-nav > .active > a, .navbar-inverse .navbar-nav > .active > a:hover, .navbar-inverse .navbar-nav > .active > a:focus {
+        background-color: #080808;
+        color: #fff;
+        font-weight: 700;
+        font-size: 20px;
+    }
+    .IO {
+        float: left;
+        border:1px dotted gray;
+        padding:1px;
+        margin: 4px 4px;
+        width:120px;
+        text-align:center;
+        overflow:hidden;
+    }
+    .ms_first{
+        width: 100%;
+    }
+
+    .ms_info {
+        float: left;
+        width: auto;
+        margin: 0px;
+        padding: 0px;
+        color: white;
+        background: green repeat;
+    }
+    .ms_val {
+        float: right;
+        width: auto;
+        margin: 0px;
+        padding: 0px;
+        color: green;
+        background: lightgreen repeat;
+    }
+
+    .ms_image {
+        height: 40px;
+        max-width: 50px;
+
+    }
+
+    .ms_check {
+        all: none;
+        float: left;
+        width: 0px;
+        margin: 0;
+        padding: 0;
+    }
+    .ms_check button {
+        all: unset;
+        margin-top: 0;
+    }
+    .footer {
+        width:100%;
+        height:25px;
+        background-color:#000;
+        color: #9d9d9d;
+        background-attachment: scroll;
+        background-position: 0% 0%;
+        position: fixed;
+        bottom: 0pt;
+        left: 0pt;
     }
 }
 
@@ -118,23 +235,67 @@
         font-size: 16px;
         margin-bottom: 30px;
     }
-
     .navbar-inverse .navbar-nav > .active > a, .navbar-inverse .navbar-nav > .active > a:hover, .navbar-inverse .navbar-nav > .active > a:focus {
         background-color: #080808;
         color: #fff;
         font-weight: 700;
         font-size: 20px;
     }
-    .sensor {
-        text-align:center;
+    .IO {
         border:1px dotted gray;
-        padding:5px;
-        margin:5px;
-        float:left;
+        padding:1px;
+        margin: 4px 4px;
         width:120px;
+        text-align:center;
+        overflow:hidden;
     }
+    .ms_first{
+        width: 100%;
+    }
+
+    .ms_info {
+        float: left;
+        width: auto;
+        margin: 0px;
+        padding: 0px;
+        color: white;
+        background: green repeat;
+    }
+    .ms_val {
+        float: right;
+        width: auto;
+        margin: 0px;
+        padding: 0px;
+        color: green;
+        background: lightgreen repeat;
+    }
+
     .ms_image {
         height: 40px;
         max-width: 50px;
+
+    }
+
+    .ms_check {
+        all: none;
+        float: left;
+        width: 0px;
+        margin: 0;
+        padding: 0;
+    }
+    .ms_check button {
+        all: unset;
+        margin-top: 0;
+    }
+    .footer {
+        width:100%;
+        height:25px;
+        background-color:#000;
+        color: #9d9d9d;
+        background-attachment: scroll;
+        background-position: 0% 0%;
+        position: fixed;
+        bottom: 0pt;
+        left: 0pt;
     }
 }

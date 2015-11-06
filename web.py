@@ -165,7 +165,7 @@ def menu_status():
     if thread is None:
         thread = Thread(target=event_menu_status)
         thread.start()
-    return render_template("menu_status.html", A=A, msg_type='', msg='')
+    return render_template("menu_status.html", A=A)
 
 @socketio.on('change_menu_status', namespace='/menu_status')
 def change_menu_status(message):

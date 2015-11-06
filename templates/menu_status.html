@@ -32,24 +32,42 @@
         <div style="clear:both;"  >{{ A['area'][a]['description'] }}</div>
         {% for board_io_id in A['area_board_io'] %}
             {% if A['area_board_io'][board_io_id]['area_id'] == A['area'][a]['id'] %}
-                <div style='border:1px dotted gray;' class='sensor'  >
+                <div style='border:1px dotted gray;' class='IO'  >
 
-                    <div class='ms_info'>
-                        <span class='glyphicon glyphicon-question-sign' aria-hidden='true' data-toggle="modal" data-target="#ms_info" onClick='getInfo({{ board_io_id }}, {{ A["area_board_io"][board_io_id]["board_io_address"] }})' > </span>
+                    <div class='ms_first'>
+                        <!-- Mostra l'ID di ogni IO. Premendo l'ID appare la maschera con tutte le informazioni  -->
+                        <div class='ms_info' title='ID IO. Premendo si visualizzano le informazioni.' aria-hidden='true' data-toggle="modal" data-target="#ms_info" onClick='getInfo({{ board_io_id }}, {{ A["area_board_io"][board_io_id]["board_io_address"] }})' >{{ board_io_id }}</div>
+                        <!-- Mostra il nome dell'IO. onMouseOver mostra la descrizione dell'IO  -->
+                        <span title='description{{board_io_id}}' id='name{{board_io_id}}'></span>
+                        <!-- Mostra il valore dell'IO  -->
+                        <div class='ms_val' id='val{{board_io_id}}' title='Valore IO'></div>
                     </div>
+
+
+
+<!--
+                    <div style="clear:both;"></div>
+-->
+
+                    <!-- Mostra l'ID di ogni IO. Premendo l'ID appare la maschera con tutte le informazioni
                     <div class='ms_prog'>
                         <span id='prog{{board_io_id}}'  data-toggle="modal" data-target="#ms_prog" onClick='getProg({{ board_io_id }}, {{ A["area_board_io"][board_io_id]["board_io_address"] }})' ></span>
                     </div>
+                    -->
 
-                    <span title='description{{board_io_id}}' id='name{{board_io_id}}'></span><br>
+                    <!-- Mostra l'ICONA dell' IO. E' un tasto che inverte lo stato  -->
 
-                    <span class='ms_image' id='image{{board_io_id}}' onClick='sendEvent([{{ board_io_id }}, {{ A["area_board_io"][board_io_id]["board_io_address"] }}  ])'></span><br>
+                        <span class='ms_image' id='image{{board_io_id}}' onClick='sendEvent([{{ board_io_id }}, {{ A["area_board_io"][board_io_id]["board_io_address"] }}  ])'></span><br>
 
+
+                    <!-- Mostra il checkbox sulle uscite per definire la formula di funzionamento e tutti i parametri del programma  -->
                     <div class='ms_check'>
-                        <input type="checkbox" name="io_check" value="{{board_io_id}}" aria-label="Close">
+                        {% if A['board_io'][board_io_id]['io_type_id'] == 2 or A['board_io'][board_io_id]['io_type_id'] == 3 %}
+                            <input type="checkbox" name="io_check" value="{{board_io_id}}" aria-label="Close">
+                        {% endif %}
                     </div>
 
-                    <span id='val{{board_io_id}}'></span><br>
+                    <br>
 
                 </div>
             {%endif%}
