@@ -216,6 +216,22 @@ def menu_status_getIoCheck(message):
     """
     print 'menu_status_getIoCheck', message
 
+@socketio.on('menu_status_getProgIn', namespace='/menu_status')
+def menu_status_getProgIn(prog_id):
+    """
+    Chamata da IO web. Mostra Program_ID
+    """
+
+    print 'menu_status_getProgId', prog_id['prog_id'][1:]
+    title = 'Program ID: %s' %(prog_id['prog_id'])
+    text = """
+            <div class="row" style="background:#D2D7EF;"><div class="col-xs-4 col-md-4">Program</div><div class="col-xs-8 col-md-8">ID: %s</div></div>
+        """\
+    %(prog_id['prog_id'])
+
+    socketio.emit('menu_status_getInfo', {'title': title, 'text': text}, namespace='/menu_status' )
+
+
 @app.route('/setup_program_type', methods=["GET", "POST"])
 def setup_program_type():
     permission = checkPermission(2)  # check login and privilege
