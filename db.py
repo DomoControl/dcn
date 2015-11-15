@@ -1,9 +1,8 @@
 #!/usr/bin/python
 import sqlite3
 
-
 class Database:
-    """Class to use Database SQLITE"""
+    """Class DB to use Database SQLITE"""
 
     dbname = './db/db.sqlite'
 
@@ -13,6 +12,7 @@ class Database:
     def connection(self):
         """Connection di Database"""
         return sqlite3.connect(self.database)
+
 
     def query(self, query, args=(), one=False):
         """Return query"""

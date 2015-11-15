@@ -1,10 +1,5 @@
-import domocontrol
-import smbus
+import sht21
 
-
-
-a = smbus.SMBus(1)
+a = sht21.SHT21(1)
 print dir(a)
-print help(a)
-print a.read_byte_data(33, 2)
-#print a.read_byte_data(1, 33, 0)
+print a.read_humidity()

@@ -100,26 +100,25 @@ def event_menu_status():
     print "event_menu_status"
     global event_menu_status_start
     print event_menu_status_start
-    board_bin_val = list(d.getData('self.board_bin_val'))
+    board_bin_val = list(d.getData('self.mBoard[6]'))
     A = d.getData('self.A')
     area_board_io = d.getData('self.A["area_board_io"]').copy()
     area = d.getData('self.A["area"]').copy()
-    board_id = d.getData('self.board_id')
+    board_id = d.getData('self.mBoard[1]')
     P = d.getData('self.P')
 
     while True:
         page_reload = 0
         change = 0
 
-        # print dir(d.getData('self.board_bin_val'))
-        if board_bin_val != d.getData('self.board_bin_val'):
+        if board_bin_val != d.getData('self.mBoard[6]'):
             print "cambia board_bin_val", board_bin_val
-            board_bin_val = list(d.getData('self.board_bin_val'))
+            board_bin_val = list(d.getData('self.mBoard[6]'))
             change += 1
 
-        if board_id != d.getData('self.board_id'):
+        if board_id != d.getData('self.mBoard[1]'):
             print "cambia board_id", board_id
-            board_id = list(d.getData('board_id'))
+            board_id = list(d.getData('self.mBoard[1]'))
             change += 1
 
         if area_board_io != d.getData('self.A["area_board_io"]'):
