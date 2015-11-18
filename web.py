@@ -97,9 +97,9 @@ def event_menu_status():
     For something more intelligent, take a look at Redis pub/sub
     stuff. A great example can be found here https://github.com/jakubroztocil/chat
     """
-    print "event_menu_status"
+    # print "event_menu_status"
     global event_menu_status_start
-    print event_menu_status_start
+    # print event_menu_status_start
     board_bin_val = list(d.getData('self.mBoard[6]'))
     A = d.getData('self.A')
     area_board_io = d.getData('self.A["area_board_io"]').copy()
@@ -117,34 +117,34 @@ def event_menu_status():
             change += 1
 
         if board_id != d.getData('self.mBoard[1]'):
-            print "cambia board_id", board_id
+            # print "cambia board_id", board_id
             board_id = list(d.getData('self.mBoard[1]'))
             change += 1
 
         if area_board_io != d.getData('self.A["area_board_io"]'):
-            print "cambia area_board_io", area_board_io
+            # print "cambia area_board_io", area_board_io
             area_board_io = d.getData('self.A["area_board_io"]').copy()
             page_reload = 1
 
         # print "cambia area", area, d.getData('self.A["area"]'), d.getData('self.A["area"]') == area
         if area != d.getData('self.A["area"]'):
-            print "cambia area", area
+            # print "cambia area", area
             area = d.getData('self.A["area"]').copy()
             page_reload = 1
 
         if P != d.getData('self.P'):
-            print "cambia P", P
+            # print "cambia P", P
             P = d.getData('self.P').copy()
             page_reload = 1
 
         if event_menu_status_start == 1 or change == 1 or page_reload == 1:
-            print "PageReload", page_reload, 'change', change, board_bin_val, P
+            # print "PageReload", page_reload, 'change', change, board_bin_val, P
             socketio.emit('menu_status_data', {'board_bin_val': board_bin_val,
                 'area_board_io': area_board_io, 'area': area, 'board_id': board_id, 'page_reload': page_reload, 'P': P},
                 namespace='/menu_status')
             event_menu_status_start = 0
         else:
-            print "PageReload", page_reload, 'NO changed'
+            # print "PageReload", page_reload, 'NO changed'
             time.sleep(1)
 
 @socketio.on('menu_status_start', namespace='/menu_status')

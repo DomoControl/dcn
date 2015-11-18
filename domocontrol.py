@@ -84,11 +84,13 @@ class Domocontrol:
         """
         Si occupa di leggere e scrivere i valori degli IO
         """
+
         # self.log('Self.Mboard', self.mBoard)
         if board_type_id == 0:  # None
             pass
 
         elif board_type_id == 1:  # I2C
+            # self.log('mBoard', self.mBoard)
             board_id_i2c_val = self.read_i2c(self.mBoard[3][board_n]) # Get byte valore I2C board
             if self.mBoard[6][board_n] != board_id_i2c_val: # check if board_bin_val e' cambiato
                 self.mBoard[7][board_n] = board_id_i2c_val # aggiorna board_bin_val
@@ -113,7 +115,7 @@ class Domocontrol:
         elif board_type_id == 4 or board_type_id == 6:  # Temperature + humidity
             a = sht21.SHT21(self.i2c)
             if board_type_id == 4:
-                time.sleep(0.3)
+                time.sleep(0.33)
                 self.mBoard[6][board_n] = round(a.read_temperature(), 1)
             if board_type_id == 6:
                 time.sleep(0.5)
@@ -187,45 +189,52 @@ class Domocontrol:
         out_status = self.getIOStatus(out_id)
         inverted = self.mProg[4][prog_n]
 
-        if prog_type_id == 1:  # Timer
-            # print "===>>>>", in_status, self.prog_timer, self.mProg[10]
-            print in_status
-            if in_status == 1:
-                self.mProg[10][prog_n] = round(time.time(), 1)
+        if prog_type_id == 1:  # Timer OK
+            if in_status == 1: # Deve accendersi
+                self.mProg[10][prog_n] = round(time.time(), 1) # Mette su Counter l'ora corrente
                 self.mBoard[7][self.getBoard_n(out_id)] = self.setBit(self.mBoard[6][self.getBoard_n(out_id)], self.getBoard_address(out_id), in_status ^ inverted)
                 self.mBoard[8][self.getBoard_n(out_id)] = 1
-
             timer = self.mProg[7][prog_n]
-            print time.time(), self.mProg[10][prog_n], timer, time.time() - self.mProg[10][prog_n]
+            # print time.time(), self.mProg[10][prog_n], timer, time.time() - self.mProg[10][prog_n]
             if time.time() - self.mProg[10][prog_n] > timer:
-                self.mBoard[7][self.getBoard_n(out_id)] = self.setBit(self.mBoard[6][self.getBoard_n(out_id)], self.getBoard_address(out_id), in_status ^ inverted)
+                self.mBoard[7][self.getBoard_n(out_id)] = self.setBit(self.mBoard[6][self.getBoard_n(out_id)], self.getBoard_address(out_id), inverted)
                 self.mBoard[8][self.getBoard_n(out_id)] = 1
 
         elif prog_type_id == 2:  # Timeout
-            timer = self.prog_timer[prog_n]
-            if in_status == 1 and self.prog_timeout[prog_n] == 0:
-                self.prog_timeout[prog_n] = 1
-                self.prog_counter[prog_n] = round(time.time(), 1)
-            elif in_status == 0 and self.prog_timeout[prog_n] == 1:
-                self.prog_timeout[prog_n] = 0
+            """
+            Out = 1 solo se in_status == 1 e counter non e' scaduto
+            """
+            timer = self.mProg[7][prog_n] # Tempo massimo accensione
+            counter = time.time() - self.mProg[10][prog_n]
+            # print 'in_status:', in_status, 'timer:', timer, 'counter:', time.time()-self.mProg[10][prog_n], counter >= timer
+            if in_status == 1 and counter >= timer : #
+                # print "A"
+                out = inverted
+            elif in_status == 0 and counter >= timer:
+                # print "B"
+                self.mProg[10][prog_n] = time.time()
+                out = inverted
+            elif in_status == 1 and counter <= timer:
+                # print "C"
+                out = not inverted
+            elif in_status == 0 and counter <= timer:
+                # print "D"
+                self.mProg[10][prog_n] = time.time()
+                out = inverted
 
-            if timer > time.time() - self.prog_counter[prog_n]:
-                self.bin_val_new[self.board_id.index(self.getBoard_id(P['out_id']))] = self.setBit(self.board_bin_val[self.board_id.index(self.getBoard_id(P['out_id']))], self.getBoard_address(P['out_id']), 1 ^ P['inverted'])
-                self.board_update[self.board_id.index(self.getBoard_id(P['out_id']))] = 1
-            else:
-                self.bin_val_new[self.board_id.index(self.getBoard_id(P['out_id']))] = self.setBit(self.board_bin_val[self.board_id.index(self.getBoard_id(P['out_id']))], self.getBoard_address(P['out_id']), 0 ^ P['inverted'])
-                self.board_update[self.board_id.index(self.getBoard_id(P['out_id']))] = 1
-            # print in_status, self.prog_timeout[prog_n], timer, time.time() - self.prog_counter[prog_n]
+            if out != self.mBoard[7][self.mBoard[1].index(self.getBoard_id(out_id))]:
+                self.mBoard[7][self.getBoard_n(out_id)] = self.setBit(self.mBoard[6][self.getBoard_n(out_id)], self.getBoard_address(out_id), out)
+                self.mBoard[8][self.getBoard_n(out_id)] = 1
 
         elif prog_type_id == 3:  # Automatic
             # print self.prog_chrono[prog_n]
             pass
 
-
-        elif prog_type_id == 4:  # Manual
-            if in_status != (out_status ^ inverted):
-                self.mBoard[7][self.mBoard[1].index(self.getBoard_id(out_id))] = self.setBit(self.mBoard[6][self.mBoard[1].index(self.getBoard_id(out_id))], self.getBoard_address(out_id), in_status ^ self.mProg[4][prog_n])
-                self.mBoard[8][self.mBoard[1].index(self.getBoard_id(out))] = 1
+        elif prog_type_id == 4:  # Manual OK
+                val = self.setBit(self.mBoard[6][self.mBoard[1].index(self.getBoard_id(out_id))], self.getBoard_address(out_id), in_status ^ self.mProg[4][prog_n])
+                if val != self.mBoard[7][self.mBoard[1].index(self.getBoard_id(out_id))]:
+                    self.mBoard[7][self.mBoard[1].index(self.getBoard_id(out_id))] = val
+                    self.mBoard[8][self.mBoard[1].index(self.getBoard_id(out_id))] = 1
 
         elif prog_type_id == 5:  # Thermostat
             pass
@@ -280,12 +289,12 @@ class Domocontrol:
         next_value = 0 if io_value == 1 else 1
 
         next_bin = self.setBit(self.mBoard[7][self.mBoard[1].index(board_id)], address, next_value)
-        print next_bin, self.mBoard[7][self.mBoard[1].index(board_id)], address, io_value
+        # print "next_bin:", next_bin, 'elf.mBoard[7]', self.mBoard[7][self.mBoard[1].index(board_id)], 'Address:', address, 'Value:', io_value
 
         self.mBoard[7][self.mBoard[1].index(board_id)] = next_bin
         self.mBoard[8][self.mBoard[1].index(board_id)] = 1
         # self.log('mBoard', self.mBoard)
-        # print "io_id:%s,  address:%s,  board_id:%s,  current_value:%s,  next_value:%s  next_bin:%s" %(io_id, address, board_id, io_value, next_value, next_bin)
+        print "io_id:%s,  address:%s,  board_id:%s,  current_value:%s,  next_value:%s  next_bin:%s" %(io_id, address, board_id, io_value, next_value, next_bin)
 
     def now(self):
         """
