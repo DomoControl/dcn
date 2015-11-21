@@ -63,11 +63,12 @@ Matrice Board
 self.mBoard_io #matrice board_io
 0 n           (0, 1, 2, 3, 4, 5)
 1 id          (13, 14, 16, 20, 21)
-2 type_id     (2, 2, 2, 2, 2)
+2 type_id     (2, 2, 2, 2, 2) # IO type: 0: IN virtuae, 1: IN, 2: OUT, 3: OUT virtuale, 4: tempemperature, 5: humidity, 6: light, 7: voltage, 8: current
 3 enable      (1, 1, 1, 1, 1)
 4 board_id    (1, 1, 1, 1, 1)
 5 address     (0, 1, 2, 3, 4)
 6 area_id     (4, 1, 2, 5, 5)
+7 io_definition  (0, 0, 1, 1, 0) # 0= suscita, 1= ingresso
 
 
 ============ board_io ==========

@@ -13,36 +13,16 @@ class Domocontrol:
     """Class DomoControl"""
 
     def __init__(self):
-        self.db = Database()
+        self.db = Database() # classe database
         self.i2c = 0
-        self.getBusValue()
+        self.getBusValue() # Setta il corretto device
         self.A = {}
         self.P = {}
-        self.IOThread = []
-        self.board_n = ()
         self.board_id = ()
-        self.board_type_id = ()
-        self.board_address = ()
-        self.board_type = ()
-        self.board_bin_val = []
+
         self.bin_val_new = []
         self.board_update = []
         self.board_IO_definition = ()
-        self.board_io_id = ()
-        self.board_io_address = ()
-        self.board_io_board_id = ()
-        self.PThread = []
-        self.prog_n = ()
-        self.prog_id = ()
-        self.prog_type_id = ()
-        self.prog_in_id = ()
-        self.prog_out_id = ()
-        self.prog_inverted = ()
-        self.prog_timer = ()
-        self.prog_chrono = ()
-        self.prog_enable = ()
-        self.prog_counter = []
-        self.prog_timeout = []  # dict per variabili temporane usata ad esempio per timeout
 
         self.mBoard = [] # matrive board
         self.mBoard_io = [] # matrice IO
@@ -55,7 +35,6 @@ class Domocontrol:
         """
         Controlla il numero del divice I2C, puo' essere 0 o 1....
         """
-        print 'Start getBusValue'
         self.device = []
         for a in range(0, 10):
             try:
@@ -206,19 +185,19 @@ class Domocontrol:
             """
             timer = self.mProg[7][prog_n] # Tempo massimo accensione
             counter = time.time() - self.mProg[10][prog_n]
-            # print 'in_status:', in_status, 'timer:', timer, 'counter:', time.time()-self.mProg[10][prog_n], counter >= timer
+            # print 'in_status:', in_status, 'timer:', timer, 'counter:', time.time(), self.mProg[10][prog_n], counter, counter <= timer
             if in_status == 1 and counter >= timer : #
-                # print "A"
+                print "A"
                 out = inverted
             elif in_status == 0 and counter >= timer:
-                # print "B"
+                print "B"
                 self.mProg[10][prog_n] = time.time()
                 out = inverted
             elif in_status == 1 and counter <= timer:
-                # print "C"
+                print "C"
                 out = not inverted
             elif in_status == 0 and counter <= timer:
-                # print "D"
+                print "D"
                 self.mProg[10][prog_n] = time.time()
                 out = inverted
 
@@ -227,7 +206,6 @@ class Domocontrol:
                 self.mBoard[8][self.getBoard_n(out_id)] = 1
 
         elif prog_type_id == 3:  # Automatic
-            # print self.prog_chrono[prog_n]
             pass
 
         elif prog_type_id == 4:  # Manual OK
@@ -347,7 +325,6 @@ class Domocontrol:
         board_update = []
 
         board_address = []
-        self.board_bin_val = []
         self.bin_val_new = []
         self.board_update = []
 
@@ -366,16 +343,11 @@ class Domocontrol:
             board_bin_val_new.append(0)
             board_update.append(0)
 
-            self.board_bin_val.append(0)
             self.bin_val_new.append(0)
-            self.IOThread.append(0)
             self.board_update.append(0)
 
-        self.board_n = tuple(board_n)
         self.board_id = tuple(board_id)
-        self.board_type_id = tuple(board_type_id)
 
-        self.board_address = tuple(board_address)
 
         # Matrice Board
         self.mBoard.append(tuple(board_n))
@@ -429,7 +401,6 @@ class Domocontrol:
         for r in res:
             board_type.append(r['id'])
 
-        self.board_type = tuple(board_type)
 
         q = 'SELECT * FROM board_io ORDER BY id'
         res = self.db.query(q)
@@ -440,6 +411,7 @@ class Domocontrol:
         board_io_type_id = []
         board_io_enable = []
         board_io_area_id = []
+        board_io_definition = []
         n = 0
         for r in res:
             board_io_n.append(n)
@@ -447,13 +419,16 @@ class Domocontrol:
             board_io_address.append(r['address'])
             board_io_board_id.append(r['board_id'])
             board_io_type_id.append(r['io_type_id'])
+            if r['io_type_id'] == 2 or r['io_type_id'] == 3: # IO = uscite
+                board_io_definition.append(0)
+            else: # IO = ingressi
+                board_io_definition.append(1)
+
             board_io_enable.append(r['enable'])
             board_io_area_id.append(r['area_id'])
-            n += 1
 
-        self.board_io_id = tuple(board_io_id)
-        self.board_io_address = tuple(board_io_address)
-        self.board_io_board_id = tuple(board_io_board_id)
+            n += 1
+            n += 1
 
 
         icon_path = os.path.join(self.dir_root, 'static/icon')
@@ -468,12 +443,12 @@ class Domocontrol:
         self.mBoard_io.append(tuple(board_io_board_id))
         self.mBoard_io.append(tuple(board_io_address))
         self.mBoard_io.append(tuple(board_io_area_id))
+        self.mBoard_io.append(tuple(board_io_definition))
         self.log('Self.mBoard_io', self.mBoard_io)
 
 
         q = """SELECT * FROM program ORDER BY id"""
         res = self.db.query(q)
-        self.PThread = []
         self.P = {}
         prog_n = []
         prog_id = []
@@ -488,11 +463,9 @@ class Domocontrol:
         prog_counter = []
         prog_PTHread = []
 
-        self.prog_timeout = []
         n = 0
         for r in res:
             self.P.update({r['id']: r})
-            self.PThread.append(0)
             prog_n.append(n)
             prog_id.append(r['id'])
             prog_type_id.append(r['type_id'])
@@ -514,19 +487,7 @@ class Domocontrol:
             prog_enable.append(r['enable'])
             prog_PTHread.append(0)
             prog_counter.append(round(time.time(), 1))
-            self.prog_timeout.append(0)
             n += 1
-
-        self.prog_n = tuple(prog_n)
-        self.prog_id = tuple(prog_id)
-        self.prog_type_id = tuple(prog_type_id)
-        self.prog_in_id = tuple(prog_in_id)
-        self.prog_out_id = tuple(prog_out_id)
-        self.prog_inverted = tuple(prog_inverted)
-        self.prog_timer = tuple(prog_timer)
-        self.prog_chrono = tuple(prog_chrono)
-        self.prog_enable = tuple(prog_enable)
-        self.prog_counter = prog_counter
 
 
         # Matrice Program

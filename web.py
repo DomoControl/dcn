@@ -107,9 +107,12 @@ def event_menu_status():
     board_id = d.getData('self.mBoard[1]')
     P = d.getData('self.P')
 
+
     while True:
         page_reload = 0
         change = 0
+
+
 
         if board_bin_val != d.getData('self.mBoard[6]'):
             print "cambia board_bin_val", board_bin_val
@@ -137,6 +140,13 @@ def event_menu_status():
             P = d.getData('self.P').copy()
             page_reload = 1
 
+        mProg = d.getData('self.mProg')
+        counter = []
+        for p in mProg[6]:
+            counter.append(time.time() - p)
+        print counter
+
+
         if event_menu_status_start == 1 or change == 1 or page_reload == 1:
             # print "PageReload", page_reload, 'change', change, board_bin_val, P
             socketio.emit('menu_status_data', {'board_bin_val': board_bin_val,
@@ -159,6 +169,8 @@ def menu_status():
     if permission: return redirect(url_for(permission))
 
     A = d.getData('self.A')
+
+
 
     global thread
     if thread is None:
@@ -254,7 +266,7 @@ def setup_area():
         f = request.form  # get input value
         db.setForm('UPDATE', f.to_dict(), 'area')  # recall db.setForm to update query. UPDATE=Update method, f.to_dict=dictionary with input value, area:database table
         d.setup_area()
-        d.area_board_io()
+        d.setup_area_board_io()
     q = 'SELECT * FROM area ORDER by sort'
     res = db.query(q)
     return render_template("setup_area.html", data=res)
@@ -415,7 +427,7 @@ def setup_board_io():
                 q = 'UPDATE board_io SET id="{}", io_type_id="{}", name="{}", description="{}", area_id="{}", enable="{}", board_id="{}", address="{}", icon_on="{}", icon_off="{}" WHERE id="{}"'\
                     .format(f['id'], f['io_type_id'], f['name'], f['description'], f['area_id'], enable, f['board_id'], f['address'], f['icon_on'], f['icon_off'], f['id'])
                 db.query(q)
-                d.area_board_io()
+                d.setup_area_board_io()
                 d.setup_board_io()
                 print q
         elif f['submit'] == 'Add IO':
@@ -777,22 +789,9 @@ def setProg(start='y'):  # To update Program
     else:
         threading.Timer(1, setProg).cancel()
 
-def counter(start='y'):  # One second counter
-    try:
-        # print "counter"
-        pass
-    except:
-        print('Error Counter')
-        traceback.print_exc()
-    if start == 'y':
-        threading.Timer(1, counter).start()
-    else:
-        threading.Timer(1, counter).cancel()
-
 if __name__ == '__main__':
     getIO()
     setProg()
-    counter()
 
     app.debug = 1
     socketio.run(app, port=8000, host='0.0.0.0')
