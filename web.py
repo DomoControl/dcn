@@ -91,28 +91,26 @@ def getTime():
     return jsonify(result=now().strftime("%a  %d/%m/%y   %H:%M:%S"))
 
 event_menu_status_start = 0
-def event_menu_status():
+def event_menu_status(start = 0):
     """
     Send data to menu_status by server sent event (SSE)
     For something more intelligent, take a look at Redis pub/sub
     stuff. A great example can be found here https://github.com/jakubroztocil/chat
     """
-    # print "event_menu_status"
-    global event_menu_status_start
-    # print event_menu_status_start
     board_bin_val = list(d.getData('self.mBoard[6]'))
     A = d.getData('self.A')
     area_board_io = d.getData('self.A["area_board_io"]').copy()
     area = d.getData('self.A["area"]').copy()
     board_id = d.getData('self.mBoard[1]')
     P = d.getData('self.P')
-
+    global event_menu_status_start
+    print 'event_menu_status', event_menu_status_start
 
     while True:
         page_reload = 0
         change = 0
 
-
+        # print "event_menu_status"
 
         if board_bin_val != d.getData('self.mBoard[6]'):
             print "cambia board_bin_val", board_bin_val
@@ -147,12 +145,12 @@ def event_menu_status():
         print counter
 
 
-        if event_menu_status_start == 1 or change == 1 or page_reload == 1:
+        if event_menu_status_start or change or page_reload:
+            event_menu_status_start = 0
             # print "PageReload", page_reload, 'change', change, board_bin_val, P
             socketio.emit('menu_status_data', {'board_bin_val': board_bin_val,
                 'area_board_io': area_board_io, 'area': area, 'board_id': board_id, 'page_reload': page_reload, 'P': P},
                 namespace='/menu_status')
-            event_menu_status_start = 0
         else:
             # print "PageReload", page_reload, 'NO changed'
             time.sleep(1)
@@ -170,7 +168,6 @@ def menu_status():
 
     A = d.getData('self.A')
     area_id = d.getData('self.area_id')
-
 
     global thread
     if thread is None:
