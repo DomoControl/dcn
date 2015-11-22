@@ -28,7 +28,7 @@
         </div>
     </div>
 
-    {% for a in A['area'] %}
+    {% for a in area_id %}
         <div style="clear:both;"  >{{ A['area'][a]['description'] }}</div>
         {% for board_io_id in A['area_board_io'] %}
             {% if A['area_board_io'][board_io_id]['area_id'] == A['area'][a]['id'] %}

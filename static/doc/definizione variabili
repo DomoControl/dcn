@@ -1,5 +1,6 @@
 Definizioni variabili per il funzionamento
 
+=============== Logica booleana ==============
 
  &        |      ^      ~
 AND      OR     XOR     Complement
@@ -8,44 +9,11 @@ AND      OR     XOR     Complement
 10|0    10|1    10|1
 11|1    11|1    11|0
 
-
 =============== Board ==============
 
 self.IOThread -> Lista dei Thread attivi che testano il valore in ingresso delle schede
 0 se thread non è attivo, 1 se è attivo
 [0, 0, 0, 0...]
-
-self.board_n -> Board_number
-(0, 1, 2, 5, 8, 9)
- |  |  |Terza board
- |  |Seconda board
- |Prima board
-
-self.board_id -> board id
-(1, 2, 3, 4, 5, 6)
-
-self.board_IO_definition -> Setta in bintario se gli IO sono ingressi o uscite
-1=input  0=Output
-[0,1,0,0,1]
-
-self.board_address -> Indirizzi delle varie schede
-(0, 32, 33, 0, 40, 39)
-
-self.board_type_id -> type_id delle relative board
-(1, 2, 1, 2, 5, 6)
-
-self.board_type -> board_type disponibili
-(0, 1, 2, 3, 4, 5, 6)  # Tipo di board: 0:null, 1:I2C, 2:RS485, 3:WEB, 4:SHT21 temperature, 5:PD9535, 6:SHT humidity
-
-self.board_bin_val -> Lista valori IO per ciascuna scheda
-[0, 255, 247, 0, 22.8, 0, 57.4]
-
-self.board_bin_onchange -> IO che devono essere cambiati (valore binario)
-[0, 0, 0, 29, 0, 0, 0]
-
-self.board_changerequest -> Chede che devono subire una modifica
-1 = il valore deve essere aggiornato, 0 = nessuna modifica
-[0, 0, 0, 1, 0... ]
 
 Matrice Board
 0 n                     (0, 1, 2, 3, 4, 5)
@@ -57,6 +25,7 @@ Matrice Board
 6 board_bin_val         [0, 0, 0, 0, 0, 0]
 7 board_bin_val_new     [0, 0, 0, 0, 0, 0] # nuovo valore del'IO
 8 board_update          [0, 0, 0, 0, 0, 0] # se 1, l'IO deve essere aggiornato (old changerequest)
+9 definition            (0, 0, 1, 1, 0, 0) # 0= uscita, 1= ingresso
 
 =============== Board_IO ==============
 
@@ -68,7 +37,7 @@ self.mBoard_io #matrice board_io
 4 board_id    (1, 1, 1, 1, 1)
 5 address     (0, 1, 2, 3, 4)
 6 area_id     (4, 1, 2, 5, 5)
-7 io_definition  (0, 0, 1, 1, 0) # 0= suscita, 1= ingresso
+7 definition  (0, 0, 1, 1, 0) # 0= suscita, 1= ingresso
 
 
 ============ board_io ==========

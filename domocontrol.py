@@ -18,15 +18,12 @@ class Domocontrol:
         self.getBusValue() # Setta il corretto device
         self.A = {}
         self.P = {}
-        self.board_id = ()
-
-        self.bin_val_new = []
-        self.board_update = []
-        self.board_IO_definition = ()
 
         self.mBoard = [] # matrive board
         self.mBoard_io = [] # matrice IO
         self.mProg = [] # matrice programma
+
+        self.area_id = ()
 
         self.dir_root = os.path.dirname(os.path.abspath(__file__))
         self.initialize()
@@ -70,18 +67,16 @@ class Domocontrol:
 
         elif board_type_id == 1:  # I2C
             # self.log('mBoard', self.mBoard)
+            if self.mBoard[8][board_n] == 1: # se board_update e' settato:
+                self.mBoard[6][board_n] = self.mBoard[7][board_n] # Aggiorna board_bin_val con board_bin_val_new
+                self.write_i2c(self.mBoard[3][board_n], (self.mBoard[6][board_n] | self.mBoard[9][board_n])) # Aggiorna I2C out
+                self.mBoard[8][board_n] = 0
+
             board_id_i2c_val = self.read_i2c(self.mBoard[3][board_n]) # Get byte valore I2C board
             if self.mBoard[6][board_n] != board_id_i2c_val: # check if board_bin_val e' cambiato
-                self.mBoard[7][board_n] = board_id_i2c_val # aggiorna board_bin_val
-                self.mBoard[8][board_n] = 1 # Aggiorna board_update
-            # Aggiorna I2C
+                self.mBoard[7][board_n] = self.mBoard[6][board_n] = board_id_i2c_val # aggiorna board_bin_val
+                self.write_i2c(self.mBoard[3][board_n], (self.mBoard[6][board_n] | self.mBoard[9][board_n])) # Aggiorna I2C out
 
-            # print self.mBoard[8], board_n
-            if self.mBoard[8][board_n] == 1: # se board_update e' settato:
-
-                self.mBoard[6][board_n] = self.mBoard[7][board_n] # Aggiorna board_bin_val con board_bin_val_new
-                self.write_i2c(self.mBoard[3][board_n], (self.mBoard[6][board_n] | self.board_IO_definition[board_n])) # Aggiorna I2C out
-                self.mBoard[8][board_n] = 0
 
         elif board_type_id == 2:  # RS485
             pass
@@ -187,17 +182,17 @@ class Domocontrol:
             counter = time.time() - self.mProg[10][prog_n]
             # print 'in_status:', in_status, 'timer:', timer, 'counter:', time.time(), self.mProg[10][prog_n], counter, counter <= timer
             if in_status == 1 and counter >= timer : #
-                print "A"
+                # print "A"
                 out = inverted
             elif in_status == 0 and counter >= timer:
-                print "B"
+                # print "B"
                 self.mProg[10][prog_n] = time.time()
                 out = inverted
             elif in_status == 1 and counter <= timer:
-                print "C"
+                # print "C"
                 out = not inverted
             elif in_status == 0 and counter <= timer:
-                print "D"
+                # print "D"
                 self.mProg[10][prog_n] = time.time()
                 out = inverted
 
@@ -280,7 +275,7 @@ class Domocontrol:
         """
         return date.now()
 
-    def default(self):
+    def setDefault(self):
         """
         Set default value at start program
         that is store into database
@@ -289,9 +284,12 @@ class Domocontrol:
         res = self.db.query(q)
         for r in res:
             if r['board_id'] == 0 or r['board_id'] == 1 or r['board_id'] == 2 or r['board_id'] == 3 or r['board_id'] == 5:  # Tutte le schede che possono essere a valore "0"
-                self.bin_val_new[self.board_id.index(r['board_id'])] = self.setBit(self.bin_val_new[self.board_id.index(r['board_id'])], r['address'], r['default'])
-                self.board_update[self.board_id.index(r['board_id'])] = 1  # setta la schede che deve essere aggiornata a 1
-        print self.bin_val_new, self.board_update
+                self.mBoard[7][self.mBoard[1].index(r['board_id'])] = self.setBit(self.mBoard[7][self.mBoard[1].index(r['board_id'])], r['address'], r['default'])
+                self.mBoard[8][self.mBoard[1].index(r['board_id'])] = 1  # setta la schede che deve essere aggiornata a 1
+        # self.log('self.mBoard', self.mBoard)
+
+
+
 
     def log(self, name, data):
         """
@@ -323,11 +321,7 @@ class Domocontrol:
         board_bin_val = []
         board_bin_val_new = []
         board_update = []
-
         board_address = []
-        self.bin_val_new = []
-        self.board_update = []
-
 
         n = 0
         for r in res:
@@ -343,12 +337,6 @@ class Domocontrol:
             board_bin_val_new.append(0)
             board_update.append(0)
 
-            self.bin_val_new.append(0)
-            self.board_update.append(0)
-
-        self.board_id = tuple(board_id)
-
-
         # Matrice Board
         self.mBoard.append(tuple(board_n))
         self.mBoard.append(tuple(board_id))
@@ -359,7 +347,7 @@ class Domocontrol:
         self.mBoard.append(board_bin_val)
         self.mBoard.append(board_bin_val_new)
         self.mBoard.append(board_update)
-        self.log('Matrice Board', self.mBoard)
+        # self.log('Matrice Board', self.mBoard)
 
 
         q = 'SELECT id, address, board_id, io_type_id FROM board_io ORDER BY board_id, address'
@@ -370,10 +358,9 @@ class Domocontrol:
         tmp_address = []
         tmp_id = []
         tmp_val = []
-        self.board_IO_definition = ()
         tmp_IO_definition = []
         tmp_IO_definitionBin = 0
-        for lb in self.board_id:
+        for lb in self.mBoard[1]:
             for r in res:
                 if r['board_id'] == lb:
                     tmp_address.append(r['address'])
@@ -392,7 +379,6 @@ class Domocontrol:
             tmp_address = []
             tmp_id = []
             tmp_val = []
-        self.board_IO_definition = tuple(tmp_IO_definition)
 
 
         q = 'SELECT * FROM board_type ORDER BY id'
@@ -416,20 +402,16 @@ class Domocontrol:
         for r in res:
             board_io_n.append(n)
             board_io_id.append(r['id'])
-            board_io_address.append(r['address'])
-            board_io_board_id.append(r['board_id'])
             board_io_type_id.append(r['io_type_id'])
+            board_io_enable.append(r['enable'])
+            board_io_board_id.append(r['board_id'])
+            board_io_address.append(r['address'])
+            board_io_area_id.append(r['area_id'])
             if r['io_type_id'] == 2 or r['io_type_id'] == 3: # IO = uscite
                 board_io_definition.append(0)
             else: # IO = ingressi
                 board_io_definition.append(1)
-
-            board_io_enable.append(r['enable'])
-            board_io_area_id.append(r['area_id'])
-
             n += 1
-            n += 1
-
 
         icon_path = os.path.join(self.dir_root, 'static/icon')
         files = [ fn for fn in os.listdir(icon_path) ]
@@ -444,7 +426,22 @@ class Domocontrol:
         self.mBoard_io.append(tuple(board_io_address))
         self.mBoard_io.append(tuple(board_io_area_id))
         self.mBoard_io.append(tuple(board_io_definition))
-        self.log('Self.mBoard_io', self.mBoard_io)
+
+        # Set mBoard[9] -> definizione ingressi / uscite: 0=output, 1=input
+        board_definition = {}
+        board_definition1 = []
+        for x in self.mBoard_io[0]:
+            # print x, self.mBoard_io[4][x], self.mBoard_io[7][x], self.mBoard_io[5][x]
+            if not self.mBoard_io[4][x] in board_definition: # Add board_id into list
+                board_definition.update({self.mBoard_io[4][x]: 0})
+            if self.mBoard_io[7][x] == 1 and self.mBoard_io[7][x] == 1 : # IO = input
+                board_definition[self.mBoard_io[4][x]] += 2 ** self.mBoard_io[5][x]
+        for x in self.mBoard[1]:
+            # print x, board_definition.get(x, 1)
+            board_definition1.append(board_definition.get(x, 1))
+        self.mBoard.append(board_definition1)
+        self.log('mBoard', self.mBoard)
+
 
 
         q = """SELECT * FROM program ORDER BY id"""
@@ -503,7 +500,7 @@ class Domocontrol:
         self.mProg.append(tuple(prog_enable))
         self.mProg.append(prog_counter)
         self.mProg.append(prog_PTHread)
-        self.log('Matrice Prog', self.mProg)
+        # self.log('Matrice Prog', self.mProg)
 
 
         self.setup_board_io()  # Setup Board_IO
@@ -513,7 +510,7 @@ class Domocontrol:
         self.setup_program_type()  # Setup Program_Type
         self.setup_area_board_io()  # Area_Board_IO
 
-        self.default()  # Chiama la funzione per settare gli stati degli IO come da default
+        self.setDefault()  # Chiama la funzione per settare gli stati degli IO come da default
 
         print 'End Domocontrol Setup'
 
@@ -528,8 +525,11 @@ class Domocontrol:
         q = 'SELECT id, name, description, sort FROM area ORDER BY sort'
         res = self.db.query(q)
         self.A['area'] = {}
+        area_id = []
         for r in res:
             self.A['area'].update({r['id']: r})
+            area_id.append(r['id'])
+        self.area_id = tuple(area_id)
 
     def setup_io_type(self):
         q = 'SELECT id, type, name, description FROM io_type'

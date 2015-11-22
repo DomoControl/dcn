@@ -169,14 +169,14 @@ def menu_status():
     if permission: return redirect(url_for(permission))
 
     A = d.getData('self.A')
-
+    area_id = d.getData('self.area_id')
 
 
     global thread
     if thread is None:
         thread = Thread(target=event_menu_status)
         thread.start()
-    return render_template("menu_status.html", A=A)
+    return render_template("menu_status.html", A=A, area_id=area_id)
 
 @socketio.on('change_menu_status', namespace='/menu_status')
 def change_menu_status(message):
