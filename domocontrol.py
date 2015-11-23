@@ -90,11 +90,17 @@ class Domocontrol:
             a = sht21.SHT21(self.i2c)
             if board_type_id == 4:
                 time.sleep(0.33)
-                self.mBoard[6][board_n] = round(a.read_temperature(), 1)
+                temperature = round(a.read_temperature(), 1)
+                self.mBoard[6][board_n] = temperature
+                q = 'INSERT INTO sensor (type, value) VALUES("{}", "{}");'.format('1', temperature)
+                self.db.query(q)
             if board_type_id == 6:
                 time.sleep(0.5)
-                self.mBoard[6][board_n] = round(a.read_humidity(), 0)
-            # time.sleep(1)
+                humidity = round(a.read_humidity(), 0)
+                self.mBoard[6][board_n] = humidity
+                q = 'INSERT INTO sensor (type, value) VALUES("{}", "{}");'.format('2', humidity)
+                self.db.query(q)
+            time.sleep(60)
 
         elif board_type_id == 5:  # PD9535
             pass
@@ -120,13 +126,24 @@ class Domocontrol:
                     self.mBoard[5][bn] = 1
                     self.InThread(self.mBoard[1][bn], self.mBoard[4][bn], bn) # chiama a funzione per update IO
 
+    def getBitValue(self, byteval, idx):
+        """
+        Return if bit in the byte is 0 or 1
+        Ritorna il valore del BIT di un Byte
+        """
+        # print byteval, idx, byteval & 1 << idx != 0
+        if byteval & 1 << idx != 0:
+            return 1
+        return 0
 
     def getIOStatus(self, io_id):
         """
         Ritorna il valore del bit del byte
         """
         # self.log('mBoard_io', self.mBoard_io)
-        address = self.mBoard[3][self.getBoard_n(io_id)]
+        address = self.mBoard_io[5][self.mBoard_io[1].index(io_id)]
+        # print address, self.getBoard_n(io_id), self.mBoard[6][self.getBoard_n(io_id)]
+
         return self.getBitValue(self.mBoard[6][self.getBoard_n(io_id)], address)
 
     def getBoard_id(self, io_id):
@@ -154,8 +171,7 @@ class Domocontrol:
         """
         # print 'prog'
         # self.log('mProg', self.mProg)
-        # self.log('mBoard', self.mBoard)self.log
-
+        # self.log('mBoard', self.mBoard)
         # self.log('mBoard', self.mBoard)
         in_id = self.mProg[2][prog_n]
         in_status = self.getIOStatus(in_id)
@@ -204,7 +220,8 @@ class Domocontrol:
             pass
 
         elif prog_type_id == 4:  # Manual OK
-                val = self.setBit(self.mBoard[6][self.mBoard[1].index(self.getBoard_id(out_id))], self.getBoard_address(out_id), in_status ^ self.mProg[4][prog_n])
+                val = self.setBit(self.mBoard[6][self.mBoard[1].index(self.getBoard_id(out_id))], self.getBoard_address(out_id), in_status ^ inverted)
+                # print 'in_id:%s,  out_id:%s,  val:%s,  in_status:%s,  inverted:%s' %(in_id, out_id, val, in_status, inverted)
                 if val != self.mBoard[7][self.mBoard[1].index(self.getBoard_id(out_id))]:
                     self.mBoard[7][self.mBoard[1].index(self.getBoard_id(out_id))] = val
                     self.mBoard[8][self.mBoard[1].index(self.getBoard_id(out_id))] = 1
@@ -444,7 +461,7 @@ class Domocontrol:
 
 
 
-        q = """SELECT * FROM program ORDER BY id"""
+        q = """SELECT * FROM program WHERE enable=1 ORDER BY id"""
         res = self.db.query(q)
         self.P = {}
         prog_n = []
@@ -559,9 +576,10 @@ class Domocontrol:
         """
         q = """SELECT a.id AS area_id, a.name AS area_name, a.description AS area_description, bio.id AS  board_io_id,  bio.io_type_id AS board_io_io_type_id,
                 bio.name AS board_io_name, bio.description AS board_io_description, bio.address AS board_io_address, bio.board_id AS board_io_board_id,
-                bio.icon_on AS board_io_icon_on, bio.icon_off AS board_io_icon_off
+                bio.icon_on AS board_io_icon_on, bio.icon_off AS board_io_icon_off, bio.enable
             FROM board_io AS bio
             LEFT JOIN area AS a ON bio.area_id=a.id
+            WHERE bio.enable = 1
             ORDER BY a.sort
             """
         res = self.db.query(q)
@@ -574,12 +592,3 @@ class Domocontrol:
         Ritorna qualsiasi variabile (es. "self.A")
         """
         return eval(data)
-
-    def getBitValue(self, byteval, idx):
-        """
-        Return if bit in the byte is 0 or 1
-        Ritorna il valore del BIT di un Byte
-        """
-        if byteval & 1 << idx != 0:
-            return 1
-        return 0

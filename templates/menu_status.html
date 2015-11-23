@@ -49,21 +49,24 @@
 
 
                     <!-- Mostra il checkbox sulle uscite per definire la formula di funzionamento e tutti i parametri del programma  -->
+
                     <div class='ms_check'>
-                        {% if A['board_io'][board_io_id]['io_type_id'] == 2 or A['board_io'][board_io_id]['io_type_id'] == 3 %}
-<!--
-                            <input type="checkbox" name="io_check" value="1" aria-label="Close">
--->
-<!--
-                            <span id='prog{{board_io_id}}' onClick='getProgIn("prog{{board_io_id}}")'></span>
--->
+                            <!--    <input type="checkbox" name="io_check" value="1" aria-label="Close">     -->
+                            <!--    <span id='prog{{board_io_id}}' onClick='getProgIn("prog{{board_io_id}}")'></span>    -->
                             <div id='prog{{board_io_id}}' class='ms_info' title='Program ID. Premendo si visualizzano le informazioni del programma.' aria-hidden='true' data-toggle="modal" data-target="#ms_info" onClick='getProgIn("prog{{board_io_id}}")' ></div>
+                        </div>
 
-                        {% endif %}
-                    </div>
-                    <br>
+                    {% if A['board_io'][board_io_id]['io_type_id'] == 2 or A['board_io'][board_io_id]['io_type_id'] == 3 %}
 
-                    <progress id='progres{{board_io_id}}' style="width: 100%; height: 8px;" max="100" value="80"></progress>
+                        <span id='prog_type{{board_io_id}}'></span>
+                        <br>
+                        <progress id='progres{{board_io_id}}' style="width: 100%; height: 8px;" max="100" value="80"></progress>
+
+                    {% else %}
+                        <br>
+                        <br>
+                    {% endif %}
+
 
                 </div>
 
@@ -117,6 +120,7 @@ socket.on('menu_status_data', function(dict) {
     area_board_io = dict.area_board_io;
     board_bin_val = dict.board_bin_val; //Dict with input value
     board_id = dict.board_id;
+    program_type = dict.program_type;
     P = dict.P;
     n = 0;
     for( var a in area){
@@ -155,9 +159,12 @@ socket.on('menu_status_data', function(dict) {
                 document.getElementById("val"+bio).innerHTML = In;
 
                 for(var p in P){
-                    if(P[p]['out_id'] == bio){
+                    if(P[p]['out_id'] == bio || P[p]['in_id'] == bio){ //write P_ID
                         document.getElementById("prog"+bio).innerHTML = 'P'+P[p]['id'];
-                        debug = P[p]['timer'];
+                        // debug = JSON.stringify(program_type);
+                    }
+                    if(P[p]['out_id'] == bio){ //write type of program to output
+                        document.getElementById("prog_type"+bio).innerHTML = program_type[P[p]['type_id']]['name'];
                     }
                 }
 

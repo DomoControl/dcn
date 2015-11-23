@@ -103,6 +103,7 @@ def event_menu_status(start = 0):
     area = d.getData('self.A["area"]').copy()
     board_id = d.getData('self.mBoard[1]')
     P = d.getData('self.P')
+    program_type = d.getData('self.A["program_type"]')
     global event_menu_status_start
     print 'event_menu_status', event_menu_status_start
 
@@ -138,6 +139,10 @@ def event_menu_status(start = 0):
             P = d.getData('self.P').copy()
             page_reload = 1
 
+        if program_type != d.getData('self.A["program_type"]'):
+            program_type = d.getData('self.A["program_type"]').copy()
+            page_reload = 1
+
         mProg = d.getData('self.mProg')
         counter = []
         for p in mProg[6]:
@@ -149,7 +154,7 @@ def event_menu_status(start = 0):
             event_menu_status_start = 0
             # print "PageReload", page_reload, 'change', change, board_bin_val, P
             socketio.emit('menu_status_data', {'board_bin_val': board_bin_val,
-                'area_board_io': area_board_io, 'area': area, 'board_id': board_id, 'page_reload': page_reload, 'P': P},
+                'area_board_io': area_board_io, 'area': area, 'board_id': board_id, 'page_reload': page_reload, 'P': P, 'program_type': program_type},
                 namespace='/menu_status')
         else:
             # print "PageReload", page_reload, 'NO changed'
@@ -389,15 +394,21 @@ def setup_board():
     return render_template("setup_board.html", data=res, board_type=board_type)
 
 
-def checkEnable(id):
+def checkEnable(io_id, enable):
     """
     Controlla se board_io_id e' usato nel programma.
     Solo un ingresso per programma
     """
-    P = d.getData('self.prog_in_id')
-    print "****************", P, id in P
-    if id in P:
-        return 1
+    if enable:  # ritorna se enable = 1
+        return 0
+
+    in_io = d.getData('self.mProg[2]')
+    out_io = d.getData('self.mProg[5]')
+    io = in_io + out_io
+    print 'Enable:%s, io:%s, io_id:%s ' %(enable, io, io_id)
+
+    if int(io_id) in io:
+        return io_id
     else:
         return 0
 
@@ -407,19 +418,20 @@ def setup_board_io():
     permission = checkPermission(2)  # check login and privilege
     if permission: return redirect(url_for(permission))
 
-    error = ''
+    msg = msg_type = ''
     if request.method == "POST":
         f = request.form
-        print(f)
+        # print(f)
         if f['submit'] == 'Save':
             if 'enable' in f:
                 enable = 1
             else:
                 enable = 0
-            print 'f["id"]: ', f["id"], '  ', "enable:", enable
+            # print 'f["id"]: ', f["id"], '  ', "enable:", enable
 
-            if checkEnable(f["id"] ):  # Controlla se l'ingresso e' gia' stato usato
-                error = "Cannot disable I/O used in setup_board_io because it is used into Program n. %s. First delete program or change IN/OUT into it." % (checkEnable(f["id"], enable))
+            if checkEnable(f["id"], enable):  # Controlla se l'ingresso e' gia' usato da Program
+                msg_type = 'warning'
+                msg = "Cannot disable I/O id:%s used in setup_board_io because it is used into Program. First delete program or change IN/OUT into it." % (checkEnable(f["id"], enable))
             else:
                 q = 'UPDATE board_io SET id="{}", io_type_id="{}", name="{}", description="{}", area_id="{}", enable="{}", board_id="{}", address="{}", icon_on="{}", icon_off="{}" WHERE id="{}"'\
                     .format(f['id'], f['io_type_id'], f['name'], f['description'], f['area_id'], enable, f['board_id'], f['address'], f['icon_on'], f['icon_off'], f['id'])
@@ -434,13 +446,13 @@ def setup_board_io():
                 enable = 0
             q = 'INSERT INTO board_io (io_type_id, name, description, area_id, enable, board_id, address) VALUES ("{}", "{}", "{}", "{}", "{}", "{}", "{}")'\
                 .format(f['io_type_id'], f["name"], f["description"], f["area_id"], enable, f['board_id'], f["address"])
-            print q
             db.query(q)
             d.area_board_io()
             d.setup_board_io()
         elif f['submit'] == 'Delete':
             if checkEnable(f["id"]):
-                error = 'Cannot delete I/O used in Program, first change Program '
+                msg_type = 'warning'
+                msg = 'Cannot delete I/O used in Program, first change Program '
             else:
                 q = "DELETE FROM board_io WHERE id={}".format(f['id'])
                 db.query(q)
@@ -463,9 +475,8 @@ def setup_board_io():
     d.initialize()  # reload database
 
     icon = d.A['icon']
-    print icon
 
-    return render_template("setup_board_io.html", error=error, data=res, board=board, board_type=board_type, io_type=io_type, all_board=all_board, area=area, icon=icon)
+    return render_template("setup_board_io.html", msg=msg, msg_type=msg_type, data=res, board=board, board_type=board_type, io_type=io_type, all_board=all_board, area=area, icon=icon)
 
 
 @app.route('/setup_io_type', methods=["GET", "POST"])

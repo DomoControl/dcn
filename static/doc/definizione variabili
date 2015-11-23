@@ -67,23 +67,6 @@ tipi programmi:
 - Timer: come timer scale: if timer > 0 or in == 1: out = 1
 - Timeout: if timer > 0: out = 1
 
-self.prog_in_id -> in_id
-(1, 2)
-
-self.prog_out_id -> out_id
-
-self.prog_inverted -> inverted output
-
-self.prog_timer -> timer
-
-self.prog_chrono -> Chrono
-
-self.prog_enable -> program enable
-
-self.prog_counter -> contatore tempo
-
-self.timeout -> variabile che serve per il programma timeout
-
 self.mProg # Matrice program
 0 n             (0, 1, 2, 3, 4, 5)
 1 id            (3, 4, 5, 6, 7, 8)
