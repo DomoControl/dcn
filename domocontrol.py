@@ -8,6 +8,42 @@ import sht21
 import os
 import threading
 
+# Costanti mBoard
+BOARD_N = 0
+BOARD_ID = 1
+BOARD_ENABLE = 2
+BOARD_ADDRESS = 3
+BOARD_TYPE_ID = 4
+BOARD_THREAD = 5
+BOARD_BIN_VAL = 6
+BOARD_BIN_VAL_NEW = 7
+BOARD_UPDATE = 8
+BOARD_DIRECTION = 9
+
+# Costanti mBoard_io
+BOARD_IO_N = 0
+BOARD_IO_ID = 1
+BOARD_IO_TYPE_ID = 2
+BOARD_IO_ENABLE = 3
+BOARD_IO_BOARD_ID = 4
+BOARD_IO_ADDRESS = 5
+BOARD_IO_AREA_ID = 6
+BOARD_IO_DEFINITION = 7
+
+# Costanti mProg
+PROG_N = 0
+PROG_ID = 1
+PROG_IN_ID = 2
+PROG_DELAY = 3
+PROG_INVERTED = 4
+PROG_OUT_ID = 5
+PROG_TYPE_ID = 6
+PROG_TIMER = 7
+PROG_CHRONO = 8
+PROG_ENABLE = 9
+PROG_COUNTER = 10
+PROG_THREAD = 11
+
 
 class Domocontrol:
     """Class DomoControl"""
@@ -18,13 +54,10 @@ class Domocontrol:
         self.getBusValue() # Setta il corretto device
         self.A = {}
         self.P = {}
-
         self.mBoard = [] # matrive board
         self.mBoard_io = [] # matrice IO
         self.mProg = [] # matrice programma
-
         self.area_id = ()
-
         self.dir_root = os.path.dirname(os.path.abspath(__file__))
         self.initialize()
 
@@ -66,47 +99,52 @@ class Domocontrol:
             pass
 
         elif board_type_id == 1:  # I2C
-            # self.log('mBoard', self.mBoard)
-            if self.mBoard[8][board_n] == 1: # se board_update e' settato:
-                self.mBoard[6][board_n] = self.mBoard[7][board_n] # Aggiorna board_bin_val con board_bin_val_new
-                self.write_i2c(self.mBoard[3][board_n], (self.mBoard[6][board_n] | self.mBoard[9][board_n])) # Aggiorna I2C out
-                self.mBoard[8][board_n] = 0
+            try:
+                # self.log('mBoard', self.mBoard)
+                if self.mBoard[BOARD_UPDATE][board_n] == 1: # se board_update e' settato:
+                    self.mBoard[BOARD_BIN_VAL][board_n] = self.mBoard[BOARD_BIN_VAL_NEW][board_n] # Aggiorna board_bin_val con board_bin_val_new
+                    self.write_i2c(self.mBoard[BOARD_ADDRESS][board_n], (self.mBoard[BOARD_BIN_VAL][board_n] | self.mBoard[BOARD_DIRECTION][board_n])) # Aggiorna I2C out
+                    self.mBoard[BOARD_UPDATE][board_n] = 0
 
-            board_id_i2c_val = self.read_i2c(self.mBoard[3][board_n]) # Get byte valore I2C board
-            if self.mBoard[6][board_n] != board_id_i2c_val: # check if board_bin_val e' cambiato
-                self.mBoard[7][board_n] = self.mBoard[6][board_n] = board_id_i2c_val # aggiorna board_bin_val
-                self.write_i2c(self.mBoard[3][board_n], (self.mBoard[6][board_n] | self.mBoard[9][board_n])) # Aggiorna I2C out
-
+                board_id_i2c_val = self.read_i2c(self.mBoard[BOARD_ADDRESS][board_n]) # Get byte valore I2C board
+                if self.mBoard[BOARD_BIN_VAL][board_n] != board_id_i2c_val: # check if board_bin_val e' cambiato
+                    self.mBoard[BOARD_BIN_VAL_NEW][board_n] = self.mBoard[BOARD_BIN_VAL][board_n] = board_id_i2c_val # aggiorna board_bin_val
+                    self.write_i2c(self.mBoard[BOARD_ADDRESS][board_n], (self.mBoard[BOARD_BIN_VAL][board_n] | self.mBoard[BOARD_DIRECTION][board_n])) # Aggiorna I2C out
+            except:
+                pass
 
         elif board_type_id == 2:  # RS485
             pass
 
         elif board_type_id == 3:  # Webs
-            if self.mBoard[8][board_n] == 1:
-                self.mBoard[6][board_n] = self.mBoard[7][board_n]
-                self.mBoard[8][board_n] = 0
+            if self.mBoard[BOARD_UPDATE][board_n] == 1:
+                self.mBoard[BOARD_BIN_VAL][board_n] = self.mBoard[BOARD_BIN_VAL_NEW][board_n]
+                self.mBoard[BOARD_UPDATE][board_n] = 0
 
         elif board_type_id == 4 or board_type_id == 6:  # Temperature + humidity
-            a = sht21.SHT21(self.i2c)
-            if board_type_id == 4:
-                time.sleep(0.33)
-                temperature = round(a.read_temperature(), 1)
-                self.mBoard[6][board_n] = temperature
-                q = 'INSERT INTO sensor (type, value) VALUES("{}", "{}");'.format('1', temperature)
-                self.db.query(q)
-            if board_type_id == 6:
-                time.sleep(0.5)
-                humidity = round(a.read_humidity(), 0)
-                self.mBoard[6][board_n] = humidity
-                q = 'INSERT INTO sensor (type, value) VALUES("{}", "{}");'.format('2', humidity)
-                self.db.query(q)
+            try:
+                a = sht21.SHT21(self.i2c)
+                if board_type_id == 4:
+                    time.sleep(0.33)
+                    temperature = round(a.read_temperature(), 1)
+                    self.mBoard[BOARD_BIN_VAL][board_n] = temperature
+                    q = 'INSERT INTO sensor (type, value) VALUES("{}", "{}");'.format('1', temperature)
+                    self.db.query(q)
+                if board_type_id == 6:
+                    time.sleep(0.5)
+                    humidity = round(a.read_humidity(), 0)
+                    self.mBoard[BOARD_BIN_VAL][board_n] = humidity
+                    q = 'INSERT INTO sensor (type, value) VALUES("{}", "{}");'.format('2', humidity)
+                    self.db.query(q)
+            except:
+                pass
             time.sleep(60)
 
         elif board_type_id == 5:  # PD9535
             pass
 
         # print self.mBoard[6]
-        self.mBoard[5][board_n] = 0
+        self.mBoard[BOARD_THREAD][board_n] = 0
         # self.log('board', self.mBoard)
 
     def InThread(self, board_id, board_type, board_n):
@@ -120,11 +158,11 @@ class Domocontrol:
         """
         LOOP si occupa di inizializzare il Thread per l'aggiornamento della lettura/scrittura IO
         """
-        for bn in self.mBoard[0]: # Fa la scansione delle board
-            if self.mBoard[2][bn] == 1: # check se la board e' abilitata
-                if self.mBoard[5][bn] == 0: # Se il thread non e' attivo, lo attiva
-                    self.mBoard[5][bn] = 1
-                    self.InThread(self.mBoard[1][bn], self.mBoard[4][bn], bn) # chiama a funzione per update IO
+        for bn in self.mBoard[BOARD_N]: # Fa la scansione delle board
+            if self.mBoard[BOARD_ENABLE][bn] == 1: # check se la board e' abilitata
+                if self.mBoard[BOARD_THREAD][bn] == 0: # Se il thread non e' attivo, lo attiva
+                    self.mBoard[BOARD_THREAD][bn] = 1
+                    self.InThread(self.mBoard[BOARD_ID][bn], self.mBoard[BOARD_TYPE_ID][bn], bn) # chiama a funzione per update IO
 
     def getBitValue(self, byteval, idx):
         """
@@ -141,29 +179,28 @@ class Domocontrol:
         Ritorna il valore del bit del byte
         """
         # self.log('mBoard_io', self.mBoard_io)
-        address = self.mBoard_io[5][self.mBoard_io[1].index(io_id)]
-        # print address, self.getBoard_n(io_id), self.mBoard[6][self.getBoard_n(io_id)]
-
-        return self.getBitValue(self.mBoard[6][self.getBoard_n(io_id)], address)
+        address = self.mBoard_io[BOARD_IO_ADDRESS][self.mBoard_io[BOARD_IO_ID].index(io_id)]
+        # print address, self.getBoard_n(io_id), self.mBoard[BOARD_BIN_VAL][self.getBoard_n(io_id)]
+        return self.getBitValue(self.mBoard[BOARD_BIN_VAL][self.getBoard_n(io_id)], address)
 
     def getBoard_id(self, io_id):
         """
         Ritorna board_id da io_id
         """
-        return self.mBoard_io[4][self.mBoard_io[1].index(io_id)]
+        return self.mBoard_io[BOARD_IO_BOARD_ID][self.mBoard_io[BOARD_IO_ID].index(io_id)]
 
 
     def getBoard_address(self, io_id):
         """
         Ritorna board_address
         """
-        return self.mBoard_io[5][self.mBoard_io[1].index(io_id)]
+        return self.mBoard_io[BOARD_IO_ADDRESS][self.mBoard_io[BOARD_IO_ID].index(io_id)]
 
     def getBoard_n(self, io_id):
         """
         Ritorna board_b
         """
-        return self.mBoard[1].index(self.getBoard_id(io_id))
+        return self.mBoard[BOARD_ID].index(self.getBoard_id(io_id))
 
     def runProg(self, prog_n, prog_type_id):
         """
@@ -173,63 +210,63 @@ class Domocontrol:
         # self.log('mProg', self.mProg)
         # self.log('mBoard', self.mBoard)
         # self.log('mBoard', self.mBoard)
-        in_id = self.mProg[2][prog_n]
+        in_id = self.mProg[PROG_IN_ID][prog_n]
         in_status = self.getIOStatus(in_id)
-        out_id = self.mProg[5][prog_n]
+        out_id = self.mProg[PROG_OUT_ID][prog_n]
         out_status = self.getIOStatus(out_id)
-        inverted = self.mProg[4][prog_n]
+        inverted = self.mProg[PROG_INVERTED][prog_n]
 
         if prog_type_id == 1:  # Timer OK
             if in_status == 1: # Deve accendersi
-                self.mProg[10][prog_n] = round(time.time(), 1) # Mette su Counter l'ora corrente
-                self.mBoard[7][self.getBoard_n(out_id)] = self.setBit(self.mBoard[6][self.getBoard_n(out_id)], self.getBoard_address(out_id), in_status ^ inverted)
-                self.mBoard[8][self.getBoard_n(out_id)] = 1
-            timer = self.mProg[7][prog_n]
-            # print time.time(), self.mProg[10][prog_n], timer, time.time() - self.mProg[10][prog_n]
-            if time.time() - self.mProg[10][prog_n] > timer:
-                self.mBoard[7][self.getBoard_n(out_id)] = self.setBit(self.mBoard[6][self.getBoard_n(out_id)], self.getBoard_address(out_id), inverted)
-                self.mBoard[8][self.getBoard_n(out_id)] = 1
+                self.mProg[PROG_COUNTER][prog_n] = round(time.time(), 1) # Mette su Counter l'ora corrente
+                self.mBoard[BOARD_BIN_VAL_NEW][self.getBoard_n(out_id)] = self.setBit(self.mBoard[BOARD_BIN_VAL][self.getBoard_n(out_id)], self.getBoard_address(out_id), in_status ^ inverted)
+                self.mBoard[BOARD_UPDATE][self.getBoard_n(out_id)] = 1
+            timer = self.mProg[PROG_TIMER][prog_n]
+            # print time.time(), self.mProg[PROG_COUNTER][prog_n], timer, time.time() - self.mProg[PROG_COUNTER][prog_n]
+            if time.time() - self.mProg[PROG_COUNTER][prog_n] > timer:
+                self.mBoard[BOARD_BIN_VAL_NEW][self.getBoard_n(out_id)] = self.setBit(self.mBoard[BOARD_BIN_VAL][self.getBoard_n(out_id)], self.getBoard_address(out_id), inverted)
+                self.mBoard[BOARD_UPDATE][self.getBoard_n(out_id)] = 1
 
         elif prog_type_id == 2:  # Timeout
             """
             Out = 1 solo se in_status == 1 e counter non e' scaduto
             """
-            timer = self.mProg[7][prog_n] # Tempo massimo accensione
-            counter = time.time() - self.mProg[10][prog_n]
+            timer = self.mProg[PROG_TIMER][prog_n] # Tempo massimo accensione
+            counter = time.time() - self.mProg[PROG_COUNTER][prog_n]
             # print 'in_status:', in_status, 'timer:', timer, 'counter:', time.time(), self.mProg[10][prog_n], counter, counter <= timer
             if in_status == 1 and counter >= timer : #
                 # print "A"
                 out = inverted
             elif in_status == 0 and counter >= timer:
                 # print "B"
-                self.mProg[10][prog_n] = time.time()
+                self.mProg[PROG_COUNTER][prog_n] = time.time()
                 out = inverted
             elif in_status == 1 and counter <= timer:
                 # print "C"
                 out = not inverted
             elif in_status == 0 and counter <= timer:
                 # print "D"
-                self.mProg[10][prog_n] = time.time()
+                self.mProg[PROG_COUNTER][prog_n] = time.time()
                 out = inverted
 
-            if out != self.mBoard[7][self.mBoard[1].index(self.getBoard_id(out_id))]:
-                self.mBoard[7][self.getBoard_n(out_id)] = self.setBit(self.mBoard[6][self.getBoard_n(out_id)], self.getBoard_address(out_id), out)
-                self.mBoard[8][self.getBoard_n(out_id)] = 1
+            if out != self.mBoard[BOARD_BIN_VAL_NEW][self.mBoard[BOARD_ID].index(self.getBoard_id(out_id))]:
+                self.mBoard[BOARD_BIN_VAL_NEW][self.getBoard_n(out_id)] = self.setBit(self.mBoard[BOARD_BIN_VAL][self.getBoard_n(out_id)], self.getBoard_address(out_id), out)
+                self.mBoard[BOARD_UPDATE][self.getBoard_n(out_id)] = 1
 
         elif prog_type_id == 3:  # Automatic
             pass
 
         elif prog_type_id == 4:  # Manual OK
-                val = self.setBit(self.mBoard[6][self.mBoard[1].index(self.getBoard_id(out_id))], self.getBoard_address(out_id), in_status ^ inverted)
+                val = self.setBit(self.mBoard[BOARD_BIN_VAL][self.mBoard[1].index(self.getBoard_id(out_id))], self.getBoard_address(out_id), in_status ^ inverted)
                 # print 'in_id:%s,  out_id:%s,  val:%s,  in_status:%s,  inverted:%s' %(in_id, out_id, val, in_status, inverted)
-                if val != self.mBoard[7][self.mBoard[1].index(self.getBoard_id(out_id))]:
-                    self.mBoard[7][self.mBoard[1].index(self.getBoard_id(out_id))] = val
-                    self.mBoard[8][self.mBoard[1].index(self.getBoard_id(out_id))] = 1
+                if val != self.mBoard[BOARD_BIN_VAL_NEW][self.mBoard[BOARD_ID].index(self.getBoard_id(out_id))]:
+                    self.mBoard[BOARD_BIN_VAL_NEW][self.mBoard[BOARD_ID].index(self.getBoard_id(out_id))] = val
+                    self.mBoard[BOARD_UPDATE][self.mBoard[BOARD_ID].index(self.getBoard_id(out_id))] = 1
 
         elif prog_type_id == 5:  # Thermostat
             pass
 
-        self.mProg[11][prog_n] = 0
+        self.mProg[PROG_THREAD][prog_n] = 0
 
     def ProgThread(self, prog_n, prog_type_id):
         """
@@ -242,11 +279,11 @@ class Domocontrol:
         """
         LOOP si occupa del programma
         """
-        for prog_n in self.mProg[0]: # loog programma
-            if self.mProg[9][prog_n]: # Check se programma abilitato
-                if self.mProg[11][prog_n] == 0: # Se Thread == 0 esegui
-                    self.mProg[11][prog_n] = 1
-                    self.ProgThread(prog_n, self.mProg[6][prog_n])
+        for prog_n in self.mProg[PROG_N]: # loog programma
+            if self.mProg[PROG_ENABLE][prog_n]: # Check se programma abilitato
+                if self.mProg[PROG_THREAD][prog_n] == 0: # Se Thread == 0 esegui
+                    self.mProg[PROG_THREAD][prog_n] = 1
+                    self.ProgThread(prog_n, self.mProg[PROG_TYPE_ID][prog_n])
 
     def setBit(self, byte, index, x):
         """
@@ -301,8 +338,8 @@ class Domocontrol:
         res = self.db.query(q)
         for r in res:
             if r['board_id'] == 0 or r['board_id'] == 1 or r['board_id'] == 2 or r['board_id'] == 3 or r['board_id'] == 5:  # Tutte le schede che possono essere a valore "0"
-                self.mBoard[7][self.mBoard[1].index(r['board_id'])] = self.setBit(self.mBoard[7][self.mBoard[1].index(r['board_id'])], r['address'], r['default'])
-                self.mBoard[8][self.mBoard[1].index(r['board_id'])] = 1  # setta la schede che deve essere aggiornata a 1
+                self.mBoard[BOARD_BIN_VAL_NEW][self.mBoard[BOARD_ID].index(r['board_id'])] = self.setBit(self.mBoard[BOARD_BIN_VAL_NEW][self.mBoard[BOARD_ID].index(r['board_id'])], r['address'], r['default'])
+                self.mBoard[BOARD_UPDATE][self.mBoard[BOARD_ID].index(r['board_id'])] = 1  # setta la schede che deve essere aggiornata a 1
         # self.log('self.mBoard', self.mBoard)
 
 
@@ -334,7 +371,7 @@ class Domocontrol:
         board_id = []
         board_enable = []
         board_type_id = []
-        IOThread = []
+        board_thread = []
         board_bin_val = []
         board_bin_val_new = []
         board_update = []
@@ -349,7 +386,7 @@ class Domocontrol:
             board_enable.append(r['enable'])
             board_address.append(r['address'])
             board_type_id.append(r['board_type_id'])
-            IOThread.append(0)
+            board_thread.append(0)
             board_bin_val.append(0)
             board_bin_val_new.append(0)
             board_update.append(0)
@@ -360,7 +397,7 @@ class Domocontrol:
         self.mBoard.append(tuple(board_enable))
         self.mBoard.append(tuple(board_address))
         self.mBoard.append(tuple(board_type_id))
-        self.mBoard.append(IOThread)
+        self.mBoard.append(board_thread)
         self.mBoard.append(board_bin_val)
         self.mBoard.append(board_bin_val_new)
         self.mBoard.append(board_update)
@@ -414,7 +451,7 @@ class Domocontrol:
         board_io_type_id = []
         board_io_enable = []
         board_io_area_id = []
-        board_io_definition = []
+        board_io_direction = []
         n = 0
         for r in res:
             board_io_n.append(n)
@@ -425,9 +462,9 @@ class Domocontrol:
             board_io_address.append(r['address'])
             board_io_area_id.append(r['area_id'])
             if r['io_type_id'] == 2 or r['io_type_id'] == 3: # IO = uscite
-                board_io_definition.append(0)
+                board_io_direction.append(0)
             else: # IO = ingressi
-                board_io_definition.append(1)
+                board_io_direction.append(1)
             n += 1
 
         icon_path = os.path.join(self.dir_root, 'static/icon')
@@ -442,21 +479,21 @@ class Domocontrol:
         self.mBoard_io.append(tuple(board_io_board_id))
         self.mBoard_io.append(tuple(board_io_address))
         self.mBoard_io.append(tuple(board_io_area_id))
-        self.mBoard_io.append(tuple(board_io_definition))
+        self.mBoard_io.append(tuple(board_io_direction))
 
         # Set mBoard[9] -> definizione ingressi / uscite: 0=output, 1=input
-        board_definition = {}
-        board_definition1 = []
+        board_direction = {}
+        board_direction1 = []
         for x in self.mBoard_io[0]:
             # print x, self.mBoard_io[4][x], self.mBoard_io[7][x], self.mBoard_io[5][x]
-            if not self.mBoard_io[4][x] in board_definition: # Add board_id into list
-                board_definition.update({self.mBoard_io[4][x]: 0})
+            if not self.mBoard_io[4][x] in board_direction: # Add board_id into list
+                board_direction.update({self.mBoard_io[4][x]: 0})
             if self.mBoard_io[7][x] == 1 and self.mBoard_io[7][x] == 1 : # IO = input
-                board_definition[self.mBoard_io[4][x]] += 2 ** self.mBoard_io[5][x]
+                board_direction[self.mBoard_io[4][x]] += 2 ** self.mBoard_io[5][x]
         for x in self.mBoard[1]:
-            # print x, board_definition.get(x, 1)
-            board_definition1.append(board_definition.get(x, 1))
-        self.mBoard.append(board_definition1)
+            # print x, board_direction.get(x, 1)
+            board_direction1.append(board_direction.get(x, 1))
+        self.mBoard.append(board_direction1)
         self.log('mBoard', self.mBoard)
 
 
@@ -475,7 +512,7 @@ class Domocontrol:
         prog_chrono = []
         prog_enable = []
         prog_counter = []
-        prog_PTHread = []
+        prog_thread = []
 
         n = 0
         for r in res:
@@ -499,7 +536,7 @@ class Domocontrol:
 
             prog_chrono.append(r['chrono'])
             prog_enable.append(r['enable'])
-            prog_PTHread.append(0)
+            prog_thread.append(0)
             prog_counter.append(round(time.time(), 1))
             n += 1
 
@@ -516,7 +553,7 @@ class Domocontrol:
         self.mProg.append(tuple(prog_chrono))
         self.mProg.append(tuple(prog_enable))
         self.mProg.append(prog_counter)
-        self.mProg.append(prog_PTHread)
+        self.mProg.append(prog_thread)
         # self.log('Matrice Prog', self.mProg)
 
 
