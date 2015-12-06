@@ -7,6 +7,7 @@ import datetime
 import sht21
 import os
 import threading
+import RPi.GPIO as GPIO
 
 # Costanti mBoard
 BOARD_N = 0
@@ -60,6 +61,7 @@ class Domocontrol:
         self.area_id = ()
         self.dir_root = os.path.dirname(os.path.abspath(__file__))
         self.initialize()
+        GPIO.setmode(GPIO.BCM) # Def GPIO type (for raspberry)
 
     def getBusValue(self):
         """
@@ -142,6 +144,22 @@ class Domocontrol:
 
         elif board_type_id == 5:  # PD9535
             pass
+
+        elif board_type_id == 7:  # GPIO
+            """
+            Example GPIO OUT
+            """
+            # print self.log('mBoard', self.mBoard)
+
+            GPIO.setup(19, GPIO.OUT)
+            GPIO.setup(13, GPIO.OUT)
+            GPIO.setup(16, GPIO.OUT)
+            GPIO.setup(20, GPIO.OUT)
+
+            GPIO.output(19, True)
+            GPIO.output(13, True)
+            GPIO.output(16, True)
+            GPIO.output(20, True)
 
         # print self.mBoard[6]
         self.mBoard[BOARD_THREAD][board_n] = 0

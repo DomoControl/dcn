@@ -444,10 +444,10 @@ def setup_board_io():
                 enable = 1
             else:
                 enable = 0
-            q = 'INSERT INTO board_io (io_type_id, name, description, area_id, enable, board_id, address) VALUES ("{}", "{}", "{}", "{}", "{}", "{}", "{}")'\
-                .format(f['io_type_id'], f["name"], f["description"], f["area_id"], enable, f['board_id'], f["address"])
+            q = 'INSERT INTO board_io (io_type_id, name, description, area_id, enable, board_id, address , icon_on, icon_off) VALUES ("{}", "{}", "{}", "{}", "{}", "{}", "{}", "{}", "{}")'\
+                .format(f['io_type_id'], f["name"], f["description"], f["area_id"], enable, f['board_id'], f["address"], f['icon_on'], f['icon_off'] )
             db.query(q)
-            d.area_board_io()
+            d.setup_area_board_io()
             d.setup_board_io()
         elif f['submit'] == 'Delete':
             if checkEnable(f["id"]):
