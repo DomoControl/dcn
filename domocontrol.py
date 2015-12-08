@@ -7,7 +7,11 @@ import datetime
 import sht21
 import os
 import threading
-import RPi.GPIO as GPIO
+try:
+    import pigpio
+except:
+    print "Module pigpio not installed."
+
 
 # Costanti mBoard
 BOARD_N = 0
@@ -61,7 +65,21 @@ class Domocontrol:
         self.area_id = ()
         self.dir_root = os.path.dirname(os.path.abspath(__file__))
         self.initialize()
-        GPIO.setmode(GPIO.BCM) # Def GPIO type (for raspberry)
+
+        """
+        Example pigpio port
+        """
+        self.pi = pigpio.pi("localhost", 8888) # Instance host, port
+        print dir(self.pi)
+        print
+        self.pi.write(16, False)
+        print self.pi.read(16) # Read status if IO 16
+        self.pi.write(16, True) # Write 1 to IO 16
+        print self.pi.read(16)
+
+        for n in range(32): # print mode of GPIO: 0 = INPUT  1 = OUTPUT, 2 = ALT5, 3 = ALT4, 4 = ALT0, 5 = ALT1, 6 = ALT2, 7 = ALT3
+            print "GPIO n:%s, mode: %s" %(n, self.pi.get_mode(n))
+
 
     def getBusValue(self):
         """
@@ -149,17 +167,20 @@ class Domocontrol:
             """
             Example GPIO OUT
             """
-            # print self.log('mBoard', self.mBoard)
+            # print self.pi.get_current_tick() # Tick in uS from started
+            # print self.pi.get_hardware_revision() # Hardware revision
+            print bin(self.pi.read_bank_1()) # Get GPIO status in block
+            b1 = self.pi.read_bank_1()
+            # print bin(self.pi.read_bank_2()) # Get GPIO status in block
+            b1 = self.setBit(b1, 16, 1)
+            print bin(b1)
 
-            GPIO.setup(19, GPIO.OUT)
-            GPIO.setup(13, GPIO.OUT)
-            GPIO.setup(16, GPIO.OUT)
-            GPIO.setup(20, GPIO.OUT)
+            # self.pi.set_bank_1(b1)
 
-            GPIO.output(19, True)
-            GPIO.output(13, True)
-            GPIO.output(16, True)
-            GPIO.output(20, True)
+
+
+
+            pass
 
         # print self.mBoard[6]
         self.mBoard[BOARD_THREAD][board_n] = 0
